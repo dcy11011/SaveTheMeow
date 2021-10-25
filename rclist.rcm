@@ -1,0 +1,3 @@
+MAIN_ICON           ICON        "img/icon.ico"
+MAIN_BACKGROUND     BITMAP      "img/background.bmp"
+BOTTON_START        BITMAP      "img/login.bmp"
