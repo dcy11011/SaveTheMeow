@@ -8,20 +8,28 @@ EXE = app.exe
 
 EX_LIB = kernel32.lib gdi32.lib user32.lib msvcrt.lib
 
-LINK_FLAG = /subsystem:console
-ML_FLAG = /c /coff
+ML = $(MASM)\bin\ml.exe
+LINK = $(MASM)\bin\link.exe
+RC_E = $(MASM)\bin\rc.exe
 
-$(EXE):$(OBJ) $(RES)
-	link $(LINK_FLAG) $(OBJ) $(RES) $(EX_LIB) /out:$(EXE)
+LINK_FLAG = /subsystem:console /LIBPATH:$(IRVINE) /LIBPATH:$(MASM)\lib
+ML_FLAG = /c /coff /I$(MASM)/include
+
+
+$(EXE): $(OBJ) $(RES)
+	$(LINK) $(LINK_FLAG) $(OBJ) $(RES) $(EX_LIB) /out:$(EXE)
 	del $(OBJ)
 	del $(RES)
 	@echo [SUCCESS]
-$(OBJ):$(ASM) $(RCINC)
-	ml $(ML_FLAG) $(ASM) 
-$(RC) $(RCINC):$(RCM)
+
+$(OBJ): $(ASM) $(RCINC)
+	$(ML) $(ML_FLAG) $(ASM) 
+
+$(RC) $(RCINC): $(RCM)
 	rcmake.exe $(RCM)
-$(RES):$(RC)
-	rc $(RC)
+
+$(RES): $(RC)
+	$(RC_E) $(RC)
 	del $(RC)
 
 

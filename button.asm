@@ -294,7 +294,7 @@ SendClickInfo proc uses  ebx edi esi x:DWORD, y:DWORD
     ret
 SendClickInfo endp
 
-SendHoverInfo proc x:DWORD, y:DWORD
+SendHoverInfo proc uses ebx edi x:DWORD, y:DWORD 
     local   @cnt
 
     xor     ecx, ecx
@@ -336,7 +336,7 @@ SendHoverInfo proc x:DWORD, y:DWORD
     ret
 SendHoverInfo endp
 
-SendUpdateInfo proc cnt:DWORD
+SendUpdateInfo proc uses ebx edi cnt:DWORD
     local   @cnt
 
     xor     ecx, ecx
@@ -365,7 +365,7 @@ SendUpdateInfo proc cnt:DWORD
     ret
 SendUpdateInfo endp
 
-ClearClick proc 
+ClearClick proc uses ebx edi
     xor     ecx, ecx
     mov     ebx, nButtonListCnt
     mov     edi, offset arrayButtonList
