@@ -18,10 +18,11 @@ szDefaultButtonHover    BYTE     "Button Hovered: %d", 0dh, 0ah, 0
 szDefaultButtonUpdate   BYTE     "Button Update : %d", 0dh, 0ah, 0
 
 .data?
-arrayButtonList BUTTONDATA MAXBTNCNT DUP(<?>)
+arrayButtonList BUTTONDATA MAXBTNCNT DUP(<?>) ; 存储BUTTONDATA内存池
 
 .code
 
+; 初始化
 InitButtonData     PROC uses  ebx ecx edi
     lea     edi, arrayButtonList
     mov     ebx, MAXBTNCNT
@@ -38,6 +39,8 @@ InitButtonData     PROC uses  ebx ecx edi
     ret
 InitButtonData endp
 
+
+; 获取一个可以存贮数据的空位
 GetAvilaibleButtonData PROC uses ebx ecx edx edi
     .IF ! bIfInitButtonData
         invoke InitButtonData
@@ -63,6 +66,7 @@ GetAvilaibleButtonData PROC uses ebx ecx edx edi
     ret
 GetAvilaibleButtonData endp
 
+; 注册BUTTON。相当于创建BUTTON，会自动寻找内存位置存储数据，并被PaintAllButton管理
 RegisterButton      PROC    uses ebx edi esi pRect: ptr RECT, pPaint:DWORD, pClickEvent:DWORD, pHoverEvent:DWORD, pUpdateEvent:DWORD
     invoke  GetAvilaibleButtonData
     mov     esi, eax
@@ -109,6 +113,7 @@ RegisterButton      PROC    uses ebx edi esi pRect: ptr RECT, pPaint:DWORD, pCli
     ret 
 RegisterButton endp
 
+; 绘制单个按钮
 PaintButton     PROC    hDc:DWORD, pButton: ptr BUTTONDATA
     push    pButton
     push    hDc
@@ -120,6 +125,7 @@ PaintButton     PROC    hDc:DWORD, pButton: ptr BUTTONDATA
     ret
 PaintButton     endp
 
+; 绘制所有注册过的按钮
 PaintAllButton  PROC    uses ebx ecx edi hDc:DWORD
     mov     ecx, 0
     mov     ebx, nButtonListCnt
