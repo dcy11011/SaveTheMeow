@@ -14,9 +14,3 @@ dPrint3         PROTO  data0:DWORD, data1:DWORD, data2:DWORD
 dPrintFloat     PROTO  data:DWORD
 dPrint2Float    PROTO  data0:DWORD, data1:DWORD
 
-dword2real4     PROTO  intValue: DWORD
-real42dword     PROTO  realValue: REAL4
-
-
-EXTERNDEF PI:REAL4
-

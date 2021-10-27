@@ -319,6 +319,26 @@ GetButtonSize  PROC uses ebx edi esi pButton: ptr BUTTONDATA, pPoint: ptr D_POIN
     ret
 GetButtonSize   ENDP
 
+
+MoveButton    proc pButton: ptr BUTTONDATA, x:DWORD, y:DWORD
+    mov     edx, pButton
+    assume  edx: ptr BUTTONDATA
+    mov     eax, [edx].left
+    add     eax, x
+    mov     [edx].left, eax
+    mov     eax, [edx].right
+    add     eax, x
+    mov     [edx].right, eax
+    mov     eax, [edx].top
+    add     eax, y
+    mov     [edx].top, eax
+    mov     eax, [edx].bottom
+    add     eax, y
+    mov     [edx].bottom, eax
+    ret     
+MoveButton    endp
+
+
 InButtonRange   proc uses ebx edi pButton:ptr BUTTONDATA, x:DWORD, y:DWORD
     xor     eax, eax
     mov     ebx, x
