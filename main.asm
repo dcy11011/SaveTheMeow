@@ -68,6 +68,7 @@ tmp             QWORD  ?
                 invoke  CreateCompatibleBitmap, @hDc, @stRect.right, @stRect.bottom
                 mov     @hBitmap, eax
                 invoke  SelectObject, @hMemDc, @hBitmap
+                ; begin paint
 
                 invoke  CreatePen, PS_SOLID, 5, 00000000h
                 mov     @tPen, eax
@@ -75,14 +76,17 @@ tmp             QWORD  ?
 
                 invoke  PaintBitmapEx, @hMemDc, MAIN_BACKGROUND,\
                         addr @stRect, STRETCH_XY or CENTER_XY
-                invoke  PaintBitmapEx, @hMemDc, BOTTON_START,\
-                        addr @stRect, CENTER_XY 
+                
                 invoke  DrawText, @hMemDc, addr szText, -1, addr @stRect, \
                         DT_SINGLELINE or DT_CENTER or DT_VCENTER
                 invoke  PaintObj, @hMemDc, addr testObj
-
                 invoke  PaintAllButton, @hMemDc
-                
+
+                invoke  RotateDC, @hMemDc, cnt, 135, 61
+                invoke  PaintBitmapEx, @hMemDc, BOTTON_START,\
+                        addr @stRect, 0 
+                invoke  ClearDCRotate, @hMemDc
+                ; end paint
                 invoke  BitBlt, @hDc, 0, 0, @stRect.right, @stRect.bottom, \
                         @hMemDc, 0, 0, SRCCOPY
                 
@@ -125,7 +129,7 @@ tmp             QWORD  ?
                 mov     eax, 100
                 mov     @stRect.left, eax
                 mov     @stRect.top,  eax
-                mov     eax, 120
+                mov     eax, 150
                 mov     @stRect.right, eax
                 mov     @stRect.bottom,eax
                 invoke  RegisterButton, addr @stRect, 0, 0, 0, 0
@@ -133,7 +137,7 @@ tmp             QWORD  ?
                 mov     eax, 200
                 mov     @stRect.left, eax
                 mov     @stRect.top,  eax
-                mov     eax, 220
+                mov     eax, 250
                 mov     @stRect.right, eax
                 mov     @stRect.bottom,eax
                 invoke  RegisterButton, addr @stRect, 0, 0, 0, 0
@@ -141,7 +145,7 @@ tmp             QWORD  ?
                 mov     eax, 300
                 mov     @stRect.left, eax
                 mov     @stRect.top,  eax
-                mov     eax, 320
+                mov     eax, 350
                 mov     @stRect.right, eax
                 mov     @stRect.bottom,eax
                 invoke  RegisterButton, addr @stRect, 0, 0, 0, 0

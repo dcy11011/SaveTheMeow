@@ -197,6 +197,87 @@ PaintRect  proc   hDc:DWORD, lpRect:ptr RECT
     ret
 PaintRect ENDP
 
+RotateDC    PROC uses ebx esi edi hdc:DWORD, iAngle:DWORD, x:DWORD, y:DWORD
+    local   @nGraphicsMode:DWORD, @fangle:REAL4, @ftmp:REAL4
+    local   @xform:XFORM
+    local   @f180: DWORD
+    lea     edi, @xform
+    assume  edi: PTR XFORM
+    invoke  SetGraphicsMode, hdc, GM_ADVANCED
+    .IF     iAngle != 0
+        fild    DWORD ptr iAngle
+        mov     @f180, 180
+        fidiv   @f180
+        fmul    PI
+        fstp    DWORD ptr @fangle
+        fld     DWORD ptr @fangle
+        fcos    
+        fstp    DWORD ptr @ftmp
+        mov     eax, @ftmp
+        mov     [edi].eM11, eax
+        mov     [edi].eM22, eax
+        fld     DWORD ptr @fangle
+        fsin    
+        fstp    DWORD ptr @ftmp
+        mov     eax, @ftmp
+        mov     [edi].eM12, eax
+        xor     eax, 80000000h
+        mov     [edi].eM21, eax
+        fild    DWORD ptr x
+        fld     DWORD ptr @fangle
+        fcos
+        fild    DWORD ptr x
+        fmul
+        fsub
+        fld     DWORD ptr @fangle
+        fsin
+        fild    DWORD ptr y
+        fmul
+        fadd
+        fstp    DWORD ptr @ftmp
+        mov     eax, @ftmp
+        mov     [edi].ex, eax
+        
+        fild    DWORD ptr y
+        fld     DWORD ptr @fangle
+        fcos
+        fild    DWORD ptr y
+        fmul
+        fsub
+        fld     DWORD ptr @fangle
+        fsin
+        fild    DWORD ptr x
+        fmul
+        fsub
+        fstp    DWORD ptr @ftmp
+        mov     eax, @ftmp
+        mov     [edi].ey, eax
+        invoke  SetWorldTransform, hdc, edi
+    .ENDIF
+    mov     eax, @nGraphicsMode
+    ret
+RotateDC    ENDP
+
+ClearDCRotate  PROC uses ebx esi edi hdc:DWORD
+    local   @xform:XFORM, @tmp:DWORD
+    lea     edi, @xform
+    assume  edi: PTR XFORM
+    invoke  SetGraphicsMode, hdc, GM_ADVANCED
+    mov     eax, 0
+    mov     [edi].ey, eax
+    mov     [edi].ex, eax
+    mov     [edi].eM12, eax
+    mov     [edi].eM21, eax
+    mov     eax, 1
+    mov     @tmp, eax
+    fild    DWORD ptr @tmp
+    fstp    DWORD ptr @tmp
+    mov     eax, @tmp
+    mov     [edi].eM11, eax
+    mov     [edi].eM22, eax
+    invoke  SetWorldTransform, hdc, edi
+    ret
+ClearDCRotate    ENDP
 
 
 end

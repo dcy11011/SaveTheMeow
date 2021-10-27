@@ -30,4 +30,6 @@ PaintRect       PROTO   hDc:DWORD, lpRect:ptr RECT
 GetBitmapSize   PROTO   bitmapID:DWORD, pPoint:ptr D_POINT
 PaintBitmap     PROTO   hDc:DWORD, bitmapID:DWORD, posX:DWORD, posY:DWORD
 PaintBitmapEx   PROTO   hDc:DWORD, bitmapID:DWORD, lpRect:ptr RECT, optionCode:DWORD
+RotateDC        PROTO   hdc:DWORD, iAngle:DWORD, x:DWORD, y:DWORD
+ClearDCRotate   PROTO   hdc:DWORD
 
