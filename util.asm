@@ -15,20 +15,20 @@ dPrint      proc  data:DWORD
     invoke  printf, offset szdPrintFormat, data
     popad
     ret
-dPrint      endp
+dPrint      ENDP
 
 dPrint2     proc  data0:DWORD, data1:DWORD
     pushad
     invoke  printf, offset szdPrint2Format, data0, data1
     popad
     ret
-dPrint2     endp
+dPrint2     ENDP
 
 dPrint3     proc  data0:DWORD, data1:DWORD, data2:DWORD
     pushad
     invoke  printf, offset szdPrint3Format, data0, data1, data2
     popad
     ret
-dPrint3     endp
+dPrint3     ENDP
 
 end

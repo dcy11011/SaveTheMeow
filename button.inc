@@ -15,6 +15,7 @@ BUTTONDATA struct
     top             DWORD   ?
     left            DWORD   ?
     bottom          DWORD   ?
+    depth           DWORD   ?
     isActive        WORD    ?
     status          WORD    ?
     pPaint          DWORD   ?
@@ -39,4 +40,6 @@ SendClickInfo           PROTO    x:DWORD, y:DWORD                           ; �
 SendHoverInfo           PROTO    x:DWORD, y:DWORD                           ; 发送鼠标滑过消息，会自动检测是否在按钮区域，触发按钮的HoverEvent
 SendUpdateInfo          PROTO    cnt:DWORD                                  ; 发送更新消息，触发所有按钮格子的UpdateEvent
 ClearClick              PROTO                                               ; 清除所有按钮的按下状态。请在LBUTTONUP消息处理中加入这个函数 
-
+SortButtons             PROTO
+SetButtonDepth          PROTO    pButton: ptr BUTTONDATA, depth:DWORD
+GetButtonDepth          PROTO    pButton: ptr BUTTONDATA

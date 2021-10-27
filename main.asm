@@ -17,14 +17,17 @@ include user32.inc
 include kernel32.inc
 
 ;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-; Include ds.asm
+; Include in project
 ;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 include util.inc
 include paint.inc
 include rclist.inc
 include testobj.inc
-Include button.inc            
+Include button.inc        
+
+include main.inc
+
 ;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 ; Data
 ;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -33,9 +36,10 @@ testObj         OBJDATA  <100,100,20>
 cnt             dd  0
 
 .data?
-hInstance       dd  ?
-hWinMain        dd  ?
-pButton1        dd  ?
+hInstance       DWORD  ?
+hWinMain        DWORD  ?
+pButton1        DWORD  ?
+tmp             QWORD  ?
 
 
 .const
@@ -69,9 +73,9 @@ pButton1        dd  ?
                 mov     @tPen, eax
                 invoke  SelectObject, @hMemDc, eax
 
-                invoke  PaintBitmapEx, hInstance, @hMemDc, MAIN_BACKGROUND,\
+                invoke  PaintBitmapEx, @hMemDc, MAIN_BACKGROUND,\
                         addr @stRect, STRETCH_XY or CENTER_XY
-                invoke  PaintBitmapEx, hInstance, @hMemDc, BOTTON_START,\
+                invoke  PaintBitmapEx, @hMemDc, BOTTON_START,\
                         addr @stRect, CENTER_XY 
                 invoke  DrawText, @hMemDc, addr szText, -1, addr @stRect, \
                         DT_SINGLELINE or DT_CENTER or DT_VCENTER
@@ -147,7 +151,7 @@ pButton1        dd  ?
             .ENDIF
             xor eax, eax
             ret
-    _ProcWinMain endp
+    _ProcWinMain ENDP
     ;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
     _WinMain        proc
             ;*******************************************
@@ -188,7 +192,7 @@ pButton1        dd  ?
                 invoke  DispatchMessage, addr @stMsg
             .ENDW
             ret
-    _WinMain    endp
+    _WinMain    ENDP
     ;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
     start:
             call _WinMain

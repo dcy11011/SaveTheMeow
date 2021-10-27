@@ -24,7 +24,7 @@ TESTSTRUCT ends
         assume  eax: ptr TESTSTRUCT
         invoke  printf, offset printFormat, [eax].a, Param2
         ret
-    testFunc    endp
+    testFunc    ENDP
 
     MAIN:
         invoke  printf, offset printFormat1, esp 

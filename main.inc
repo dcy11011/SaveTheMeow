@@ -1,0 +1,1 @@
+EXTERNDEF  hInstance:DWORD

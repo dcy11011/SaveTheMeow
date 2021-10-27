@@ -37,7 +37,7 @@ InitButtonData     PROC uses  ebx ecx edi
     .ENDW
     xor     eax, eax
     ret
-InitButtonData endp
+InitButtonData ENDP
 
 
 ; 获取一个可以存贮数据的空位
@@ -64,7 +64,7 @@ GetAvilaibleButtonData PROC uses ebx ecx edx edi
     .ENDIF
     mov eax, edi
     ret
-GetAvilaibleButtonData endp
+GetAvilaibleButtonData ENDP
 
 ; 注册BUTTON。相当于创建BUTTON，会自动寻找内存位置存储数据，并被PaintAllButton管理
 RegisterButton      PROC    uses ebx edi esi pRect: ptr RECT, pPaint:DWORD, pClickEvent:DWORD, pHoverEvent:DWORD, pUpdateEvent:DWORD
@@ -74,6 +74,8 @@ RegisterButton      PROC    uses ebx edi esi pRect: ptr RECT, pPaint:DWORD, pCli
     assume  edi: ptr RECT
     assume  esi: ptr BUTTONDATA
 
+    mov     eax, 0
+    mov     [esi].depth, eax
     mov     eax, [edi].left
     mov     [esi].left, eax
     mov     eax, [edi].right
@@ -110,8 +112,11 @@ RegisterButton      PROC    uses ebx edi esi pRect: ptr RECT, pPaint:DWORD, pCli
         mov     [esi].pUpdateEvent, eax
     .ENDIF
     mov     eax, esi
+    push    eax
+    invoke  SortButtons
+    pop     eax
     ret 
-RegisterButton endp
+RegisterButton ENDP
 
 ; 绘制单个按钮
 PaintButton     PROC    hDc:DWORD, pButton: ptr BUTTONDATA
@@ -123,7 +128,7 @@ PaintButton     PROC    hDc:DWORD, pButton: ptr BUTTONDATA
     call    eax
     xor     eax, eax
     ret
-PaintButton     endp
+PaintButton     ENDP
 
 ; 绘制所有注册过的按钮
 PaintAllButton  PROC    uses ebx ecx edi hDc:DWORD
@@ -145,7 +150,7 @@ PaintAllButton  PROC    uses ebx ecx edi hDc:DWORD
     .ENDW
     xor     eax, eax
     ret
-PaintAllButton  endp
+PaintAllButton  ENDP
 
 ButtonDefaultPaint  PROC  uses ebx edi hDc: DWORD, pButton: ptr BUTTONDATA
     local   @oldPen, @oldBrush, @stRect:RECT
@@ -179,28 +184,28 @@ ButtonDefaultPaint  PROC  uses ebx edi hDc: DWORD, pButton: ptr BUTTONDATA
     invoke  SelectObject, hDc, @oldBrush
     xor     eax, eax
     ret
-ButtonDefaultPaint  endp
+ButtonDefaultPaint  ENDP
 
 ButtonDefaultClick PROC uses ebx edi esi pButton: ptr BUTTONDATA
     invoke  printf, offset szDefaultButtonClick, pButton
     ret
-ButtonDefaultClick endp
+ButtonDefaultClick ENDP
 
 ButtonDefaultHover PROC uses ebx edi esi pButton: ptr BUTTONDATA
     invoke  printf, offset szDefaultButtonHover, pButton
     ret
-ButtonDefaultHover endp
+ButtonDefaultHover ENDP
 
 ButtonDefaultUpdate PROC uses ebx edi esi cnt:DWORD, pButton: ptr BUTTONDATA
     ;invoke  printf, offset szDefaultButtonUpdate, cnt
     ret
-ButtonDefaultUpdate endp
+ButtonDefaultUpdate ENDP
 
 
 GetButtonDefuatPainter proc
     mov     eax, ButtonDefaultPaint
     ret
-GetButtonDefuatPainter endp
+GetButtonDefuatPainter ENDP
 
 GetButtonRect   proc  uses ebx ecx  pButton: ptr BUTTONDATA, pRect: ptr RECT
     mov     ecx, pButton
@@ -218,7 +223,7 @@ GetButtonRect   proc  uses ebx ecx  pButton: ptr BUTTONDATA, pRect: ptr RECT
     xor     eax, eax
     assume  ebx: DWORD
     ret
-GetButtonRect endp
+GetButtonRect ENDP
 
 DeleteButton    proc uses esi  pButton:ptr BUTTONDATA
     mov     esi, pButton
@@ -226,7 +231,7 @@ DeleteButton    proc uses esi  pButton:ptr BUTTONDATA
     mov     [esi].status, BTNS_UNUSED
     xor     eax, eax
     ret     
-DeleteButton    endp
+DeleteButton    ENDP
 
 InButtonRange   proc uses ebx edi pButton:ptr BUTTONDATA, x:DWORD, y:DWORD
     xor     eax, eax
@@ -248,7 +253,7 @@ InButtonRange   proc uses ebx edi pButton:ptr BUTTONDATA, x:DWORD, y:DWORD
         xor eax, eax
     .ENDIF
     ret     
-InButtonRange endp
+InButtonRange ENDP
 
 SendClickInfo proc uses  ebx edi esi x:DWORD, y:DWORD
     local   @cnt
@@ -292,7 +297,7 @@ SendClickInfo proc uses  ebx edi esi x:DWORD, y:DWORD
     .ENDW
     mov     eax, @cnt
     ret
-SendClickInfo endp
+SendClickInfo ENDP
 
 SendHoverInfo proc x:DWORD, y:DWORD
     local   @cnt
@@ -334,7 +339,7 @@ SendHoverInfo proc x:DWORD, y:DWORD
     .ENDW
     mov     eax, @cnt
     ret
-SendHoverInfo endp
+SendHoverInfo ENDP
 
 SendUpdateInfo proc cnt:DWORD
     local   @cnt
@@ -363,7 +368,7 @@ SendUpdateInfo proc cnt:DWORD
     .ENDW
     mov     eax, @cnt
     ret
-SendUpdateInfo endp
+SendUpdateInfo ENDP
 
 ClearClick proc 
     xor     ecx, ecx
@@ -380,6 +385,50 @@ ClearClick proc
     .ENDW
     mov     eax, 0
     ret
-ClearClick endp
+ClearClick ENDP
+
+CompareByDepth  PROC    uses ebx esi edi buttonA: PTR BUTTONDATA, buttonB: PTR BUTTONDATA
+    mov     esi, buttonA
+    mov     edi, buttonB
+    assume  esi: PTR BUTTONDATA
+    assume  edi: PTR BUTTONDATA
+
+    mov     esi, [esi].depth
+    mov     edi, [edi].depth
+
+    xor     eax, eax
+    .IF     esi < edi
+            mov     eax, -1
+    .ENDIF
+    .IF     esi > edi
+            mov     eax, 1
+    .ENDIF
+    ret
+CompareByDepth  ENDP
+
+
+SetButtonDepth  PROC  uses edi pButton: ptr BUTTONDATA, depth:DWORD
+    mov     edi, pButton
+    assume  edi: ptr BUTTONDATA
+    mov     eax, depth
+    mov     [edi].depth, eax
+    ret
+SetButtonDepth  ENDP 
+
+
+GetButtonDepth  PROC  pButton: ptr BUTTONDATA
+    mov     edi, pButton
+    assume  edi: ptr BUTTONDATA
+    mov     eax, [edi].depth
+    ret
+GetButtonDepth  ENDP
+
+
+SortButtons     PROC    uses ebx esi edi
+    mov     edi, offset arrayButtonList
+    mov     ecx, nButtonListCnt
+    invoke  qsort, edi, ecx, sizeof BUTTONDATA, CompareByDepth
+    ret
+SortButtons     ENDP 
 
 end
