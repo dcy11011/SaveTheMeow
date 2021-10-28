@@ -1,5 +1,5 @@
 .386
-.model flat,stdcall
+.model flat, stdcall
 option casemap:none
 ;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 ; Defines
@@ -24,8 +24,9 @@ include util.inc
 include paint.inc
 include rclist.inc
 include testobj.inc
-Include button.inc    
-include enemy.inc    
+Include button.inc            
+include enemy.inc
+include mapblock.inc
 
 include main.inc        
 
@@ -88,6 +89,8 @@ pEnemy1         dd  ?
                 invoke  PaintBitmapEx, @hMemDc, BOTTON_START,\
                         addr @stRect, 0 
                 invoke  ClearDCRotate, @hMemDc
+
+                invoke  PaintBitmapTrans, @hMemDc, MAP_BLOCK, 200, 50
                 ; end paint
                 invoke  BitBlt, @hDc, 0, 0, @stRect.right, @stRect.bottom, \
                         @hMemDc, 0, 0, SRCCOPY
@@ -96,18 +99,22 @@ pEnemy1         dd  ?
                 invoke  DeleteObject, @hBitmap
                 invoke  DeleteObject, @tPen 
                 invoke  EndPaint, hWnd, addr @stPs
+                
             .ELSEIF eax == WM_TIMER
                 .IF     wParam == TIMER_TICK
                         mov     eax, cnt
                         inc     eax
                         mov     cnt, eax
+                        
                         invoke  SendUpdateInfo, cnt
-                        invoke  EnemyUpdateAll, cnt
-
+                        ;invoke  EnemyUpdateAll, cnt
                         invoke  GetClientRect, hWnd, addr @stRect
                         invoke  MoveObj, offset testObj, addr @stRect
+                        
                         invoke  InvalidateRect, hWnd, addr @stRect, 0
+                        
                         invoke  SortButtons
+                        
                 .ENDIF
             .ELSEIF eax == WM_MOUSEMOVE
                 mov     eax, lParam
@@ -130,6 +137,7 @@ pEnemy1         dd  ?
                 invoke  PostQuitMessage, NULL
                 invoke  KillTimer, hInstance, TIMER_TICK
             .ELSEIF eax == WM_CREATE
+
                 invoke  SetTimer, hWnd, TIMER_TICK, TICK_INTERVAL, NULL   
                 mov     eax, 100
                 mov     @stRect.left, eax
@@ -138,6 +146,15 @@ pEnemy1         dd  ?
                 mov     @stRect.right, eax
                 mov     @stRect.bottom,eax
                 invoke  RegisterButton, addr @stRect, 0, 0, 0, 0
+
+                mov     eax, 120
+                mov     @stRect.left, eax
+                mov     @stRect.top,  eax
+                mov     eax, 170
+                mov     @stRect.right, eax
+                mov     @stRect.bottom,eax
+                invoke  RegisterButton, addr @stRect, 0, 0, 0, 0
+                
                 mov     pButton1, eax
                 invoke  RegisterEnemy, 10, 10, 10
                 mov     pEnemy1, eax
@@ -160,6 +177,7 @@ pEnemy1         dd  ?
                 invoke  RegisterButton, addr @stRect, 0, 0, 0, 0
                 invoke  BindButtonToBitmap, eax, BOTTON_START
                 invoke  SetButtonDepth, eax, 3
+                invoke  RegisterMapBlock, 300, 100
             .ELSE
                 invoke DefWindowProc, hWnd, uMsg, wParam, lParam
                 ret
