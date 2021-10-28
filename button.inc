@@ -37,6 +37,7 @@ GetButtonRect           PROTO    pButton: ptr BUTTONDATA, pRect: ptr RECT   ; �
 DeleteButton            PROTO    pButton: ptr BUTTONDATA                    ; 删除按钮
 
 MoveButton              PROTO    pButton: ptr BUTTONDATA, x:DWORD, y:DWORD                           ; 移动按钮
+MoveButtonTo            PROTO    pButton: ptr BUTTONDATA, x:DWORD, y:DWORD                           ; 移动按钮
 
 SendClickInfo           PROTO    x:DWORD, y:DWORD                           ; 发送鼠标点击消息，会自动检测是否在按钮区域，触发按钮的PressEvent
 SendHoverInfo           PROTO    x:DWORD, y:DWORD                           ; 发送鼠标滑过消息，会自动检测是否在按钮区域，触发按钮的HoverEvent
