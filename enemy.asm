@@ -132,7 +132,7 @@ EnemyDefaultUpdate PROC uses ebx edi esi cnt:DWORD, pEnemy: ptr ENEMYDATA
     invoke  CalcDist, [edx].top, [edx].left, 0, 0
     mov     tmpf, eax
     fld     DWORD ptr tmpf
-    invoke  dPrintFloat, eax
+    ;invoke  dPrintFloat, eax
     mov     tmpf, 300
     fild    DWORD ptr tmpf
     fcompp

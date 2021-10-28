@@ -208,7 +208,7 @@ ButtonBitmapPaint   PROC uses ebx edi esi hdc:DWORD, pButton: ptr BUTTONDATA
     .ENDIF
 
     invoke  SetColorAdjustment, hdc, addr @colorAdjustment
-    invoke  PaintBitmapEx, hdc, [edi].aParam, addr @stRect, STRETCH_XY
+    invoke  PaintBitmapTrans, hdc, [edi].aParam, addr @stRect, STRETCH_XY
     invoke  SetColorAdjustment, hdc, addr @oldColorAdjustment
     xor     eax, eax
     ret
@@ -280,6 +280,18 @@ MoveButton    proc pButton: ptr BUTTONDATA, x:DWORD, y:DWORD
     ret     
 MoveButton    endp
 
+MoveButtonTo    proc pButton: ptr BUTTONDATA, x:DWORD, y:DWORD
+    mov     edx, pButton
+    assume  edx: ptr BUTTONDATA
+    mov     ecx, x
+    sub     ecx, [edx].left
+    mov     eax, y 
+    sub     eax, [edx].top
+    invoke  MoveButton, pButton, ecx, eax
+    ret
+MoveButtonTo    endp 
+
+
 SetButtonSize  PROC  uses ebx edi esi pButton:ptr BUTTONDATA, w:DWORD, h:DWORD
     mov     edi, pButton
     assume  edi: ptr BUTTONDATA
@@ -293,6 +305,19 @@ SetButtonSize  PROC  uses ebx edi esi pButton:ptr BUTTONDATA, w:DWORD, h:DWORD
     ret
 SetButtonSize endp
 
+GetButtonSize  PROC uses ebx edi esi pButton: ptr BUTTONDATA, pPoint: ptr D_POINT
+    mov     edi, pButton
+    assume  edi: ptr BUTTONDATA
+    mov     esi, pPoint
+    assume  esi: ptr D_POINT
+    mov     ebx, [edi].right
+    sub     ebx, [edi].left
+    mov     [esi].x, ebx
+    mov     ebx, [edi].bottom
+    mov     ebx, [edi].top
+    mov     [esi].y, ebx
+    ret
+GetButtonSize   ENDP
 
 InButtonRange   proc uses ebx edi pButton:ptr BUTTONDATA, x:DWORD, y:DWORD
     xor     eax, eax
@@ -447,9 +472,13 @@ ClearClick proc uses ebx edi
     ret
 ClearClick ENDP
 
-CompareByDepth  PROC    uses ebx esi edi buttonA: PTR BUTTONDATA, buttonB: PTR BUTTONDATA
+CompareByDepth  PROC C   uses ebx esi edi buttonA: DWORD, buttonB: DWORD
     mov     esi, buttonA
     mov     edi, buttonB
+    .IF esi< 1000
+        mov eax, 0
+        ret
+    .ENDIF
     assume  esi: PTR BUTTONDATA
     assume  edi: PTR BUTTONDATA
 

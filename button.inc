@@ -7,7 +7,7 @@ BTNS_CLICK       EQU     0004h
 BTNI_DISABLE     EQU     0001h ; 禁用按钮，将不会收到鼠标事件
 BTNI_RUNNING     EQU     0002h
 
-MAXBTNCNT        EQU     250   ; 最大的按钮数量； Note：没有溢出保护
+MAXBTNCNT        EQU     2500   ; 最大的按钮数量； Note：没有溢出保护
 
 
 BUTTONDATA struct
@@ -36,8 +36,10 @@ PaintAllButton          PROTO    hDc:DWORD                                  ; �
 GetButtonRect           PROTO    pButton: ptr BUTTONDATA, pRect: ptr RECT   ; 获取按钮的矩形区域。填充到pRect中
 DeleteButton            PROTO    pButton: ptr BUTTONDATA                    ; 删除按钮
 
-MoveButton              PROTO    pButton: ptr BUTTONDATA, x:DWORD, y:DWORD                           ; 移动按钮
+MoveButton              PROTO    pButton: ptr BUTTONDATA, detx:DWORD, dety:DWORD; 移动按钮
+MoveButtonTo            PROTO    pButton: ptr BUTTONDATA, x:DWORD, y:DWORD  ; 移动按钮到指定位置
 SetButtonSize           PROTO    pButton: ptr BUTTONDATA, w:DWORD, h:DWORD  ; 设置按钮大小，以左上角为基准调整
+GetButtonSize           PROTO    pButton: ptr BUTTONDATA, pPoint: ptr D_POINT; 获取按钮的宽高
 
 SendClickInfo           PROTO    x:DWORD, y:DWORD                           ; 发送鼠标点击消息，会自动检测是否在按钮区域，触发按钮的PressEvent
 SendHoverInfo           PROTO    x:DWORD, y:DWORD                           ; 发送鼠标滑过消息，会自动检测是否在按钮区域，触发按钮的HoverEvent
