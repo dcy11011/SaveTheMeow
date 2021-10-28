@@ -121,7 +121,10 @@ pEnemy1         dd  ?
                 mov     ebx, eax
                 and     ebx, 0000FFFFh
                 shr     eax, 16
+                push    eax ; save eax
                 invoke  SendHoverInfo, ebx, eax
+                pop     eax ; save eax
+                invoke  UpdateMousePos, ebx, eax
                 invoke DefWindowProc, hWnd, uMsg, wParam, lParam
                 ret
             .ELSEIF eax == WM_LBUTTONDOWN

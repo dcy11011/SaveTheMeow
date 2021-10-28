@@ -13,6 +13,12 @@ include paint.inc
 .data
 nEnemyListCnt           DWORD    0
 bIfInitEnemyData        DWORD    0
+real0                   REAL4    0.0
+real1                   REAL4    1.0
+real1n                  REAL4    -1.0
+real1of2                REAL4    0.5
+real1of3                REAL4    0.33333
+real2of3                REAL4    0.66666
 
 .data?
 arrayEnemyList ENEMYDATA MAXENYCNT DUP(<?>) ; 内存池
@@ -70,6 +76,10 @@ RegisterEnemy proc hp: DWORD, speed: DWORD, atk: DWORD
     mov     eax, atk
     mov     [edx].attack, eax
 
+    mov     eax, real0
+    mov     [edx].xf, eax
+    mov     eax, real0
+    mov     [edx].yf, eax
     mov     [edx].progress, 0
     mov     [edx].isActive, 1
     mov     [edx].aParam, 0
@@ -120,6 +130,71 @@ EnemyBindUpdate proc self: ptr ENEMYDATA, upd: DWORD
     ret
 EnemyBindUpdate endp
 
+;
+;   Geometry
+;
+
+EnemyUpdatePosition proc uses edi self: ptr ENEMYDATA        ; update buttom pos to enemy pos
+    local   tx:DWORD, ty:DWORD
+    mov     edi, self
+    assume  edi: ptr ENEMYDATA
+    invoke  real42dword, [edi].xf
+    mov     tx, eax
+    invoke  real42dword, [edi].yf
+    mov     ty, eax
+    mov     edx, [edi].pAsButton
+    assume  edx: ptr BUTTONDATA
+    invoke  MoveButtonTo, edx, tx, ty
+    ret
+EnemyUpdatePosition endp
+
+EnemySetPositioni proc    self: ptr ENEMYDATA, x:DWORD, y:DWORD
+    invoke  dword2real4, x
+    mov     x, eax
+    invoke  dword2real4, y
+    mov     y, eax
+    invoke  EnemySetPositionf, self, x, y
+    ret
+EnemySetPositioni endp
+
+EnemySetPositionf proc    self: ptr ENEMYDATA, x:REAL4, y:REAL4
+    mov     edx, self
+    assume  edx: ptr ENEMYDATA
+    mov     eax, x
+    mov     [edx].xf, eax
+    mov     eax, y
+    mov     [edx].yf, eax
+    invoke  EnemyUpdatePosition, self
+    ret
+EnemySetPositionf endp
+
+EnemyMovePositioni proc    self: ptr ENEMYDATA, x:DWORD, y:DWORD
+    invoke  dword2real4, x
+    mov     x, eax
+    invoke  dword2real4, y
+    mov     y, eax
+    invoke  EnemyMovePositionf, self, x, y
+    ret
+EnemyMovePositioni endp
+
+EnemyMovePositionf proc    self: ptr ENEMYDATA, x:REAL4, y:REAL4
+    mov     edx, self
+    assume  edx: ptr ENEMYDATA
+    fld     DWORD ptr [edx].xf
+    fld     DWORD ptr x
+    fadd
+    fstp    DWORD ptr [edx].xf
+    fld     DWORD ptr [edx].yf
+    fld     DWORD ptr y
+    fadd
+    fstp    DWORD ptr [edx].yf
+    invoke  EnemyUpdatePosition, self
+    ret
+EnemyMovePositionf endp
+
+;
+;   Events
+;
 
 EnemyDefaultUpdate PROC uses ebx edi esi cnt:DWORD, pEnemy: ptr ENEMYDATA
     local   tmpf: DWORD
@@ -129,10 +204,10 @@ EnemyDefaultUpdate PROC uses ebx edi esi cnt:DWORD, pEnemy: ptr ENEMYDATA
     assume  edx: ptr BUTTONDATA
 
     push    edx
-    invoke  CalcDist, [edx].top, [edx].left, 0, 0
+    invoke  CalcDisti, [edx].top, [edx].left, 0, 0
     mov     tmpf, eax
     fld     DWORD ptr tmpf
-    ;invoke  dPrintFloat, eax
+    ; invoke  dPrintFloat, eax
     mov     tmpf, 300
     fild    DWORD ptr tmpf
     fcompp
@@ -141,10 +216,21 @@ EnemyDefaultUpdate PROC uses ebx edi esi cnt:DWORD, pEnemy: ptr ENEMYDATA
     ja      @f
     pop     edx
     push    edx
-    invoke  MoveButton, edx, -100, -10
+    ; invoke  MoveButton, edx, -100, -10
     @@:
-    invoke  MoveButton, edx, 2, 1
+    ; invoke  MoveButton, edx, 2, 1
+    ; invoke  dPrintFloat, wwww
     pop     edx
+    ; invoke  GetAtan2, real1of3, real1
+
+    ; invoke  DirectionTo, [edi].xf, [edi].yf, MouseXf, MouseYf
+    ; push    eax
+    ; invoke  dPrintFloat, eax
+    ; pop     eax
+    ; invoke  GetDirVector, eax, real1
+    ; invoke  EnemyMovePositionf, edi, eax, edx
+    invoke  LerpXY, [edi].xf, [edi].yf, MouseXf, MouseYf, real2of3
+    invoke  EnemySetPositionf, edi, eax, edx
 
     ret
 EnemyDefaultUpdate endp
