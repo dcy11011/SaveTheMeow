@@ -158,6 +158,7 @@ pEnemy1         dd  ?
                 mov     @stRect.right, eax
                 mov     @stRect.bottom,eax
                 invoke  RegisterButton, addr @stRect, 0, 0, 0, 0
+                invoke  BindButtonToBitmap, eax, BOTTON_START
                 invoke  SetButtonDepth, eax, 3
             .ELSE
                 invoke DefWindowProc, hWnd, uMsg, wParam, lParam
