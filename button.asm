@@ -184,6 +184,36 @@ ButtonDefaultPaint  PROC  uses ebx edi hDc: DWORD, pButton: ptr BUTTONDATA
     ret
 ButtonDefaultPaint  ENDP
 
+ButtonBitmapPaint   PROC uses ebx edi esi hdc:DWORD, pButton: ptr BUTTONDATA
+    local   @oldPen, @oldBrush, @stRect:RECT
+    local   @colorAdjustment:COLORADJUSTMENT, @oldColorAdjustment:COLORADJUSTMENT
+    mov     edi, pButton
+    assume  edi: ptr BUTTONDATA
+    invoke  GetButtonRect, pButton, addr @stRect
+    invoke  GetColorAdjustment, hdc, addr @colorAdjustment
+    invoke  memcpy, addr @oldColorAdjustment, addr @colorAdjustment, sizeof COLORADJUSTMENT
+    lea     esi, @colorAdjustment
+    assume  esi: ptr COLORADJUSTMENT
+    mov     bx, [edi].status
+    and     bx, BTNS_HOVER
+    .IF     bx
+        mov     ax, 50
+        mov     [esi].caBrightness, ax
+    .ENDIF
+    mov     bx, [edi].status
+    and     bx, BTNS_CLICK
+    .IF     bx
+        mov     ax, -50
+        mov     [esi].caBrightness, ax
+    .ENDIF
+
+    invoke  SetColorAdjustment, hdc, addr @colorAdjustment
+    invoke  PaintBitmapEx, hdc, [edi].aParam, addr @stRect, STRETCH_XY
+    invoke  SetColorAdjustment, hdc, addr @oldColorAdjustment
+    xor     eax, eax
+    ret
+ButtonBitmapPaint   ENDP
+
 ButtonDefaultClick PROC uses ebx edi esi pButton: ptr BUTTONDATA
     invoke  printf, offset szDefaultButtonClick, pButton
     ret
@@ -249,6 +279,19 @@ MoveButton    proc pButton: ptr BUTTONDATA, x:DWORD, y:DWORD
     mov     [edx].bottom, eax
     ret     
 MoveButton    endp
+
+SetButtonSize  PROC  uses ebx edi esi pButton:ptr BUTTONDATA, w:DWORD, h:DWORD
+    mov     edi, pButton
+    assume  edi: ptr BUTTONDATA
+    mov     eax, [edi].left
+    add     eax, w
+    mov     eax, [edi].right
+    mov     eax, [edi].top
+    add     eax, h
+    mov     eax, [edi].bottom
+    xor     eax, eax
+    ret
+SetButtonSize endp
 
 
 InButtonRange   proc uses ebx edi pButton:ptr BUTTONDATA, x:DWORD, y:DWORD
@@ -430,6 +473,7 @@ SetButtonDepth  PROC  uses edi pButton: ptr BUTTONDATA, depth:DWORD
     assume  edi: ptr BUTTONDATA
     mov     eax, depth
     mov     [edi].depth, eax
+    mov     eax, pButton
     ret
 SetButtonDepth  ENDP 
 
@@ -448,5 +492,19 @@ SortButtons     PROC    uses ebx esi edi
     invoke  qsort, edi, ecx, sizeof BUTTONDATA, CompareByDepth
     ret
 SortButtons     ENDP 
+
+BindButtonToBitmap  PROC uses ebx esi edi pButton:ptr BUTTONDATA, BitmapID:DWORD
+    local   @point:D_POINT
+    invoke  GetBitmapSize,BitmapID, addr @point
+    mov     edi, pButton
+    assume  edi:ptr BUTTONDATA
+    invoke  SetButtonSize, edi, @point.x, @point.y
+    mov     eax, BitmapID
+    mov     [edi].aParam, eax
+    mov     eax, ButtonBitmapPaint
+    mov     [edi].pPaint, eax
+    mov     eax, pButton
+    ret
+BindButtonToBitmap  ENDP
 
 end
