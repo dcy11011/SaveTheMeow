@@ -3,6 +3,7 @@
 option casemap:none
 
 include enemy.inc
+include collision.inc
 
 include windows.inc
 include gdi32.inc
@@ -20,7 +21,7 @@ arrayEnemyList ENEMYDATA MAXENYCNT DUP(<?>) ; 内存池
 
 InitEnemyData proc uses  ebx edi
     lea     edi, arrayEnemyList
-    mov     ecx, MAXENYCNT
+    mov     ebx, MAXENYCNT
     mov     ecx, 0
     .WHILE ecx < ebx
         assume  edi: ptr ENEMYDATA
@@ -57,10 +58,11 @@ GetAvilaibleEnemyData proc uses ebx edx edi
     ret
 GetAvilaibleEnemyData endp
 
-RegisterEnemyAt proc self: ptr ENEMYDATA, hp: DWORD, speed: DWORD, atk: DWORD
-    mov     edx, self
+
+RegisterEnemy proc hp: DWORD, speed: DWORD, atk: DWORD
+    invoke  GetAvilaibleEnemyData
+    mov     edx, eax
     assume  edx: ptr ENEMYDATA
-    mov     eax, btn
     mov     [edx].health, eax
     mov     [edx].healthMax, eax
     mov     eax, speed
@@ -75,16 +77,76 @@ RegisterEnemyAt proc self: ptr ENEMYDATA, hp: DWORD, speed: DWORD, atk: DWORD
     mov     [edx].pUpdateEvent, 0
     mov     [edx].pHurtEvent, 0
     mov     [edx].pDeathEvent, 0
+    mov     eax, edx
     ret
-RegisterEnemyAt endp
+RegisterEnemy endp
 
 
-BindButton proc self: ENEMYDATA, btn: ptr BUTTONDATA
+EnemyUpdateAll proc uses esi cnt: DWORD
+    mov     ecx, nEnemyListCnt
+    lea     esi, arrayEnemyList
+    assume  esi: ptr ENEMYDATA
+    @@:
+        mov     ax, [esi].isActive
+        .IF ax
+            mov     eax, [esi].pUpdateEvent
+            .IF eax
+                push    esi
+                push    cnt
+                call    eax
+            .ENDIF
+        .ENDIF
+        add     eax, sizeof ENEMYDATA
+        add     esi, eax
+    loop @b
+    ret
+EnemyUpdateAll endp
+
+
+EnemyBindButton proc self: ptr ENEMYDATA, btn: ptr BUTTONDATA
     mov     eax, btn
     mov     edx, self
     assume  edx: ptr ENEMYDATA
     mov     [edx].pAsButton, eax
     ret
-BindButton endp
+EnemyBindButton endp
+
+
+EnemyBindUpdate proc self: ptr ENEMYDATA, upd: DWORD
+    mov     eax, upd
+    mov     edx, self
+    assume  edx: ptr ENEMYDATA
+    mov     [edx].pUpdateEvent, eax
+    ret
+EnemyBindUpdate endp
+
+
+EnemyDefaultUpdate PROC uses ebx edi esi cnt:DWORD, pEnemy: ptr ENEMYDATA
+    local   tmpf: DWORD
+    mov     edi, pEnemy
+    assume  edi: ptr ENEMYDATA
+    mov     edx, [edi].pAsButton
+    assume  edx: ptr BUTTONDATA
+
+    push    edx
+    invoke  CalcDist, [edx].top, [edx].left, 0, 0
+    mov     tmpf, eax
+    fld     DWORD ptr tmpf
+    invoke  dPrintFloat, eax
+    mov     tmpf, 300
+    fild    DWORD ptr tmpf
+    fcompp
+    fstsw   ax
+    sahf
+    ja      @f
+    pop     edx
+    push    edx
+    invoke  MoveButton, edx, -100, -10
+    @@:
+    invoke  MoveButton, edx, 2, 1
+    pop     edx
+
+    ret
+EnemyDefaultUpdate endp
 
 end

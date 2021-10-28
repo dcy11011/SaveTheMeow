@@ -24,7 +24,8 @@ include util.inc
 include paint.inc
 include rclist.inc
 include testobj.inc
-Include button.inc        
+Include button.inc            
+include enemy.inc
 
 include main.inc
 
@@ -39,6 +40,7 @@ cnt             dd  0
 hInstance       DWORD  ?
 hWinMain        DWORD  ?
 pButton1        DWORD  ?
+pEnemy1         DWORD  ?
 tmp             QWORD  ?
 
 
@@ -100,6 +102,8 @@ tmp             QWORD  ?
                         inc     eax
                         mov     cnt, eax
                         invoke  SendUpdateInfo, cnt
+                        invoke  EnemyUpdateAll, cnt
+
                         invoke  GetClientRect, hWnd, addr @stRect
                         invoke  MoveObj, offset testObj, addr @stRect
                         invoke  InvalidateRect, hWnd, addr @stRect, 0
@@ -134,6 +138,11 @@ tmp             QWORD  ?
                 mov     @stRect.bottom,eax
                 invoke  RegisterButton, addr @stRect, 0, 0, 0, 0
                 mov     pButton1, eax
+                invoke  RegisterEnemy, 10, 10, 10
+                mov     pEnemy1, eax
+                invoke  EnemyBindButton, pEnemy1, pButton1
+                invoke  EnemyBindUpdate, pEnemy1, EnemyDefaultUpdate
+
                 mov     eax, 200
                 mov     @stRect.left, eax
                 mov     @stRect.top,  eax

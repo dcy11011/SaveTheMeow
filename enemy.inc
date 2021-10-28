@@ -21,9 +21,11 @@ ENEMYDATA struct
 ENEMYDATA ends
 
 
-RegisterEnemyAt         PROTO    self: ptr ENEMYDATA, hp: DWORD, speed: DWORD, atk: DWORD
-BindButton              PROTO    self: ptr ENEMYDATA, btn: ptr BUTTONDATA
+RegisterEnemy           PROTO    hp: DWORD, speed: DWORD, atk: DWORD
+EnemyBindButton         PROTO    self: ptr ENEMYDATA, btn: ptr BUTTONDATA
+EnemyBindUpdate         PROTO    self: ptr ENEMYDATA, upd: DWORD
 
 
-ClearClick              PROTO                                               ; 清除所有按钮的按下状态。请在LBUTTONUP消息处理中加入这个函数 
+EnemyDefaultUpdate      PROTO    cnt:DWORD, pEnemy: ptr ENEMYDATA
+EnemyUpdateAll          PROTO    cnt:DWORD                                  ; 发送更新消息
 
