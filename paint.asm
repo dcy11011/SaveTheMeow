@@ -9,6 +9,7 @@ include kernel32.inc
 
 include paint.inc
 include util.inc
+include main.inc
 
 .code
 GetCircleRect  PROC  uses ebx ecx edx lpCircle: ptr CIRCLEDATA, lpRect: ptr RECT
@@ -34,7 +35,7 @@ GetCircleRect  PROC  uses ebx ecx edx lpCircle: ptr CIRCLEDATA, lpRect: ptr RECT
 
     xor     eax, eax
     ret
-GetCircleRect endp
+GetCircleRect ENDP
 
 PaintCircle    PROC     hDc:DWORD, lpCircle: ptr CIRCLEDATA
     local   @stRect:RECT
@@ -43,7 +44,7 @@ PaintCircle    PROC     hDc:DWORD, lpCircle: ptr CIRCLEDATA
     invoke  Ellipse, hDc, @stRect.left, @stRect.top, @stRect.right, @stRect.bottom
 
     ret
-PaintCircle endp
+PaintCircle ENDP
 
 PaintCircleCR  PROC    hDc:DWORD, centerX:DWORD, centerY:DWORD, r:DWORD
     local   @stCircle:CIRCLEDATA
@@ -57,9 +58,9 @@ PaintCircleCR  PROC    hDc:DWORD, centerX:DWORD, centerY:DWORD, r:DWORD
 
     invoke  PaintCircle, hDc, addr @stCircle
     ret
-PaintCircleCR endp
+PaintCircleCR ENDP
 
-PrepareBitmapPaint  PROC  uses edi ebx  hInstance:DWORD, hDc:DWORD, bitmapID:DWORD, lpBitmapData:ptr BITMAPDATA
+PrepareBitmapPaint  PROC  uses edi ebx  hDc:DWORD, bitmapID:DWORD, lpBitmapData:ptr BITMAPDATA
     local   @hDcBitmap
     local   @hBitmap, @bitmap[32]:byte
     local   @w, @h
@@ -81,9 +82,24 @@ PrepareBitmapPaint  PROC  uses edi ebx  hInstance:DWORD, hDc:DWORD, bitmapID:DWO
     mov     ebx, [eax+8]
     mov     [edi].h, ebx
     xor     eax, eax
-
     ret
-PrepareBitmapPaint endp
+PrepareBitmapPaint ENDP
+
+GetBitmapSize       PROC uses edi ebx bitmapID:DWORD, pPoint:ptr D_POINT
+    local   @hBitmap:DWORD, @bitmap[32]:byte
+    invoke  LoadBitmap, hInstance, bitmapID
+    mov     @hBitmap, eax
+    invoke  GetObject, @hBitmap, 32, addr @bitmap
+    lea     eax, @bitmap
+    mov     edi, pPoint
+    assume  edi: ptr D_POINT
+    mov     ebx, [eax+4]
+    mov     [edi].x, ebx
+    mov     ebx, [eax+8]
+    mov     [edi].y, ebx
+    xor     eax, eax
+    ret
+GetBitmapSize       ENDP 
 
 ReleaseBitmapData  PROC uses edi lpBitmapData: ptr BITMAPDATA
     mov     edi, lpBitmapData
@@ -94,19 +110,19 @@ ReleaseBitmapData  PROC uses edi lpBitmapData: ptr BITMAPDATA
 
     xor     eax, eax
     ret
-ReleaseBitmapData  endp
+ReleaseBitmapData  ENDP
 
-PaintBitmap     PROC  uses edi  hInstance:DWORD, hDc:DWORD, bitmapID:DWORD, posX:DWORD, posY:DWORD
+PaintBitmap     PROC  uses edi  hDc:DWORD, bitmapID:DWORD, posX:DWORD, posY:DWORD
     local   @stBitmapData:BITMAPDATA
 
-    invoke  PrepareBitmapPaint, hInstance, hDc, bitmapID, addr @stBitmapData
+    invoke  PrepareBitmapPaint, hDc, bitmapID, addr @stBitmapData
     invoke  BitBlt, hDc, posX, posY, @stBitmapData.w, @stBitmapData.h, @stBitmapData.hDcBitmap, 0, 0, SRCCOPY
     invoke  ReleaseBitmapData, addr @stBitmapData
 
     ret
-PaintBitmap endp
+PaintBitmap ENDP
 
-PaintBitmapEx PROC uses edi ebx hInstance:DWORD, hDc:DWORD, bitmapID:DWORD, lpRect:ptr RECT, optionCode:DWORD
+PaintBitmapEx PROC uses edi ebx hDc:DWORD, bitmapID:DWORD, lpRect:ptr RECT, optionCode:DWORD
     local   @stBitmapData:BITMAPDATA
     local   @areaW, @areaH
     local   @srcW, @srcH, @tarW, @tarH; source width&height and target width&height
@@ -128,7 +144,7 @@ PaintBitmapEx PROC uses edi ebx hInstance:DWORD, hDc:DWORD, bitmapID:DWORD, lpRe
     mov     @areaH, eax
     mov     @tarH, eax
 
-    invoke  PrepareBitmapPaint, hInstance, hDc, bitmapID, addr @stBitmapData
+    invoke  PrepareBitmapPaint, hDc, bitmapID, addr @stBitmapData
     mov     eax, @stBitmapData.w
     mov     ebx, @stBitmapData.h
     mov     @srcW, eax
@@ -172,13 +188,96 @@ PaintBitmapEx PROC uses edi ebx hInstance:DWORD, hDc:DWORD, bitmapID:DWORD, lpRe
             SRCCOPY
     invoke  ReleaseBitmapData, addr @stBitmapData
     ret
-PaintBitmapEx endp
+PaintBitmapEx ENDP
 
 PaintRect  proc   hDc:DWORD, lpRect:ptr RECT
     mov     eax, lpRect
     assume  eax: ptr RECT
     invoke  Rectangle, hDc, [eax].left, [eax].top, [eax].right, [eax].bottom
     ret
-PaintRect endp
+PaintRect ENDP
+
+RotateDC    PROC uses ebx esi edi hdc:DWORD, iAngle:DWORD, x:DWORD, y:DWORD
+    local   @nGraphicsMode:DWORD, @fangle:REAL4, @ftmp:REAL4
+    local   @xform:XFORM
+    local   @f180: DWORD
+    lea     edi, @xform
+    assume  edi: PTR XFORM
+    invoke  SetGraphicsMode, hdc, GM_ADVANCED
+    .IF     iAngle != 0
+        fild    DWORD ptr iAngle
+        mov     @f180, 180
+        fidiv   @f180
+        fmul    PI
+        fstp    DWORD ptr @fangle
+        fld     DWORD ptr @fangle
+        fcos    
+        fstp    DWORD ptr @ftmp
+        mov     eax, @ftmp
+        mov     [edi].eM11, eax
+        mov     [edi].eM22, eax
+        fld     DWORD ptr @fangle
+        fsin    
+        fstp    DWORD ptr @ftmp
+        mov     eax, @ftmp
+        mov     [edi].eM12, eax
+        xor     eax, 80000000h
+        mov     [edi].eM21, eax
+        fild    DWORD ptr x
+        fld     DWORD ptr @fangle
+        fcos
+        fild    DWORD ptr x
+        fmul
+        fsub
+        fld     DWORD ptr @fangle
+        fsin
+        fild    DWORD ptr y
+        fmul
+        fadd
+        fstp    DWORD ptr @ftmp
+        mov     eax, @ftmp
+        mov     [edi].ex, eax
+        
+        fild    DWORD ptr y
+        fld     DWORD ptr @fangle
+        fcos
+        fild    DWORD ptr y
+        fmul
+        fsub
+        fld     DWORD ptr @fangle
+        fsin
+        fild    DWORD ptr x
+        fmul
+        fsub
+        fstp    DWORD ptr @ftmp
+        mov     eax, @ftmp
+        mov     [edi].ey, eax
+        invoke  SetWorldTransform, hdc, edi
+    .ENDIF
+    mov     eax, @nGraphicsMode
+    ret
+RotateDC    ENDP
+
+ClearDCRotate  PROC uses ebx esi edi hdc:DWORD
+    local   @xform:XFORM, @tmp:DWORD
+    lea     edi, @xform
+    assume  edi: PTR XFORM
+    invoke  SetGraphicsMode, hdc, GM_ADVANCED
+    mov     eax, 0
+    mov     [edi].ey, eax
+    mov     [edi].ex, eax
+    mov     [edi].eM12, eax
+    mov     [edi].eM21, eax
+    mov     eax, 1
+    mov     @tmp, eax
+    fild    DWORD ptr @tmp
+    fstp    DWORD ptr @tmp
+    mov     eax, @tmp
+    mov     [edi].eM11, eax
+    mov     [edi].eM22, eax
+    invoke  SetWorldTransform, hdc, edi
+    ret
+ClearDCRotate    ENDP
+
 
 end

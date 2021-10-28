@@ -20,7 +20,7 @@ include paint.inc
         assume  eax: ptr OBJDATA
         invoke  PaintCircleCR, hDc, [eax].posX, [eax].posY, [eax].r
         ret
-    PaintObj    endp
+    PaintObj    ENDP
 
     SetObjData proc uses ebx edi lpObj: ptr OBJDATA, posX:DWORD, posY:DWORD
         mov     edi, lpObj
@@ -30,7 +30,7 @@ include paint.inc
         mov     ebx, posY
         mov     [edi].posY, ebx
         ret 
-    SetObjData endp
+    SetObjData ENDP
 
     SetObjRadius proc uses ebx edi lpObj:ptr OBJDATA, r:DWORD
         mov     edi, lpObj
@@ -38,7 +38,7 @@ include paint.inc
         mov     ebx, r
         mov     [edi].r, ebx
         ret     
-    SetObjRadius endp
+    SetObjRadius ENDP
 
     MoveObj     proc uses edi ebx ecx lpObj: ptr OBJDATA, lpRect: ptr RECT
         local   @stRect:RECT
@@ -81,6 +81,6 @@ include paint.inc
         
         xor     edi, edi
         ret
-    MoveObj endp
+    MoveObj ENDP
 end
 

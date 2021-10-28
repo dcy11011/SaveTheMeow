@@ -17,7 +17,7 @@ include user32.inc
 include kernel32.inc
 
 ;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-; Include ds.asm
+; Include in project
 ;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 include util.inc
@@ -26,6 +26,9 @@ include rclist.inc
 include testobj.inc
 Include button.inc            
 include enemy.inc
+
+include main.inc
+
 ;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 ; Data
 ;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -34,10 +37,11 @@ testObj         OBJDATA  <100,100,20>
 cnt             dd  0
 
 .data?
-hInstance       dd  ?
-hWinMain        dd  ?
-pButton1        dd  ?
-pEnemy1         dd  ?
+hInstance       DWORD  ?
+hWinMain        DWORD  ?
+pButton1        DWORD  ?
+pEnemy1         DWORD  ?
+tmp             QWORD  ?
 
 
 .const
@@ -66,21 +70,25 @@ pEnemy1         dd  ?
                 invoke  CreateCompatibleBitmap, @hDc, @stRect.right, @stRect.bottom
                 mov     @hBitmap, eax
                 invoke  SelectObject, @hMemDc, @hBitmap
+                ; begin paint
 
                 invoke  CreatePen, PS_SOLID, 5, 00000000h
                 mov     @tPen, eax
                 invoke  SelectObject, @hMemDc, eax
 
-                invoke  PaintBitmapEx, hInstance, @hMemDc, MAIN_BACKGROUND,\
+                invoke  PaintBitmapEx, @hMemDc, MAIN_BACKGROUND,\
                         addr @stRect, STRETCH_XY or CENTER_XY
-                invoke  PaintBitmapEx, hInstance, @hMemDc, BOTTON_START,\
-                        addr @stRect, CENTER_XY 
+                
                 invoke  DrawText, @hMemDc, addr szText, -1, addr @stRect, \
                         DT_SINGLELINE or DT_CENTER or DT_VCENTER
                 invoke  PaintObj, @hMemDc, addr testObj
-
                 invoke  PaintAllButton, @hMemDc
-                
+
+                invoke  RotateDC, @hMemDc, cnt, 135, 61
+                invoke  PaintBitmapEx, @hMemDc, BOTTON_START,\
+                        addr @stRect, 0 
+                invoke  ClearDCRotate, @hMemDc
+                ; end paint
                 invoke  BitBlt, @hDc, 0, 0, @stRect.right, @stRect.bottom, \
                         @hMemDc, 0, 0, SRCCOPY
                 
@@ -125,7 +133,7 @@ pEnemy1         dd  ?
                 mov     eax, 100
                 mov     @stRect.left, eax
                 mov     @stRect.top,  eax
-                mov     eax, 120
+                mov     eax, 150
                 mov     @stRect.right, eax
                 mov     @stRect.bottom,eax
                 invoke  RegisterButton, addr @stRect, 0, 0, 0, 0
@@ -138,7 +146,7 @@ pEnemy1         dd  ?
                 mov     eax, 200
                 mov     @stRect.left, eax
                 mov     @stRect.top,  eax
-                mov     eax, 220
+                mov     eax, 250
                 mov     @stRect.right, eax
                 mov     @stRect.bottom,eax
                 invoke  RegisterButton, addr @stRect, 0, 0, 0, 0
@@ -146,7 +154,7 @@ pEnemy1         dd  ?
                 mov     eax, 300
                 mov     @stRect.left, eax
                 mov     @stRect.top,  eax
-                mov     eax, 320
+                mov     eax, 350
                 mov     @stRect.right, eax
                 mov     @stRect.bottom,eax
                 invoke  RegisterButton, addr @stRect, 0, 0, 0, 0
@@ -156,7 +164,7 @@ pEnemy1         dd  ?
             .ENDIF
             xor eax, eax
             ret
-    _ProcWinMain endp
+    _ProcWinMain ENDP
     ;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
     _WinMain        proc
             ;*******************************************
@@ -197,7 +205,7 @@ pEnemy1         dd  ?
                 invoke  DispatchMessage, addr @stMsg
             .ENDW
             ret
-    _WinMain    endp
+    _WinMain    ENDP
     ;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
     start:
             call _WinMain
