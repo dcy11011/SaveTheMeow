@@ -112,9 +112,6 @@ RegisterButton      PROC    uses ebx edi esi pRect: ptr RECT, pPaint:DWORD, pCli
         mov     [esi].pUpdateEvent, eax
     .ENDIF
     mov     eax, esi
-    push    eax
-    invoke  SortButtons
-    pop     eax
     ret 
 RegisterButton ENDP
 
@@ -132,22 +129,23 @@ PaintButton     ENDP
 
 ; 绘制所有注册过的按钮
 PaintAllButton  PROC    uses ebx ecx edi hDc:DWORD
-    mov     ecx, 0
-    mov     ebx, nButtonListCnt
+    mov     ecx, nButtonListCnt
     lea     edi, arrayButtonList
-    .WHILE ecx < ebx
-        assume  edi: ptr BUTTONDATA
-        push    ecx
-        .IF [edi].status != BTNS_UNUSED 
-            .IF [edi].isActive != BTNI_DISABLE
-                invoke  PaintButton, hDc, edi
-            .ENDIF
+    mov     eax, sizeof BUTTONDATA
+    mul     ecx
+    add     edi, eax
+    assume  edi: ptr BUTTONDATA
+    inc     ecx
+@@: push    ecx
+    .IF [edi].status != BTNS_UNUSED 
+        .IF [edi].isActive != BTNI_DISABLE
+            invoke  PaintButton, hDc, edi
         .ENDIF
-        ;invoke  dPrint2,2,ecx
-        pop     ecx
-        add     edi, sizeof BUTTONDATA
-        inc     ecx
-    .ENDW
+    .ENDIF
+    pop     ecx
+    sub     edi, sizeof BUTTONDATA
+    loop    @b
+
     xor     eax, eax
     ret
 PaintAllButton  ENDP
@@ -301,11 +299,7 @@ SendClickInfo proc uses  ebx edi esi x:DWORD, y:DWORD
                 mov     eax, @cnt
                 inc     eax
                 mov     @cnt, eax
-            .ELSE
-                mov     dx, BTNS_CLICK
-                not     dx
-                and     dx, [edi].status
-                mov     [edi].status, dx
+                jmp     @f
             .ENDIF
         .ENDIF
         xor     ebx, ebx
@@ -315,6 +309,7 @@ SendClickInfo proc uses  ebx edi esi x:DWORD, y:DWORD
         add     edi, sizeof BUTTONDATA
         inc     ecx
     .ENDW
+@@:
     mov     eax, @cnt
     ret
 SendClickInfo ENDP
@@ -336,7 +331,8 @@ SendHoverInfo proc uses ebx edi x:DWORD, y:DWORD
         mov     dx, [edi].isActive
         and     dx, BTNI_DISABLE
         .IF !dx
-            .IF eax
+            mov     ebx, @cnt
+            .IF eax && !ebx
                 push    edi
                 call    [edi].pHoverEvent
                 mov     dx, [edi].status
@@ -357,6 +353,7 @@ SendHoverInfo proc uses ebx edi x:DWORD, y:DWORD
         add     edi, sizeof BUTTONDATA
         inc     ecx
     .ENDW
+@@:
     mov     eax, @cnt
     ret
 SendHoverInfo ENDP
@@ -423,6 +420,7 @@ CompareByDepth  PROC    uses ebx esi edi buttonA: PTR BUTTONDATA, buttonB: PTR B
     .IF     esi > edi
             mov     eax, 1
     .ENDIF
+    
     ret
 CompareByDepth  ENDP
 

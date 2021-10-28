@@ -107,6 +107,7 @@ tmp             QWORD  ?
                         invoke  GetClientRect, hWnd, addr @stRect
                         invoke  MoveObj, offset testObj, addr @stRect
                         invoke  InvalidateRect, hWnd, addr @stRect, 0
+                        invoke  SortButtons
                 .ENDIF
             .ELSEIF eax == WM_MOUSEMOVE
                 mov     eax, lParam
@@ -138,6 +139,8 @@ tmp             QWORD  ?
                 mov     @stRect.bottom,eax
                 invoke  RegisterButton, addr @stRect, 0, 0, 0, 0
                 mov     pButton1, eax
+                invoke  SetButtonDepth, eax, 1
+                
                 invoke  RegisterEnemy, 10, 10, 10
                 mov     pEnemy1, eax
                 invoke  EnemyBindButton, pEnemy1, pButton1
@@ -150,14 +153,15 @@ tmp             QWORD  ?
                 mov     @stRect.right, eax
                 mov     @stRect.bottom,eax
                 invoke  RegisterButton, addr @stRect, 0, 0, 0, 0
-                mov     pButton1, eax
-                mov     eax, 300
+                invoke  SetButtonDepth, eax, 2
+                mov     eax, 220
                 mov     @stRect.left, eax
                 mov     @stRect.top,  eax
-                mov     eax, 350
+                mov     eax, 270
                 mov     @stRect.right, eax
                 mov     @stRect.bottom,eax
                 invoke  RegisterButton, addr @stRect, 0, 0, 0, 0
+                invoke  SetButtonDepth, eax, 3
             .ELSE
                 invoke DefWindowProc, hWnd, uMsg, wParam, lParam
                 ret
