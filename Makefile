@@ -1,10 +1,15 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 ASM = main.asm util.asm paint.asm testobj.asm button.asm enemy.asm collision.asm mapblock.asm
 OBJ = main.obj util.obj paint.obj testobj.obj button.obj enemy.obj collision.obj mapblock.obj
 =======
 ASM = main.asm util.asm paint.asm testobj.asm button.asm enemy.asm collision.asm
 OBJ = main.obj util.obj paint.obj testobj.obj button.obj enemy.obj collision.obj
 >>>>>>> 4876971... Update Enemy class
+=======
+ASM = main.asm util.asm paint.asm testobj.asm button.asm enemy.asm collision.asm mapblock.asm
+OBJ = main.obj util.obj paint.obj testobj.obj button.obj enemy.obj collision.obj mapblock.obj
+>>>>>>> 00cda7c... Added transparent bitmap paint
 RCM = rclist.rcm 
 RCINC = rclist.inc
 RC  = rclist.rc

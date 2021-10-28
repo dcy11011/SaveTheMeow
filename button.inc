@@ -50,7 +50,11 @@ SetButtonDepth          PROTO    pButton: ptr BUTTONDATA, depth:DWORD       ; �
 GetButtonDepth          PROTO    pButton: ptr BUTTONDATA                    ; 获取按钮的深度
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 BindButtonToBitmap      PROTO    pButton:ptr BUTTONDATA, BitmapID:DWORD
 =======
 BindButtonToBitmap      PROTO    pButton:ptr BUTTONDATA, BitmapID:DWORD
 >>>>>>> 1537a7a... Added bind bitmap to button
+=======
+BindButtonToBitmap      PROTO    pButton:ptr BUTTONDATA, BitmapID:DWORD
+>>>>>>> 00cda7c... Added transparent bitmap paint

@@ -107,7 +107,7 @@ pEnemy1         dd  ?
                         mov     cnt, eax
                         
                         invoke  SendUpdateInfo, cnt
-                        invoke  EnemyUpdateAll, cnt
+                        ;invoke  EnemyUpdateAll, cnt
                         invoke  GetClientRect, hWnd, addr @stRect
                         invoke  MoveObj, offset testObj, addr @stRect
                         
@@ -154,6 +154,9 @@ pEnemy1         dd  ?
                 mov     @stRect.right, eax
                 mov     @stRect.bottom,eax
                 invoke  RegisterButton, addr @stRect, 0, 0, 0, 0
+                
+                mov     pButton1, eax
+                invoke  SetButtonDepth, eax, 1
                 
                 mov     pButton1, eax
                 invoke  RegisterEnemy, 10, 10, 10
