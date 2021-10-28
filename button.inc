@@ -36,6 +36,8 @@ PaintAllButton          PROTO    hDc:DWORD                                  ; �
 GetButtonRect           PROTO    pButton: ptr BUTTONDATA, pRect: ptr RECT   ; 获取按钮的矩形区域。填充到pRect中
 DeleteButton            PROTO    pButton: ptr BUTTONDATA                    ; 删除按钮
 
+MoveButton              PROTO    pButton: ptr BUTTONDATA, x:DWORD, y:DWORD                           ; 移动按钮
+
 SendClickInfo           PROTO    x:DWORD, y:DWORD                           ; 发送鼠标点击消息，会自动检测是否在按钮区域，触发按钮的PressEvent
 SendHoverInfo           PROTO    x:DWORD, y:DWORD                           ; 发送鼠标滑过消息，会自动检测是否在按钮区域，触发按钮的HoverEvent
 SendUpdateInfo          PROTO    cnt:DWORD                                  ; 发送更新消息，触发所有按钮格子的UpdateEvent
