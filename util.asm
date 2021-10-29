@@ -8,8 +8,6 @@ include util.inc
 szdPrintFormat      byte    "%d", 0dh, 0ah, 0
 szdPrint2Format     byte    "%d %d", 0dh, 0ah, 0
 szdPrint3Format     byte    "%d %d %d", 0dh, 0ah, 0
-<<<<<<< HEAD
-=======
 szdPrintFloatFormat byte    "%f", 0dh, 0ah, 0
 szdPrint2FloatFormat byte    "(%f %f)", 0dh, 0ah, 0
 PI                  REAL4   3.1415926
@@ -17,10 +15,6 @@ MouseXi             DWORD   0
 MouseYi             DWORD   0
 MouseXf             REAL4   0.0
 MouseYf             REAL4   0.0
->>>>>>> 7af19402107ba63452b5a99703da51c31b3c12a4
-
-szdPrintFloatFormat byte    "%f", 0dh, 0ah, 0
-szdPrint2FloatFormat byte    "%f %f", 0dh, 0ah, 0
 
 .code
 dPrint      proc  data:DWORD
@@ -72,27 +66,17 @@ dPrintFloat proc  data:DWORD
 dPrintFloat endp
 
 dPrint2Float proc  data0:DWORD, data1:DWORD
-<<<<<<< HEAD
-    local   dbdata0: QWORD, dbdata1:DWORD
-=======
     local   dbdata0: QWORD, dbdata1:QWORD
->>>>>>> 7af19402107ba63452b5a99703da51c31b3c12a4
     pushad
     fld     DWORD ptr data0
     fstp    QWORD ptr dbdata0
     fld     DWORD ptr data1
     fstp    QWORD ptr dbdata1
-<<<<<<< HEAD
-    invoke  printf, offset szdPrintFloatFormat, dbdata0, dbdata1
-=======
     invoke  printf, offset szdPrint2FloatFormat, dbdata0, dbdata1
->>>>>>> 7af19402107ba63452b5a99703da51c31b3c12a4
     popad
     ret
 dPrint2Float endp
 
-<<<<<<< HEAD
-=======
 UpdateMousePos proc x:DWORD, y:DWORD
     mov     eax, x
     mov     MouseXi, eax
@@ -108,5 +92,4 @@ UpdateMousePos proc x:DWORD, y:DWORD
 UpdateMousePos endp
 
 
->>>>>>> 7af19402107ba63452b5a99703da51c31b3c12a4
 end

@@ -130,8 +130,6 @@ EnemyBindUpdate proc self: ptr ENEMYDATA, upd: DWORD
     ret
 EnemyBindUpdate endp
 
-<<<<<<< HEAD
-=======
 ;
 ;   Geometry
 ;
@@ -197,7 +195,6 @@ EnemyMovePositionf endp
 ;
 ;   Events
 ;
->>>>>>> 7af19402107ba63452b5a99703da51c31b3c12a4
 
 EnemyDefaultUpdate PROC uses ebx edi esi cnt:DWORD, pEnemy: ptr ENEMYDATA
     local   tmpf: DWORD
@@ -207,17 +204,10 @@ EnemyDefaultUpdate PROC uses ebx edi esi cnt:DWORD, pEnemy: ptr ENEMYDATA
     assume  edx: ptr BUTTONDATA
 
     push    edx
-<<<<<<< HEAD
-    invoke  CalcDist, [edx].top, [edx].left, 0, 0
-    mov     tmpf, eax
-    fld     DWORD ptr tmpf
-    ;invoke  dPrintFloat, eax
-=======
     invoke  CalcDisti, [edx].top, [edx].left, 0, 0
     mov     tmpf, eax
     fld     DWORD ptr tmpf
     ; invoke  dPrintFloat, eax
->>>>>>> 7af19402107ba63452b5a99703da51c31b3c12a4
     mov     tmpf, 300
     fild    DWORD ptr tmpf
     fcompp
@@ -226,12 +216,6 @@ EnemyDefaultUpdate PROC uses ebx edi esi cnt:DWORD, pEnemy: ptr ENEMYDATA
     ja      @f
     pop     edx
     push    edx
-<<<<<<< HEAD
-    invoke  MoveButton, edx, -100, -10
-    @@:
-    invoke  MoveButton, edx, 2, 1
-    pop     edx
-=======
     ; invoke  MoveButton, edx, -100, -10
     @@:
     ; invoke  MoveButton, edx, 2, 1
@@ -247,7 +231,6 @@ EnemyDefaultUpdate PROC uses ebx edi esi cnt:DWORD, pEnemy: ptr ENEMYDATA
     ; invoke  EnemyMovePositionf, edi, eax, edx
     invoke  LerpXY, [edi].xf, [edi].yf, MouseXf, MouseYf, real2of3
     invoke  EnemySetPositionf, edi, eax, edx
->>>>>>> 7af19402107ba63452b5a99703da51c31b3c12a4
 
     ret
 EnemyDefaultUpdate endp
