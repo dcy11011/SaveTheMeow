@@ -1,5 +1,5 @@
-ASM = main.asm util.asm paint.asm testobj.asm button.asm enemy.asm collision.asm mapblock.asm
-OBJ = main.obj util.obj paint.obj testobj.obj button.obj enemy.obj collision.obj mapblock.obj
+ASM = main.asm util.asm paint.asm testobj.asm button.asm enemy.asm collision.asm mapblock.asm projectile.asm
+OBJ = main.obj util.obj paint.obj testobj.obj button.obj enemy.obj collision.obj mapblock.obj projectile.obj
 RCM = rclist.rcm 
 RCINC = rclist.inc
 RC  = rclist.rc

@@ -280,17 +280,6 @@ MoveButton    proc pButton: ptr BUTTONDATA, x:DWORD, y:DWORD
     ret     
 MoveButton    endp
 
-MoveButtonTo    proc pButton: ptr BUTTONDATA, x:DWORD, y:DWORD
-    mov     edx, pButton
-    assume  edx: ptr BUTTONDATA
-    mov     ecx, x
-    sub     ecx, [edx].left
-    mov     eax, y 
-    sub     eax, [edx].top
-    invoke  MoveButton, pButton, ecx, eax
-    ret
-MoveButtonTo    endp 
-
 
 SetButtonSize  PROC  uses ebx edi esi pButton:ptr BUTTONDATA, w:DWORD, h:DWORD
     mov     edi, pButton
