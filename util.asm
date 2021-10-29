@@ -16,9 +16,6 @@ MouseYi             DWORD   0
 MouseXf             REAL4   0.0
 MouseYf             REAL4   0.0
 
-szdPrintFloatFormat byte    "%f", 0dh, 0ah, 0
-szdPrint2FloatFormat byte    "%f %f", 0dh, 0ah, 0
-
 .code
 dPrint      proc  data:DWORD
     pushad

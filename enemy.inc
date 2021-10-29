@@ -33,7 +33,6 @@ EnemySetPositionf       PROTO    self: ptr ENEMYDATA, x:REAL4, y:REAL4
 EnemyMovePositioni      PROTO    self: ptr ENEMYDATA, x:DWORD, y:DWORD
 EnemyMovePositionf      PROTO    self: ptr ENEMYDATA, x:REAL4, y:REAL4
 
-
 EnemyDefaultUpdate      PROTO    cnt:DWORD, pEnemy: ptr ENEMYDATA
 EnemyUpdateAll          PROTO    cnt:DWORD                                  ; 发送更新消息
 

@@ -122,11 +122,14 @@ MapBlockUpdate  PROC uses ebx esi edi   cnt:DWORD, pButton: ptr BUTTONDATA
     
     .IF     eax == MAPB_POPPING
         mov     eax, [edi].action_step
-        invoke  dPrint, eax
+        ;invoke  dPrint, eax
         .IF     eax <= 0
             invoke  MoveButtonTo, [edi].pButton1, [edi].centerX, [edi].centerY
             invoke  MoveButtonTo, [edi].pButton2, [edi].centerX, [edi].centerY
             invoke  MoveButtonTo, [edi].pButton3, [edi].centerX, [edi].centerY
+            invoke  dPrint3, 0, 3, [edi].pButton1
+            invoke  dPrint3, 0, 3, [edi].pButton2
+            invoke  dPrint3, 0, 3, [edi].pButton3
         .ENDIF
         mov     eax, [edi].action_step
         inc     eax
@@ -189,16 +192,19 @@ RegisterMapBlock    PROC uses ebx esi edi    posX:DWORD, posY:DWORD
     ;invoke  BindButtonToBitmap, eax, MAP_BLOCK
     mov     [edi].pButton1, eax
     invoke  SetButtonDepth, eax, -1
+    invoke  dPrint3, 0, 1, eax
     
     invoke  RegisterButton, addr @rect, 0,0,0,0
     invoke  BindButtonToBitmap, eax, MAP_BLOCK
     mov     [edi].pButton2, eax
     invoke  SetButtonDepth, eax, -2
+    invoke  dPrint3, 0, 1, eax
 
     invoke  RegisterButton, addr @rect, 0,0,0,0
     invoke  BindButtonToBitmap, eax, MAP_BLOCK
     mov     [edi].pButton3, eax
     invoke  SetButtonDepth, eax, -3
+    invoke  dPrint3, 0, 1, eax
 
 
     mov     ebx, MAPB_WAITING

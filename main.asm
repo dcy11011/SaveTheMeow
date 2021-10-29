@@ -102,19 +102,18 @@ pEnemy1         dd  ?
                 
             .ELSEIF eax == WM_TIMER
                 .IF     wParam == TIMER_TICK
+                        invoke  SortButtons ; IMPORTANT!
+
                         mov     eax, cnt
                         inc     eax
                         mov     cnt, eax
                         
                         invoke  SendUpdateInfo, cnt
-                        ;invoke  EnemyUpdateAll, cnt
+                        invoke  EnemyUpdateAll, cnt
                         invoke  GetClientRect, hWnd, addr @stRect
                         invoke  MoveObj, offset testObj, addr @stRect
                         
                         invoke  InvalidateRect, hWnd, addr @stRect, 0
-                        
-                        invoke  SortButtons
-                        
                 .ENDIF
             .ELSEIF eax == WM_MOUSEMOVE
                 mov     eax, lParam
@@ -142,6 +141,9 @@ pEnemy1         dd  ?
             .ELSEIF eax == WM_CREATE
 
                 invoke  SetTimer, hWnd, TIMER_TICK, TICK_INTERVAL, NULL   
+
+                invoke  RegisterMapBlock, 300, 100
+
                 mov     eax, 100
                 mov     @stRect.left, eax
                 mov     @stRect.top,  eax
@@ -149,6 +151,7 @@ pEnemy1         dd  ?
                 mov     @stRect.right, eax
                 mov     @stRect.bottom,eax
                 invoke  RegisterButton, addr @stRect, 0, 0, 0, 0
+                invoke  dPrint3, 0,2, eax
 
                 mov     eax, 120
                 mov     @stRect.left, eax
@@ -157,11 +160,12 @@ pEnemy1         dd  ?
                 mov     @stRect.right, eax
                 mov     @stRect.bottom,eax
                 invoke  RegisterButton, addr @stRect, 0, 0, 0, 0
-                
+                invoke  SetButtonDepth, eax, -5
+                invoke  RegisterButton, addr @stRect, 0, 0, 0, 0
                 mov     pButton1, eax
-                invoke  SetButtonDepth, eax, 1
+                invoke  SetButtonDepth, eax, 2
                 
-                mov     pButton1, eax
+                
                 invoke  RegisterEnemy, 10, 10, 10
                 mov     pEnemy1, eax
                 invoke  EnemyBindButton, pEnemy1, pButton1
@@ -174,6 +178,7 @@ pEnemy1         dd  ?
                 mov     @stRect.bottom,eax
                 invoke  RegisterButton, addr @stRect, 0, 0, 0, 0
                 invoke  SetButtonDepth, eax, 2
+
                 mov     eax, 220
                 mov     @stRect.left, eax
                 mov     @stRect.top,  eax
@@ -183,7 +188,7 @@ pEnemy1         dd  ?
                 invoke  RegisterButton, addr @stRect, 0, 0, 0, 0
                 invoke  BindButtonToBitmap, eax, BOTTON_START
                 invoke  SetButtonDepth, eax, 3
-                invoke  RegisterMapBlock, 300, 100
+                
             .ELSE
                 invoke DefWindowProc, hWnd, uMsg, wParam, lParam
                 ret
