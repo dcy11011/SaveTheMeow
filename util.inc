@@ -17,6 +17,11 @@ dPrint2Float    PROTO  data0:DWORD, data1:DWORD
 dword2real4     PROTO  intValue: DWORD
 real42dword     PROTO  realValue: REAL4
 
+UpdateMousePos  PROTO  x:DWORD, y:DWORD
 
 EXTERNDEF PI:REAL4
+EXTERNDEF MouseXi:DWORD
+EXTERNDEF MouseYi:DWORD
 
+EXTERNDEF MouseXf:REAL4
+EXTERNDEF MouseYf:REAL4
