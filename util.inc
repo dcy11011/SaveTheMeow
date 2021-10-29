@@ -6,6 +6,7 @@ D_POINT     ends
 printf          PROTO C :ptr sbyte, :VARARG
 qsort           PROTO C :DWORD, :DWORD, :DWORD, :DWORD
 memset          PROTO C :DWORD, :DWORD, :DWORD
+memcpy          PROTO C :DWORD, :DWORD, :DWORD
 
 dPrint          PROTO  data:DWORD
 dPrint2         PROTO  data0:DWORD, data1:DWORD
