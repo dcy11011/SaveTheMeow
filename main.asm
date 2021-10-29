@@ -38,6 +38,13 @@ testObj         OBJDATA  <100,100,20>
 cnt             dd  0
 
 .data?
+<<<<<<< HEAD
+=======
+hInstance       DWORD  ?
+hWinMain        DWORD  ?
+pButton1        DWORD  ?
+pEnemy1         DWORD  ?
+>>>>>>> 7af19402107ba63452b5a99703da51c31b3c12a4
 tmp             QWORD  ?
 hInstance       dd  ?
 hWinMain        dd  ?
@@ -107,7 +114,11 @@ pEnemy1         dd  ?
                         mov     cnt, eax
                         
                         invoke  SendUpdateInfo, cnt
+<<<<<<< HEAD
                         invoke  EnemyUpdateAll, cnt
+=======
+                        ;invoke  EnemyUpdateAll, cnt
+>>>>>>> 7af19402107ba63452b5a99703da51c31b3c12a4
                         invoke  GetClientRect, hWnd, addr @stRect
                         invoke  MoveObj, offset testObj, addr @stRect
                         
@@ -121,7 +132,10 @@ pEnemy1         dd  ?
                 mov     ebx, eax
                 and     ebx, 0000FFFFh
                 shr     eax, 16
+                push    eax ; save eax
                 invoke  SendHoverInfo, ebx, eax
+                pop     eax ; save eax
+                invoke  UpdateMousePos, ebx, eax
                 invoke DefWindowProc, hWnd, uMsg, wParam, lParam
                 ret
             .ELSEIF eax == WM_LBUTTONDOWN
@@ -156,10 +170,19 @@ pEnemy1         dd  ?
                 invoke  RegisterButton, addr @stRect, 0, 0, 0, 0
                 
                 mov     pButton1, eax
+<<<<<<< HEAD
+=======
+                invoke  SetButtonDepth, eax, 1
+                
+>>>>>>> 7af19402107ba63452b5a99703da51c31b3c12a4
                 invoke  RegisterEnemy, 10, 10, 10
                 mov     pEnemy1, eax
                 invoke  EnemyBindButton, pEnemy1, pButton1
                 invoke  EnemyBindUpdate, pEnemy1, EnemyDefaultUpdate
+<<<<<<< HEAD
+=======
+
+>>>>>>> 7af19402107ba63452b5a99703da51c31b3c12a4
                 mov     eax, 200
                 mov     @stRect.left, eax
                 mov     @stRect.top,  eax
