@@ -107,7 +107,7 @@ pEnemy1         dd  ?
                         mov     cnt, eax
                         
                         invoke  SendUpdateInfo, cnt
-                        ;invoke  EnemyUpdateAll, cnt
+                        invoke  EnemyUpdateAll, cnt
                         invoke  GetClientRect, hWnd, addr @stRect
                         invoke  MoveObj, offset testObj, addr @stRect
                         
