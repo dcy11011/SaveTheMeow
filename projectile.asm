@@ -13,13 +13,6 @@ include paint.inc
 .data
 nProjtListCnt           DWORD    0
 bIfInitProjtData        DWORD    0
-real0                   REAL4    0.0
-real1                   REAL4    1.0
-real1n                  REAL4    -1.0
-real1of2                REAL4    0.5
-real1of3                REAL4    0.33333
-real2of3                REAL4    0.66666
-real9of10               REAL4    0.9
 
 .data?
 arrayProjtList PROJTDATA MAXPJTCNT DUP(<?>) ; 内存池
@@ -66,7 +59,7 @@ GetAvilaibleProjtData proc uses ebx edx edi
 GetAvilaibleProjtData endp
 
 
-RegisterProjt proc atk: DWORD, speed: REAL4
+RegisterProjectile proc atk: DWORD, speed: REAL4
     invoke  GetAvilaibleProjtData
     mov     edx, eax
     assume  edx: ptr PROJTDATA
@@ -89,7 +82,7 @@ RegisterProjt proc atk: DWORD, speed: REAL4
     mov     [edx].pDeathEvent, 0
     mov     eax, edx
     ret
-RegisterProjt endp
+RegisterProjectile endp
 
 
 ProjtUpdateAll proc uses esi cnt: DWORD
@@ -124,6 +117,8 @@ ProjtBindButton proc self: ptr PROJTDATA, btn: ptr BUTTONDATA
     mov     edx, self
     assume  edx: ptr PROJTDATA
     mov     [edx].pAsButton, eax
+    assume  eax: ptr BUTTONDATA
+    invoke  ProjtSetPositioni, self, [eax].left, [eax].top
     ret
 ProjtBindButton endp
 
@@ -198,6 +193,29 @@ ProjtMovePositionf proc    self: ptr PROJTDATA, x:REAL4, y:REAL4
     ret
 ProjtMovePositionf endp
 
+ProjtSetSpeed proc    self: ptr PROJTDATA, speed:REAL4
+    mov     edx, self
+    assume  edx: ptr PROJTDATA
+    mov     eax, speed
+    mov     [edx].speed, eax
+    ret
+ProjtSetSpeed endp
+
+ProjtSetDirection proc   self: ptr PROJTDATA, direction:REAL4
+    mov     edx, self
+    assume  edx: ptr PROJTDATA
+    mov     eax, direction
+    mov     [edx].direction, eax
+    ret
+ProjtSetDirection endp
+
+ProjtStepForward proc    self: ptr PROJTDATA
+    mov     edx, self
+    assume  edx: ptr PROJTDATA
+    invoke  GetDirVector, [edi].direction, [edi].speed
+    invoke  ProjtMovePositionf, edi, eax, edx
+    ret
+ProjtStepForward endp
 ;
 ;   Events
 ;
@@ -209,34 +227,17 @@ ProjtDefaultUpdate PROC uses ebx edi esi cnt:DWORD, pProjt: ptr PROJTDATA
     mov     edx, [edi].pAsButton
     assume  edx: ptr BUTTONDATA
 
-    push    edx
-    invoke  CalcDisti, [edx].top, [edx].left, 0, 0
-    mov     tmpf, eax
-    fld     DWORD ptr tmpf
-    ; invoke  dPrintFloat, eax
-    mov     tmpf, 300
-    fild    DWORD ptr tmpf
-    fcompp
-    fstsw   ax
-    sahf
-    ja      @f
-    pop     edx
-    push    edx
-    ; invoke  MoveButton, edx, -100, -10
-    @@:
-    ; invoke  MoveButton, edx, 2, 1
-    ; invoke  dPrintFloat, wwww
-    pop     edx
-    ; invoke  GetAtan2, real1of3, real1
 
-    ; invoke  DirectionTo, [edi].xf, [edi].yf, MouseXf, MouseYf
+    invoke  DirectionTo, [edi].xf, [edi].yf, MouseXf, MouseYf
+    invoke  ProjtSetDirection, pProjt, eax
     ; push    eax
     ; invoke  dPrintFloat, eax
     ; pop     eax
     ; invoke  GetDirVector, eax, real1
     ; invoke  ProjtMovePositionf, edi, eax, edx
-    invoke  LerpXY, [edi].xf, [edi].yf, MouseXf, MouseYf, real9of10
-    invoke  ProjtSetPositionf, edi, eax, edx
+    ; invoke  LerpXY, [edi].xf, [edi].yf, MouseXf, MouseYf, real9of10
+    ; invoke  ProjtSetPositionf, edi, eax, edx
+    invoke  ProjtStepForward, pProjt
 
     ret
 ProjtDefaultUpdate endp

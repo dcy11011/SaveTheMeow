@@ -29,6 +29,8 @@ include enemy.inc
 include projectile.inc
 include mapblock.inc
 
+include prefab.inc
+
 include main.inc
 
 ;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -43,6 +45,7 @@ hInstance       DWORD  ?
 hWinMain        DWORD  ?
 pButton1        DWORD  ?
 pEnemy1         DWORD  ?
+pProjt1         DWORD  ?
 tmp             QWORD  ?
 
 
@@ -152,21 +155,8 @@ tmp             QWORD  ?
                 mov     @stRect.bottom,eax
                 invoke  RegisterButton, addr @stRect, 0, 0, 0, 0
 
-                mov     eax, 120
-                mov     @stRect.left, eax
-                mov     @stRect.top,  eax
-                mov     eax, 170
-                mov     @stRect.right, eax
-                mov     @stRect.bottom,eax
-                invoke  RegisterButton, addr @stRect, 0, 0, 0, 0
-                
-                mov     pButton1, eax
-                invoke  SetButtonDepth, eax, 1
-                
-                invoke  RegisterEnemy, 10, 10, 10
-                mov     pEnemy1, eax
-                invoke  EnemyBindButton, pEnemy1, pButton1
-                invoke  EnemyBindUpdate, pEnemy1, EnemyDefaultUpdate
+                invoke  PrefabTestProjectile, 120, 170
+                invoke  PrefabTestProjectile, 220, 120
 
                 mov     eax, 200
                 mov     @stRect.left, eax
