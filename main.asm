@@ -6,7 +6,7 @@ option casemap:none
 ;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 TIMER_TICK      EQU     1
-TICK_INTERVAL   EQU     35
+TICK_INTERVAL   EQU     16
 
 ;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 ; Include 
@@ -26,6 +26,7 @@ include rclist.inc
 include testobj.inc
 Include button.inc            
 include enemy.inc
+include projectile.inc
 include mapblock.inc
 
 include main.inc        
@@ -109,6 +110,7 @@ pEnemy1         dd  ?
                         mov     cnt, eax
                         
                         invoke  SendUpdateInfo, cnt
+                        invoke  ProjtUpdateAll, cnt
                         invoke  EnemyUpdateAll, cnt
                         invoke  GetClientRect, hWnd, addr @stRect
                         invoke  MoveObj, offset testObj, addr @stRect
