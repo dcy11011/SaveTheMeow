@@ -21,7 +21,7 @@ PROJTDATA struct
 PROJTDATA ends
 
 
-RegisterProjtile        PROTO    atk: DWORD, speed: REAL4
+RegisterProjectile        PROTO    atk: DWORD, speed: REAL4
 ProjtBindButton         PROTO    self: ptr PROJTDATA, btn: ptr BUTTONDATA
 ProjtBindUpdate         PROTO    self: ptr PROJTDATA, upd: DWORD
 
@@ -31,6 +31,9 @@ ProjtSetPositionf       PROTO    self: ptr PROJTDATA, x:REAL4, y:REAL4
 ProjtMovePositioni      PROTO    self: ptr PROJTDATA, x:DWORD, y:DWORD
 ProjtMovePositionf      PROTO    self: ptr PROJTDATA, x:REAL4, y:REAL4
 
+ProjtSetSpeed           PROTO    self: ptr PROJTDATA, speed:REAL4
+ProjtSetDirection       PROTO    self: ptr PROJTDATA, direction:REAL4
+ProjtStepForward        PROTO    self: ptr PROJTDATA
 
 ProjtDefaultUpdate      PROTO    cnt:DWORD, pProjt: ptr PROJTDATA
 ProjtUpdateAll          PROTO    cnt:DWORD                                  ; 发送更新消息

@@ -29,7 +29,9 @@ include enemy.inc
 include projectile.inc
 include mapblock.inc
 
-include main.inc        
+include prefab.inc
+
+include main.inc
 
 ;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 ; Data
@@ -39,6 +41,8 @@ testObj         OBJDATA  <100,100,20>
 cnt             dd  0
 
 .data?
+pEnemy1         DWORD  ?
+pProjt1         DWORD  ?
 tmp             QWORD  ?
 hInstance       dd  ?
 hWinMain        dd  ?
@@ -155,23 +159,8 @@ pEnemy1         dd  ?
                 invoke  RegisterButton, addr @stRect, 0, 0, 0, 0
                 invoke  dPrint3, 0,2, eax
 
-                mov     eax, 120
-                mov     @stRect.left, eax
-                mov     @stRect.top,  eax
-                mov     eax, 170
-                mov     @stRect.right, eax
-                mov     @stRect.bottom,eax
-                invoke  RegisterButton, addr @stRect, 0, 0, 0, 0
-                invoke  SetButtonDepth, eax, -5
-                invoke  RegisterButton, addr @stRect, 0, 0, 0, 0
-                mov     pButton1, eax
-                invoke  SetButtonDepth, eax, 2
-                
-                
-                invoke  RegisterEnemy, 10, 10, 10
-                mov     pEnemy1, eax
-                invoke  EnemyBindButton, pEnemy1, pButton1
-                invoke  EnemyBindUpdate, pEnemy1, EnemyDefaultUpdate
+                invoke  PrefabTestProjectile, 120, 170
+                invoke  PrefabTestProjectile, 220, 120
 
                 mov     eax, 200
                 mov     @stRect.left, eax

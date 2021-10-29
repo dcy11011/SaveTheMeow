@@ -13,13 +13,6 @@ include paint.inc
 .data
 nEnemyListCnt           DWORD    0
 bIfInitEnemyData        DWORD    0
-real0                   REAL4    0.0
-real1                   REAL4    1.0
-real1n                  REAL4    -1.0
-real1of2                REAL4    0.5
-real1of3                REAL4    0.33333
-real2of3                REAL4    0.66666
-real9of10               REAL4    0.9
 
 .data?
 arrayEnemyList ENEMYDATA MAXENYCNT DUP(<?>) ; 内存池
@@ -125,6 +118,8 @@ EnemyBindButton proc self: ptr ENEMYDATA, btn: ptr BUTTONDATA
     mov     edx, self
     assume  edx: ptr ENEMYDATA
     mov     [edx].pAsButton, eax
+    assume  eax: ptr BUTTONDATA
+    invoke  EnemySetPositioni, self, [eax].left, [eax].top
     ret
 EnemyBindButton endp
 
@@ -141,7 +136,7 @@ EnemyBindUpdate endp
 ;   Geometry
 ;
 
-EnemyUpdatePosition proc uses edi self: ptr ENEMYDATA        ; update buttom pos to enemy pos
+EnemyUpdatePosition proc uses edi self: ptr ENEMYDATA        ; update button pos to enemy pos
     local   tx:DWORD, ty:DWORD
     mov     edi, self
     assume  edi: ptr ENEMYDATA
