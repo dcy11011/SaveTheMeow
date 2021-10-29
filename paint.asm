@@ -6,12 +6,30 @@ include windows.inc
 include gdi32.inc
 include user32.inc
 include kernel32.inc
+include msimg32.inc
 
 include paint.inc
 include util.inc
 include main.inc
 
+.data?
+blendFunction   BLENDFUNCTION   <?>
+
+
 .code
+
+InitPaint   PROC    uses ebx edi esi 
+    mov     al, AC_SRC_OVER
+    mov     blendFunction.BlendOp, al
+    mov     al, 0
+    mov     blendFunction.BlendFlags, al
+    mov     al, 255
+    mov     blendFunction.BlendFlags, al
+    mov     al, AC_SRC_ALPHA
+    mov     blendFunction.BlendFlags, al
+    ret
+InitPaint   ENDP
+
 GetCircleRect  PROC  uses ebx ecx edx lpCircle: ptr CIRCLEDATA, lpRect: ptr RECT
     mov     edx, lpRect
     assume  edx: ptr RECT
@@ -122,6 +140,16 @@ PaintBitmap     PROC  uses edi  hDc:DWORD, bitmapID:DWORD, posX:DWORD, posY:DWOR
     ret
 PaintBitmap ENDP
 
+PaintBitmapTrans     PROC  uses edi  hDc:DWORD, bitmapID:DWORD, posX:DWORD, posY:DWORD
+    local   @stBitmapData:BITMAPDATA
+
+    invoke  PrepareBitmapPaint, hDc, bitmapID, addr @stBitmapData
+    invoke  TransparentBlt, hDc, posX, posY, @stBitmapData.w, @stBitmapData.h, @stBitmapData.hDcBitmap, 0, 0, @stBitmapData.w, @stBitmapData.h, 0
+    invoke  ReleaseBitmapData, addr @stBitmapData
+
+    ret
+PaintBitmapTrans ENDP
+
 PaintBitmapEx PROC uses edi ebx hDc:DWORD, bitmapID:DWORD, lpRect:ptr RECT, optionCode:DWORD
     local   @stBitmapData:BITMAPDATA
     local   @areaW, @areaH
@@ -190,12 +218,19 @@ PaintBitmapEx PROC uses edi ebx hDc:DWORD, bitmapID:DWORD, lpRect:ptr RECT, opti
     ret
 PaintBitmapEx ENDP
 
-PaintRect  proc   hDc:DWORD, lpRect:ptr RECT
-    mov     eax, lpRect
-    assume  eax: ptr RECT
-    invoke  Rectangle, hDc, [eax].left, [eax].top, [eax].right, [eax].bottom
+PaintRect  proc   uses edi hDc:DWORD, lpRect:ptr RECT
+    mov     edi, lpRect
+    assume  edi: ptr RECT
+    invoke  Rectangle, hDc, [edi].left, [edi].top, [edi].right, [edi].bottom
     ret
 PaintRect ENDP
+
+PaintRoundRect  proc   hDc:DWORD, lpRect:ptr RECT, r:DWORD
+    mov     edi, lpRect
+    assume  edi: ptr RECT
+    invoke  RoundRect, hDc, [edi].left, [edi].top, [edi].right, [edi].bottom, r, r
+    ret
+PaintRoundRect ENDP
 
 RotateDC    PROC uses ebx esi edi hdc:DWORD, iAngle:DWORD, x:DWORD, y:DWORD
     local   @nGraphicsMode:DWORD, @fangle:REAL4, @ftmp:REAL4
@@ -279,5 +314,11 @@ ClearDCRotate  PROC uses ebx esi edi hdc:DWORD
     ret
 ClearDCRotate    ENDP
 
+SetPen  PROC  uses ebx edi esi  hdc:DWORD, fnPenStyle:DWORD, nWidth:DWORD, crColor:DWORD
+    local   @hpen:HPEN
+    invoke  CreatePen, fnPenStyle, nWidth, crColor
+    invoke  SelectObject, hdc, eax
+    ret
+SetPen  ENDP
 
 end
