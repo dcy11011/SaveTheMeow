@@ -72,6 +72,7 @@ RegisterEnemy proc hp: DWORD, speed: REAL4, atk: DWORD
     invoke  GetAvilaibleEnemyData
     mov     edx, eax
     assume  edx: ptr ENEMYDATA
+    mov     eax, hp
     mov     [edx].health, eax
     mov     [edx].healthMax, eax
     mov     eax, speed
@@ -233,8 +234,6 @@ EnemyStepForward proc uses edi self: ptr ENEMYDATA
     invoke  RoadmapCalcCurrent, [edi].progress
     mov     tx, eax
     mov     ty, edx
-    invoke  EnemySetPositionf, self, tx, ty
-    ret
 
     mov     edx, [edi].pAsButton
     assume  edx: ptr BUTTONDATA
@@ -256,6 +255,17 @@ EnemyStepForward proc uses edi self: ptr ENEMYDATA
     invoke  EnemySetPositionf, self, tx, ty
     ret
 EnemyStepForward endp
+
+EnemySetDeath proc uses edi self: ptr ENEMYDATA
+    mov     edi, self
+    assume  edi: ptr ENEMYDATA
+    mov     [edi].isActive, 0
+    invoke  DeleteButton, [edi].pAsButton
+    ret
+EnemySetDeath endp
+
+
+
 
 EnemyDefaultUpdate PROC uses ebx edi esi cnt:DWORD, pEnemy: ptr ENEMYDATA
     local   tmpf: DWORD
@@ -416,5 +426,56 @@ RoadmapCalcCurrent proc uses esi    s:REAL4 ; 依据一维距离计算当前位�
     mov     edx, [esi].y
     ret
 RoadmapCalcCurrent endp
+
+
+FindInrangeEnemyf proc uses esi edi xi:REAL4, yi:REAL4, radius:REAL4
+    local   maxdist:REAL4, x1:REAL4, y1:REAL4, result:DWORD
+    mov     ecx, 0
+    mov     esi, arrayEnemyListHead
+    mov     eax, real0
+    mov     maxdist, eax
+    mov     result, 0
+    .WHILE  ecx < nEnemyListCnt
+        assume  esi: ptr ENEMYDATA
+        mov     ax, [esi].isActive
+        .IF ax
+            push    ecx
+            invoke  GetCenterButton, [esi].pAsButton
+            mov     x1, eax
+            mov     y1, edx
+            invoke  CircleCollision, x1, y1, [esi].radius, \
+                                     xi, yi, radius
+            .IF eax
+                fld     DWORD ptr maxdist
+                fld     DWORD ptr [esi].progress
+                fcompp
+                fstsw   ax
+                sahf
+                jb      @f
+                mov     result, esi
+                mov     eax, [esi].progress
+                mov     maxdist, eax
+                @@:
+            .ENDIF
+            pop     ecx
+        .ENDIF
+        add     esi, sizeof ENEMYDATA
+        add     ecx, 1
+    .ENDW
+    mov     eax, result
+    ret
+FindInrangeEnemyf endp
+
+FindInrangeEnemyi proc uses esi edi xi:DWORD, yi:DWORD, radius:DWORD
+    invoke  dword2real4, xi
+    mov     xi, eax
+    invoke  dword2real4, yi
+    mov     yi, eax
+    invoke  dword2real4, radius
+    mov     radius, eax
+    invoke  FindInrangeEnemyf, xi, yi, radius
+    ret
+FindInrangeEnemyi endp
+
 
 end

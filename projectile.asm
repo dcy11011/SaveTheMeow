@@ -313,6 +313,20 @@ ProjtHitEnemies proc uses esi edi self: ptr PROJTDATA, cnt:DWORD
                     call    eax
                 .ENDIF
                 ; invoke hurt event
+                mov     eax, [edi].attack
+                sub     [esi].health, eax
+                .IF     [esi].health <= 0
+                    mov     eax, [esi].pDeathEvent
+                    .IF eax
+                        push    esi
+                        push    cnt
+                        call    eax
+                    .ENDIF
+                    invoke  GetCenterButton, [esi].pAsButton
+                    invoke  PrefabDeathEffectProjf, eax, edx
+                    invoke  EnemySetDeath, esi
+                .ENDIF
+                ; apply damage
                 mov     eax, [edi].pHitEvent
                 .IF eax
                     push    edi
@@ -322,7 +336,11 @@ ProjtHitEnemies proc uses esi edi self: ptr PROJTDATA, cnt:DWORD
                 ; invoke projectile hit event
                 sub     [edi].penetrate, 1
                 .IF     [edi].penetrate == 0
-                    invoke  PrefabHurtEffectProjf, [edi].xf, [edi].yf
+                    ; invoke  GetCenterButton, [esi].pAsButton
+                    ; invoke  PrefabHurtEffectProjf, eax, edx
+                    invoke  GetCenterButton, [edi].pAsButton
+                    invoke  PrefabHurtEffectProjf, eax, edx
+                    ; invoke  PrefabDeathEffectProjf, [edi].xf, [edi].yf
                     invoke  ProjtCheckDeath, self
                     pop     ecx
                     ret
@@ -376,14 +394,30 @@ ProjtHurtEffectUpdate PROC uses esi edi cnt:DWORD, pProjt: ptr PROJTDATA
     add     [edx].right, 2
     invoke  ProjtBindButton, pProjt, edx
 
-    ; invoke  DirectionTo, [edi].xf, [edi].yf, MouseXf, MouseYf
-    ; invoke  ProjtSetDirection, pProjt, eax
-    ; change dir
-
     invoke  ProjtStepForward, pProjt
 
     pop     edi
     ret
 ProjtHurtEffectUpdate endp
+
+ProjtDeathEffectUpdate PROC uses esi edi cnt:DWORD, pProjt: ptr PROJTDATA
+    local   tmpf: DWORD
+    push    edi 
+    ; invoke  dPrint2, cnt, pProjt
+    mov     edi, pProjt
+    assume  edi: ptr PROJTDATA
+    mov     edx, [edi].pAsButton
+    assume  edx: ptr BUTTONDATA
+    sub     [edx].top, 8
+    add     [edx].bottom, 3
+    add     [edx].left, 1
+    sub     [edx].right, 1
+    invoke  ProjtBindButton, pProjt, edx
+
+    invoke  ProjtStepForward, pProjt
+
+    pop     edi
+    ret
+ProjtDeathEffectUpdate endp
 
 end

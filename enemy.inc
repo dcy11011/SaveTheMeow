@@ -42,6 +42,7 @@ EnemyMovePositionf      PROTO    self: ptr ENEMYDATA, x:REAL4, y:REAL4
 EnemyUpdateRadius       PROTO    self: ptr ENEMYDATA  ; use button size to set radius
 
 EnemyStepForward        PROTO    self: ptr ENEMYDATA
+EnemySetDeath           PROTO    self: ptr ENEMYDATA
 
 EnemyDefaultUpdate      PROTO    cnt:DWORD, pEnemy: ptr ENEMYDATA
 EnemyMouseUpdate        PROTO    cnt:DWORD, pEnemy: ptr ENEMYDATA
@@ -53,3 +54,6 @@ RoadmapAddi             PROTO    x:DWORD, y:DWORD
 RoadmapAddf             PROTO    x:REAL4, y:REAL4
 RoadmapTotalDist        PROTO   
 RoadmapCalcCurrent      PROTO    s:REAL4 ; 依据一维距离计算当前位置 返回-> eax, edx
+
+FindInrangeEnemyf       PROTO    xi:REAL4, yi:REAL4, radius:REAL4    ; -> ptr ENEMYDATA
+FindInrangeEnemyi       PROTO    xi:DWORD, yi:DWORD, radius:DWORD

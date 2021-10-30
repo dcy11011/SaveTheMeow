@@ -11,6 +11,7 @@ include button.inc
 include paint.inc
 include util.inc
 include collision.inc
+include enemy.inc
 
 include rclist.inc
 
@@ -20,15 +21,15 @@ include mapblock.inc
 .data
 nMapBlockListCnt           DWORD    0
 bIfInitMapBlockData        DWORD    0
-defaultAngset              DWORD    210, 90, 330, 135, 45, 0
+defaultAngset              DWORD    210, 90, 330, 135, 45, 135, 45
 defualtButtonGroupID       DWORD    1, 1, 1, 2, 2, 3, 3
 popRatio                   REAL4    0.3
 one                        REAL4    1.0
 szMapFileName              BYTE     "map0.data", 0
 pLastMapBlock              DWORD    0
-ptRoutePoint               D_POINT  MAX_ROUTEPOINT DUP(<?>)
 
 .data?
+ptRoutePoint               D_POINT  MAX_ROUTEPOINT DUP(<?>)
 arrayMapBlockList MAPBLOCKDATA MAXMAPBLOCKCNT DUP(<?>)
 
 .code
@@ -234,6 +235,135 @@ s8:     pop     edx
     ret
 MapBlockUpdate  ENDP
 
+TurrentUpdate   PROC uses ebx esi edi  cnt:DWORD, pButton: ptr BUTTONDATA
+    local   @integer:DWORD, @siz:D_POINT
+    mov     esi, pButton
+    assume  esi: PTR BUTTONDATA
+    mov     edi, [esi].bParam
+    assume  edi: PTR MAPBLOCKDATA
+
+    fild    cnt
+    mov     eax, 180
+    mov     @integer, eax
+    fidiv   @integer
+    fldpi   
+    fmul
+    fstp    [edi].turretAngle 
+
+
+    ret
+TurrentUpdate   ENDP
+
+PaintTurret     PROC    uses ebx esi edi    hdc:DWORD, pButton: PTR BUTTONDATA
+    local   @pos:D_POINT, @rect:RECT, @siz:D_POINT
+    local   @integer:DWORD
+    mov     esi, pButton
+    assume  esi: PTR BUTTONDATA
+    .IF     [esi].cParam == 0
+        ret
+    .ENDIF
+
+    mov     edi, [esi].bParam
+    assume  edi: PTR MAPBLOCKDATA
+
+    invoke  GetButtonRect, esi, addr @rect
+
+    invoke  RotateDC, hdc, [edi].turretAngle,[edi].centerX, [edi].centerY 
+    invoke  PaintBitmapTransEx, hdc, [esi].aParam, addr @rect ,STRETCH_XY
+    invoke  ClearDCRotate, hdc
+
+    ret
+PaintTurret     ENDP
+
+CreateTurret        PROC uses ebx esi edi    pMapBlock: PTR MAPBLOCKDATA, turretID:DWORD
+    mov     edi, pMapBlock
+    assume  edi: PTR MAPBLOCKDATA
+    mov     eax, turretID
+    mov     [edi].turretID, eax
+    invoke  SetMapBlockDisplaySet, edi, 2
+    mov     esi, [edi].pTurret
+    assume  esi: PTR BUTTONDATA
+    mov     [esi].bParam, edi
+    mov     eax, turretID
+    .IF     eax == A_TURRET
+        mov     eax, TURRENT_A
+        mov     [esi].aParam, eax
+    .ELSEIF eax == B_TURRET
+        mov     eax, TURRENT_B
+        mov     [esi].aParam, eax
+    .ELSEIF eax == C_TURRET
+        mov     eax, TURRENT_C
+        mov     [esi].aParam, eax
+    .ENDIF
+    mov     [esi].pPaint, PaintTurret
+    mov     [esi].pUpdateEvent, TurrentUpdate
+    mov     ax, BTNI_DISABLE_HOVER or BTNI_DISABLE_CLICK
+    mov     [esi].isActive, ax
+    mov     eax, one
+    mov     [esi].cParam, eax
+    invoke  SetButtonSize, esi, MAPB_BLOCKWIDTH, MAPB_BLOCKHEIGHT
+    invoke  MoveButtonCenterTo, esi, [edi].centerX, [edi].centerY
+    ret
+CreateTurret    ENDP
+
+CreateTurretA       PROC uses ebx esi edi    pButton: PTR BUTTONDATA
+    mov     edi, pButton
+    assume  edi: ptr BUTTONDATA
+    mov     edi, [edi].bParam
+    assume  edi: ptr MAPBLOCKDATA
+    invoke  CreateTurret, edi, A_TURRET
+    ret
+CreateTurretA       ENDP
+
+CreateTurretB       PROC uses ebx esi edi    pButton: PTR BUTTONDATA
+    mov     edi, pButton
+    assume  edi: ptr BUTTONDATA
+    mov     edi, [edi].bParam
+    assume  edi: ptr MAPBLOCKDATA
+    invoke  CreateTurret, edi, B_TURRET
+    ret
+CreateTurretB       ENDP
+
+CreateTurretC       PROC uses ebx esi edi    pButton: PTR BUTTONDATA
+    mov     edi, pButton
+    assume  edi: ptr BUTTONDATA
+    mov     edi, [edi].bParam
+    assume  edi: ptr MAPBLOCKDATA
+    invoke  CreateTurret, edi, C_TURRET
+    ret
+CreateTurretC       ENDP
+
+DeleteTurret       PROC uses ebx esi edi    pButton: PTR BUTTONDATA
+    mov     edi, pButton
+    assume  edi: ptr BUTTONDATA
+    mov     edi, [edi].bParam
+    assume  edi: ptr MAPBLOCKDATA
+    invoke  SetMapBlockDisplaySet, edi, 3
+    mov     eax, MAPB_POPPING
+    mov     [edi].status, eax
+    ret
+DeleteTurret       ENDP
+
+ReallyDeleteTurret  PROC uses ebx esi edi    pButton: PTR BUTTONDATA
+    mov     edi, pButton
+    assume  edi: ptr BUTTONDATA
+    
+    mov     edi, [edi].bParam
+    assume  edi: ptr MAPBLOCKDATA
+    invoke  SetMapBlockDisplaySet, edi, 1
+    invoke  MoveButtonCenterTo, [edi].pTurret, -100, -100
+    ret
+ReallyDeleteTurret   ENDP
+
+CancelDeleteTurret  PROC uses ebx esi edi    pButton: PTR BUTTONDATA
+    mov     edi, pButton
+    assume  edi: ptr BUTTONDATA
+    mov     edi, [edi].bParam
+    assume  edi: ptr MAPBLOCKDATA
+    invoke  SetMapBlockDisplaySet, edi, 2
+    ret
+CancelDeleteTurret  ENDP
+
 RegisterMapBlock    PROC uses ebx esi edi    posX:DWORD, posY:DWORD
     local   @rect:RECT
     lea     esi, @rect
@@ -305,11 +435,39 @@ RegisterMapBlock    PROC uses ebx esi edi    posX:DWORD, posY:DWORD
     mov     eax, 1
     mov     [edi].diaplaySet, eax       ; set initial display set 
 
+    assume  esi: PTR BUTTONDATA
     invoke  BindMapBlockPopButtonsBitmap, edi, 0, TURRENT_A
+    mov     esi, eax
+    mov     eax, CreateTurretA
+    mov     [esi].pClickEvent, eax
     invoke  BindMapBlockPopButtonsBitmap, edi, 1, TURRENT_B
+    mov     esi, eax
+    mov     eax, CreateTurretB
+    mov     [esi].pClickEvent, eax
     invoke  BindMapBlockPopButtonsBitmap, edi, 2, TURRENT_C
+    mov     esi, eax
+    mov     eax, CreateTurretC
+    mov     [esi].pClickEvent, eax
     invoke  BindMapBlockPopButtonsBitmap, edi, 3, ICON_UP
     invoke  BindMapBlockPopButtonsBitmap, edi, 4, ICON_DELETE
+    mov     esi, eax
+    mov     eax, DeleteTurret
+    mov     [esi].pClickEvent, eax
+    invoke  BindMapBlockPopButtonsBitmap, edi, 5, ICON_OK
+    mov     esi, eax
+    mov     eax, ReallyDeleteTurret
+    mov     [esi].pClickEvent, eax
+    invoke  BindMapBlockPopButtonsBitmap, edi, 6, ICON_CANCEL
+    mov     esi, eax
+    mov     eax, CancelDeleteTurret
+    mov     [esi].pClickEvent, eax
+
+    invoke  RegisterButton, addr @rect, 0, 0 ,0, 0
+    invoke  MoveButtonTo, eax, -100, -100
+    mov     [edi].pTurret, eax
+
+    mov     eax, 0
+    mov     [edi].turretID, eax
 
     mov     eax, edi
     ret
@@ -344,6 +502,7 @@ BindMapBlockPopButtonsBitmap  PROC uses ebx esi edi pMapBlock: ptr MAPBLOCKDATA,
     mov     edi, eax
     assume  edi: ptr BUTTONDATA
     invoke  BindButtonToBitmap, edi, IDBitmap
+    mov     eax, edi
     ret
 BindMapBlockPopButtonsBitmap  ENDP
 
@@ -352,6 +511,10 @@ SetMapBlockDisplaySet   PROC  uses ebx edi esi pMapBlock: ptr MAPBLOCKDATA, id:D
     assume  edi: PTR MAPBLOCKDATA
     mov     eax, id
     mov     [edi].diaplaySet, eax
+    mov     eax, MAPB_CONTRACTING
+    mov     [edi].status, eax
+    mov     eax, 0
+    mov     [edi].action_step, eax
     ret
 SetMapBlockDisplaySet  ENDP
 
@@ -397,6 +560,8 @@ LoadMapFromFile     PROC uses ebx edi esi offsetX:DWORD, offsetY:DWORD
             xor     eax, eax
             mov     al, BYTE PTR [esi]
             .IF     al == 43 || (al >=48 && al <= 64) 
+                push    eax
+
                 push    ecx
                 push    edx
                 mov     eax, @x
@@ -413,6 +578,31 @@ LoadMapFromFile     PROC uses ebx edi esi offsetX:DWORD, offsetY:DWORD
                 pop     edx
                 pop     ecx
                 mov     [eax].isActive, BTNI_DISABLE
+
+                pop     eax
+                .IF   al >= 48 && al < 78
+                    sub     eax, 48
+                    inc     eax
+                    .IF     eax > @route_point_cnt
+                        mov     @route_point_cnt, eax
+                    .ENDIF
+                    dec     eax
+                    push    ebx
+                    mov     ebx, sizeof D_POINT
+                    mul     ebx
+                    add     eax, offset ptRoutePoint
+                    assume  eax: ptr D_POINT
+                    
+                    mov     ebx, MAPB_BLOCKWIDTH
+                    shr     ebx, 1
+                    add     ebx, @x
+                    mov     [eax].x, ebx
+                    mov     ebx, MAPB_BLOCKHEIGHT
+                    shr     ebx, 1
+                    add     ebx, @y
+                    mov     [eax].y, ebx
+                    pop     ebx
+                .ENDIF
             .ELSEIF al == 111
                 push    ecx
                 push    edx
@@ -427,7 +617,7 @@ LoadMapFromFile     PROC uses ebx edi esi offsetX:DWORD, offsetY:DWORD
                 assume  eax: ptr BUTTONDATA
                 mov     dx, BTNI_DISABLE
                 mov     WORD PTR [eax].isActive, dx
-                invoke  BindButtonToBitmap, eax, BMP_EMPTY
+                invoke  BindButtonToBitmap, eax, BMP_SIDE
                 invoke  SetButtonSize, eax, MAPB_BLOCKWIDTH, 15
                 pop     edx
                 pop     ecx
@@ -455,35 +645,12 @@ LoadMapFromFile     PROC uses ebx edi esi offsetX:DWORD, offsetY:DWORD
                 assume  eax: ptr BUTTONDATA
                 mov     dx, BTNI_DISABLE
                 mov     WORD PTR [eax].isActive, dx
-                invoke  BindButtonToBitmap, eax, BMP_EMPTY
+                invoke  BindButtonToBitmap, eax, BMP_SIDE2
                 invoke  SetButtonSize, eax, MAPB_BLOCKWIDTH, 25
                 pop     edx
                 pop     ecx
                 mov [eax].isActive, BTNI_DISABLE
-            .ELSEIF   al > 48 && al < 78
-                sub     eax, 48
-                inc     eax
-                .IF     eax > @route_point_cnt
-                    mov     @route_point_cnt, eax
-                .ENDIF
-                dec     eax
-                push    ebx
-                mov     ebx, sizeof D_POINT
-                mul     ebx
-                add     eax, offset ptRoutePoint
-                assume  eax: ptr D_POINT
-                
-                mov     ebx, MAPB_BLOCKWIDTH
-                shr     ebx, 1
-                add     ebx, @x
-                mov     [eax].x, ebx
-                mov     ebx, MAPB_BLOCKHEIGHT
-                shr     ebx, 1
-                add     ebx, @y
-                mov     [eax].y, ebx
-                pop     ebx
             .ENDIF
-
             inc     esi
             inc     ebx
         .ENDW
@@ -491,6 +658,23 @@ LoadMapFromFile     PROC uses ebx edi esi offsetX:DWORD, offsetY:DWORD
         inc     ecx 
     .ENDW
     invoke CloseFile, @file
+    ; roadmap 
+    invoke  RoadmapClear
+    mov     ecx, 0
+    lea     edx, ptRoutePoint
+    .WHILE      ecx < @route_point_cnt
+        assume  edx: ptr D_POINT
+        push    ecx
+        push    edx
+        pushad
+        invoke  dPrint2, [edx].x, [edx].y
+        popad
+        invoke  RoadmapAddi, [edx].x, [edx].y
+        pop     edx
+        pop     ecx
+        add     edx, sizeof D_POINT
+        add     ecx, 1
+    .ENDW
     mov     eax, offset ptRoutePoint
     mov     edx, @route_point_cnt
     ret
