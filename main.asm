@@ -186,6 +186,8 @@ pProjt1         DWORD  ?
 
                 invoke  LoadMapFromFile, 50, 50
 
+                invoke  RegisterTopPainter
+
                 invoke  SortButtons
             .ELSE
                 invoke DefWindowProc, hWnd, uMsg, wParam, lParam

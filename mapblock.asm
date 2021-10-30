@@ -12,6 +12,8 @@ include paint.inc
 include util.inc
 include collision.inc
 include enemy.inc
+include prefab.inc
+include projectile.inc
 
 include rclist.inc
 
@@ -25,14 +27,18 @@ defaultAngset              DWORD    210, 90, 330, 135, 45, 135, 45
 defualtButtonGroupID       DWORD    1, 1, 1, 2, 2, 3, 3
 popRatio                   REAL4    0.3
 one                        REAL4    1.0
+three                      REAL4    3.0
 szMapFileName              BYTE     "map0.data", 0
 pLastMapBlock              DWORD    0
+topPainter                 DWORD    0
 
 .data?
 ptRoutePoint               D_POINT  MAX_ROUTEPOINT DUP(<?>)
 arrayMapBlockList MAPBLOCKDATA MAXMAPBLOCKCNT DUP(<?>)
 
 .code
+
+
 
 InitMapBlockData proc uses  ebx edi
     lea     edi, arrayMapBlockList
@@ -242,38 +248,93 @@ TurrentUpdate   PROC uses ebx esi edi  cnt:DWORD, pButton: ptr BUTTONDATA
     mov     edi, [esi].bParam
     assume  edi: PTR MAPBLOCKDATA
 
-    fild    cnt
-    mov     eax, 180
-    mov     @integer, eax
-    fidiv   @integer
-    fldpi   
-    fmul
-    fstp    [edi].turretAngle 
+    invoke  FindInrangeEnemyi, [edi].centerX, [edi].centerY, [edi].turretRange
+    mov     [edi].pTurretTarget, eax
+    .IF eax
+        .IF     [edi].turretID == A_TURRET
+            nop
+        .ELSEIF [edi].turretID == B_TURRET
+            xor     edx, edx
+            mov     eax, cnt
+            mov     ecx, 5
+            div     ecx
+            .IF     edx <= 1
+                invoke  PrefabTestProjectile, [edi].centerX, [edi].centerY
+                assume  eax:PTR PROJTDATA
+                mov     ebx, 30
+                mov     [eax].lifetime, ebx
+                mov     edx, eax
+                push    edx
+                invoke  Random 
+                pop     edx
+                mov     @integer, eax
+                fld     @integer
+                fadd   [edi].turretAngle
+                fstp    @integer
+                
+                invoke  ProjtSetDirection, edx, @integer
+                
+                invoke  ProjtSetSpeed, edx, three
+            .ENDIF
+        .ELSEIF [edi].turretID == C_TURRET
+            nop
+        .ENDIF
+    .ENDIF 
+
+    .IF     [edi].turretID == A_TURRET
+        nop
+    .ELSEIF [edi].turretID == B_TURRET
+        mov     eax, 15
+        mov     @integer, eax
+        fild    cnt
+        fidiv   @integer
+        fldpi
+        fmul
+        fstp    [edi].turretAngle
+    .ELSEIF [edi].turretID == C_TURRET
+        nop
+    .ENDIF
 
 
     ret
 TurrentUpdate   ENDP
 
 PaintTurret     PROC    uses ebx esi edi    hdc:DWORD, pButton: PTR BUTTONDATA
-    local   @pos:D_POINT, @rect:RECT, @siz:D_POINT
+    local   @rect:RECT
     local   @integer:DWORD
     mov     esi, pButton
     assume  esi: PTR BUTTONDATA
     .IF     [esi].cParam == 0
         ret
     .ENDIF
-
     mov     edi, [esi].bParam
     assume  edi: PTR MAPBLOCKDATA
-
     invoke  GetButtonRect, esi, addr @rect
-
     invoke  RotateDC, hdc, [edi].turretAngle,[edi].centerX, [edi].centerY 
     invoke  PaintBitmapTransEx, hdc, [esi].aParam, addr @rect ,STRETCH_XY
     invoke  ClearDCRotate, hdc
-
     ret
 PaintTurret     ENDP
+
+PainterTop  PROC  hdc:DWORD, pButton: PTR BUTTONDATA
+    local   @oldPen:DWORD, @oldBrush:DWORD 
+    mov     esi, pButton
+    assume  esi: PTR BUTTONDATA
+    mov     edi, [esi].bParam
+    assume  edi: PTR MAPBLOCKDATA
+    .IF     [edi].status == MAPB_POPPING
+        invoke  SetPen, hdc, PS_DASH , 1, 00bbbbbbh
+        mov     @oldPen, eax
+        invoke  GetStockObject, NULL_BRUSH
+        invoke  SelectObject, hdc,  eax
+        mov     @oldBrush, eax
+        invoke  PaintCircleCR, hdc, [edi].centerX, [edi].centerY, [edi].turretRange
+        invoke  SelectObject, hdc, @oldPen
+        invoke  SelectObject, hdc, @oldBrush
+        invoke  DeleteObject, eax
+    .ENDIF
+    ret
+PainterTop  ENDP
 
 CreateTurret        PROC uses ebx esi edi    pMapBlock: PTR MAPBLOCKDATA, turretID:DWORD
     mov     edi, pMapBlock
@@ -288,12 +349,18 @@ CreateTurret        PROC uses ebx esi edi    pMapBlock: PTR MAPBLOCKDATA, turret
     .IF     eax == A_TURRET
         mov     eax, TURRENT_A
         mov     [esi].aParam, eax
+        mov     eax, 120
+        mov     [edi].turretRange, eax
     .ELSEIF eax == B_TURRET
         mov     eax, TURRENT_B
         mov     [esi].aParam, eax
+        mov     eax, 80
+        mov     [edi].turretRange, eax
     .ELSEIF eax == C_TURRET
         mov     eax, TURRENT_C
         mov     [esi].aParam, eax
+        mov     eax, 200
+        mov     [edi].turretRange, eax
     .ENDIF
     mov     [esi].pPaint, PaintTurret
     mov     [esi].pUpdateEvent, TurrentUpdate
@@ -303,6 +370,13 @@ CreateTurret        PROC uses ebx esi edi    pMapBlock: PTR MAPBLOCKDATA, turret
     mov     [esi].cParam, eax
     invoke  SetButtonSize, esi, MAPB_BLOCKWIDTH, MAPB_BLOCKHEIGHT
     invoke  MoveButtonCenterTo, esi, [edi].centerX, [edi].centerY
+    mov     esi, topPainter
+    mov     [esi].bParam, edi
+    mov     ax, [esi].isActive
+    mov     bx, BTNI_DISABLE_PAINT
+    not     bx
+    and     ax, bx
+    mov     [esi].isActive, ax
     ret
 CreateTurret    ENDP
 
@@ -341,6 +415,10 @@ DeleteTurret       PROC uses ebx esi edi    pButton: PTR BUTTONDATA
     invoke  SetMapBlockDisplaySet, edi, 3
     mov     eax, MAPB_POPPING
     mov     [edi].status, eax
+    mov     esi, topPainter
+    assume  esi: ptr BUTTONDATA
+    mov     ax, BTNI_HIDE
+    mov     [esi].isActive, ax
     ret
 DeleteTurret       ENDP
 
@@ -352,6 +430,10 @@ ReallyDeleteTurret  PROC uses ebx esi edi    pButton: PTR BUTTONDATA
     assume  edi: ptr MAPBLOCKDATA
     invoke  SetMapBlockDisplaySet, edi, 1
     invoke  MoveButtonCenterTo, [edi].pTurret, -100, -100
+    
+    mov     esi, [edi].pTurret
+    mov     ax, BTNI_HIDE
+    mov     [esi].isActive, ax
     ret
 ReallyDeleteTurret   ENDP
 
@@ -680,5 +762,17 @@ LoadMapFromFile     PROC uses ebx edi esi offsetX:DWORD, offsetY:DWORD
     ret
 LoadMapFromFile     ENDP
 
+RegisterTopPainter PROC uses ebx esi edi
+    local   @rect:RECT
+    invoke  memset, addr @rect , 0, sizeof RECT
+    invoke  RegisterButton, addr @rect, PainterTop,0,0,0
+    mov     topPainter, eax
+    invoke  SetButtonDepth, eax, -7500  
+    mov     esi, eax
+    assume  esi: PTR BUTTONDATA
+    mov     ax, BTNI_HIDE
+    mov     [esi].isActive, ax
+    ret
+RegisterTopPainter ENDP
 
 end

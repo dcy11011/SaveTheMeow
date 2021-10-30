@@ -40,9 +40,12 @@ MAPBLOCKDATA    struct
     pTurret         DWORD   ? 
     turretID        DWORD   ?
     turretAngle     REAL4   ?
+    turretRange     DWORD   ?
     pTurretUpdate   DWORD   ?
     pTurretTarget   DWORD   ?
 MAPBLOCKDATA    ends
+
+RegisterTopPainter              PROTO
 
 RegisterMapBlock                PROTO    posX:DWORD, posY:DWORD     ; 注册地图块，传入左上角坐标
 BindMapBlockPopButtonsClick     PROTO    pMapBlock: ptr MAPBLOCKDATA, id:DWORD, pClickEvent:DWORD ; 根据按键编号绑定点击事件

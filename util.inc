@@ -15,6 +15,7 @@ memcpy          PROTO C :DWORD, :DWORD, :DWORD
 fopen           PROTO C :ptr sbyte, :ptr sbyte
 fscanf          PROTO C :DWORD, :ptr sbyte, :VARARG
 fclose          PROTO C :DWORD
+rand            PROTO C 
 
 dPrint          PROTO  data:DWORD
 dPrint2         PROTO  data0:DWORD, data1:DWORD
@@ -30,6 +31,8 @@ UpdateMousePos  PROTO  x:DWORD, y:DWORD
 OpenTextFile    PROTO  szFileName:DWORD
 GetFileLine     PROTO  pFile:DWORD
 CloseFile       PROTO  pFile:DWORD
+
+Random          PROTO  
 
 EXTERNDEF PI:REAL4
 EXTERNDEF real0:REAL4

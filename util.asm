@@ -123,5 +123,20 @@ CloseFile      PROC uses ebx esi edi  pFile:DWORD
     ret
 CloseFile       ENDP
     
+Random          PROC  uses ebx esi edi
+    local   @integer
+    invoke  rand
+    and     eax, 0000ffffh
+    
+    invoke  dPrint, eax
+    mov     @integer, eax
+    fild    @integer
+    mov     eax, 7fffh
+    mov     @integer, eax
+    fidiv   @integer
+    fstp    @integer
+    mov     eax, @integer
+    ret
+Random      ENDP
 
 end
