@@ -412,6 +412,25 @@ LoadMapFromFile     PROC uses ebx edi esi offsetX:DWORD, offsetY:DWORD
                 invoke  RegisterMapBlock, @x, @y
                 pop  edx
                 pop  ecx
+            .ELSEIF al == 95
+                invoke dPrint3, 999999,99999,99999
+                push ecx
+                push edx
+                mov  eax, @x
+                mov  @rect.left, eax
+                mov  eax, @y
+                mov  @rect.top, eax
+                invoke  RegisterButton, addr @rect, 0, 0, 0, 0
+                assume  eax: ptr BUTTONDATA
+                mov  dx, BTNI_DISABLE
+                mov  WORD PTR [eax].isActive, dx
+                invoke BindButtonToBitmap, eax, BMP_EMPTY
+                invoke SetButtonSize, eax, MAPB_BLOCKWIDTH, MAPB_BLOCKHEIGHT
+                invoke dPrint2, [eax].top, [eax].left
+                invoke dPrint2, [eax].bottom, [eax].right
+                pop  edx
+                pop  ecx
+                mov [eax].isActive, BTNI_DISABLE
             .ELSEIF   al < 78
                 nop
             .ENDIF

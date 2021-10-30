@@ -77,13 +77,13 @@ int main(int argc, char * argv[]){
 	}
 	
 	for(int i=0;i<cnt;i++){
-		fprintf(rcOut,"#define %s %d\n",ri[i].name.c_str(), i+1000);
+		fprintf(rcOut,"#define %s %d\n",ri[i].name.c_str(), i+1);
 	}
 	for(int i=0;i<cnt;i++){
 		fprintf(rcOut,"%s %s %s\n",ri[i].name.c_str(),ri[i].type.c_str(),ri[i].path.c_str());
 	}
 	for(int i=0;i<cnt;i++){
-		fprintf(incOut,"%s  EQU  %d\n",ri[i].name.c_str(),i+1000);
+		fprintf(incOut,"%s  EQU  %d\n",ri[i].name.c_str(),i+1);
 	}
 	
 	fclose(rcOut);
