@@ -215,8 +215,8 @@ EnemyStepForward proc uses edi self: ptr ENEMYDATA
     mov     edx, [edi].pAsButton
     assume  edx: ptr BUTTONDATA
     fld     DWORD ptr tx
-    fld     DWORD ptr [edx].right
-    fld     DWORD ptr [edx].left
+    fild    DWORD ptr [edx].right
+    fild    DWORD ptr [edx].left
     fsub
     fld     DWORD ptr real2
     fdiv
@@ -224,12 +224,11 @@ EnemyStepForward proc uses edi self: ptr ENEMYDATA
     fstp    DWORD ptr tx
     ;
     fld     DWORD ptr ty
-    fld     DWORD ptr [edx].bottom
-    fld     DWORD ptr [edx].top
+    fild    DWORD ptr [edx].bottom
+    fild    DWORD ptr [edx].top
     fsub
     fsub
     fstp    DWORD ptr ty
-    invoke  dPrint2Float, tx, ty
     invoke  EnemySetPositionf, self, tx, ty
     ret
 EnemyStepForward endp
