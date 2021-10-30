@@ -257,7 +257,7 @@ RegisterMapBlock    PROC uses ebx esi edi    posX:DWORD, posY:DWORD
     invoke  MoveButtonTo, eax, -100, -100
     assume  eax: PTR BUTTONDATA
     mov     [eax].bParam, edi
-    mov     ebx, -10
+    mov     ebx, -5000
     sub     ebx, ecx
     invoke  SetButtonDepth, eax, ebx
     add     esi, sizeof DWORD

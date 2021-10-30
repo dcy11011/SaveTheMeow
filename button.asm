@@ -543,18 +543,32 @@ CompareByDepth  PROC C   uses ebx esi edi pbuttonAptr: DWORD, pbuttonBptr: DWORD
     assume  esi: PTR BUTTONDATA
     assume  edi: PTR BUTTONDATA
 
-    mov     esi, [esi].depth
-    mov     edi, [edi].depth
+    mov     eax, [esi].depth
+    mov     ebx, [edi].depth
 
-    assume  esi: SDWORD
-    assume  edi: SDWORD
+    assume  eax: SDWORD
+    assume  ebx: SDWORD
 
-    xor     eax, eax
-    .IF     esi < edi
+    .IF     eax < ebx
+        mov     eax, -1
+    .ELSEIF     eax > ebx
+        mov     eax, 1
+    .ELSE
+        mov   eax, [esi].bottom
+        mov   ebx, [edi].bottom
+        .IF     eax < ebx
             mov     eax, -1
-    .ENDIF
-    .IF     esi > edi
+        .ELSEIF     eax > ebx
             mov     eax, 1
+        .ELSE
+            .IF     esi<edi
+                mov     eax, -1
+            .ELSEIF  esi>edi
+                mov     eax, 1
+            .ELSE
+                mov     eax, 0
+            .ENDIF
+        .ENDIF
     .ENDIF
     
     ret

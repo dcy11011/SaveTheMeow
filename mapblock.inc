@@ -33,7 +33,7 @@ MAPBLOCKDATA    struct
 MAPBLOCKDATA    ends
 
 RegisterMapBlock                PROTO    posX:DWORD, posY:DWORD     ; 注册地图块，传入左上角坐标
-BindMapBlockPopButtonsClick     PROTO    pMapBlock: ptr MAPBLOCKDATA, id:DWORD, pClickEvent:DWORD
-BindMapBlockPopButtonsBitmap    PROTO    pMapBlock: ptr MAPBLOCKDATA, id:DWORD, IDBitmap:DWORD
-SetMapBlockDisplaySet           PROTO    pMapBlock: ptr MAPBLOCKDATA, id:DWORD
+BindMapBlockPopButtonsClick     PROTO    pMapBlock: ptr MAPBLOCKDATA, id:DWORD, pClickEvent:DWORD ; 根据按键编号绑定点击事件
+BindMapBlockPopButtonsBitmap    PROTO    pMapBlock: ptr MAPBLOCKDATA, id:DWORD, IDBitmap:DWORD ; 根据按键编号绑定图片
+SetMapBlockDisplaySet           PROTO    pMapBlock: ptr MAPBLOCKDATA, id:DWORD  ; 切换按键组。在defualtButtonGroupID中设置按键组
 
