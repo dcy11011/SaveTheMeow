@@ -1,15 +1,4 @@
-MAPBLOCKDATA    struct
-    centerX         DWORD   ?
-    centerY         DWORD   ?
-    pAsButton       DWORD   ?
-    status          DWORD   ?
-    pButton1        DWORD   ?
-    pButton2        DWORD   ?
-    pButton3        DWORD   ?
-    pBtn_Upgrade    DWORD   ?
-    pBtn_Remove     DWORD   ?
-    action_step     DWORD   ?
-MAPBLOCKDATA    ends
+
 
 MAXMAPBLOCKCNT      EQU     250
 
@@ -20,13 +9,31 @@ MAPB_POPPED         EQU     00000004h
 MAPB_CONTRACTING    EQU     00000008h
 MAPB_DISABLED       EQU     00000010h
 
-MAPB_BLOCKWIDTH     EQU     80
-MAPB_BLOCKHEIGHT    EQU     80
+MAPB_BLOCKWIDTH     EQU     50
+MAPB_BLOCKHEIGHT    EQU     50
 
-MAPB_STARTSIZE      EQU     0
-MAPB_ENDSIZE        EQU     40
-MAPB_MAXSTEP        EQU     100
-MAPB_STEP           EQU     3
-MAPB_BTNDISTANCE    EQU     50
 
-RegisterMapBlock    PROTO    posX:DWORD, posY:DWORD     ; 注册地图块，传入左上角坐标
+MAPB_BTNDISTANCE    EQU     60  ; distance of pop
+
+MAPB_BTNTOTAL       EQU     6
+
+MAPB_BTNWIDTH       EQU     30
+MAPB_BTNHEIGHT      EQU     30
+
+
+MAPBLOCKDATA    struct
+    centerX         DWORD   ?
+    centerY         DWORD   ?
+    pAsButton       DWORD   ?   ; pointer to the main button
+    status          DWORD   ?   ; either MAPB_POPPING nor MAPB_CONTRACTING
+    pButton         DWORD   MAPB_BTNTOTAL DUP(?) ; pointer to popup buttons
+    angButton       DWORD   MAPB_BTNTOTAL DUP(?) ; angle of poping
+    action_step     REAL4   ?   ; for animation
+    diaplaySet      DWORD   ?   ; which set of pop buttons to diaplay; set the setID by 'defualtButtonGroupID' in .asm
+MAPBLOCKDATA    ends
+
+RegisterMapBlock                PROTO    posX:DWORD, posY:DWORD     ; 注册地图块，传入左上角坐标
+BindMapBlockPopButtonsClick     PROTO    pMapBlock: ptr MAPBLOCKDATA, id:DWORD, pClickEvent:DWORD
+BindMapBlockPopButtonsBitmap    PROTO    pMapBlock: ptr MAPBLOCKDATA, id:DWORD, IDBitmap:DWORD
+SetMapBlockDisplaySet           PROTO    pMapBlock: ptr MAPBLOCKDATA, id:DWORD
+

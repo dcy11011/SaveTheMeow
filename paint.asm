@@ -150,6 +150,74 @@ PaintBitmapTrans     PROC  uses edi  hDc:DWORD, bitmapID:DWORD, posX:DWORD, posY
     ret
 PaintBitmapTrans ENDP
 
+PaintBitmapTransEx     PROC  uses edi ebx hDc:DWORD, bitmapID:DWORD, lpRect:ptr RECT, optionCode:DWORD
+    local   @stBitmapData:BITMAPDATA
+    local   @areaW, @areaH
+    local   @srcW, @srcH, @tarW, @tarH; source width&height and target width&height
+    local   @posX, @posY; target left-top corner
+
+    mov     edi,lpRect
+    assume  edi: ptr RECT
+
+    mov     eax, [edi].right
+    mov     ebx, [edi].left
+    mov     @posX, ebx
+    sub     eax, ebx
+    mov     @areaW, eax
+    mov     @tarW, eax
+    mov     eax, [edi].bottom
+    mov     ebx, [edi].top
+    mov     @posY, ebx
+    sub     eax, ebx
+    mov     @areaH, eax
+    mov     @tarH, eax
+
+    invoke  PrepareBitmapPaint, hDc, bitmapID, addr @stBitmapData
+    mov     eax, @stBitmapData.w
+    mov     ebx, @stBitmapData.h
+    mov     @srcW, eax
+    mov     @srcH, ebx
+
+    mov     eax, optionCode
+    and     eax, STRETCH_X
+    .IF     eax == 0
+        mov     eax, @srcW
+        mov     @tarW, eax
+    .ENDIF
+    mov     eax, optionCode
+    and     eax, STRETCH_Y
+    .IF     eax == 0
+        mov     eax, @srcH
+        mov     @tarH, eax
+    .ENDIF
+    mov     eax, optionCode
+    and     eax, CENTER_MASK
+    .IF     eax == CENTER_XY
+        mov     eax, @tarW
+        mov     ebx, @areaW
+        sub     ebx, eax
+        sar     ebx, 1
+        mov     eax, @posX
+        add     eax, ebx
+        mov     @posX, eax
+
+        mov     eax, @tarH
+        mov     ebx, @areaH
+        sub     ebx, eax
+        sar     ebx, 1
+        mov     eax, @posY
+        add     eax, ebx
+        mov     @posY, eax
+    .ENDIF
+
+    invoke  SetStretchBltMode, hDc, HALFTONE
+    invoke  TransparentBlt, hDc, @posX, @posY, @tarW, @tarH, \
+            @stBitmapData.hDcBitmap, 0, 0, @srcW, @srcH, \
+            0
+    invoke  ReleaseBitmapData, addr @stBitmapData
+    ret
+PaintBitmapTransEx ENDP
+
 PaintBitmapEx PROC uses edi ebx hDc:DWORD, bitmapID:DWORD, lpRect:ptr RECT, optionCode:DWORD
     local   @stBitmapData:BITMAPDATA
     local   @areaW, @areaH
