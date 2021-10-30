@@ -157,6 +157,12 @@ pProjt1         DWORD  ?
                 invoke  SendHoverInfo, ebx, eax
                 pop     eax ; save eax
                 invoke  UpdateMousePos, ebx, eax
+                ; ------- test enemy
+                ; invoke  PrefabTestEnemy, 200, 200
+                ; invoke  PrefabHurtEffectProj, 200, 200
+                invoke  PrefabTestProjectile, 200, 200
+                invoke  SortButtons ; IMPORTANT!
+                ; ------------------
                 invoke DefWindowProc, hWnd, uMsg, wParam, lParam
                 ret
             .ELSEIF eax == WM_LBUTTONDOWN
@@ -166,7 +172,7 @@ pProjt1         DWORD  ?
                 shr     eax, 16
                 invoke  SendClickInfo, ebx, eax
                 ; ------- test enemy
-                ; invoke  PrefabTestEnemy, 200, 200
+                invoke  PrefabTestEnemy, 200, 200
                 ; invoke  PrefabHurtEffectProj, 200, 200
                 invoke  PrefabTestProjectile, 200, 200
                 invoke  SortButtons ; IMPORTANT!
@@ -214,15 +220,6 @@ pProjt1         DWORD  ?
                 invoke  PrefabTestProjectile, ecx, eax
                 pop     ecx
                 loop    @b
-
-                mov     eax, 200
-                mov     @stRect.left, eax
-                mov     @stRect.top,  eax
-                mov     eax, 250
-                mov     @stRect.right, eax
-                mov     @stRect.bottom,eax
-                invoke  RegisterButton, addr @stRect, 0, 0, 0, 0
-                invoke  SetButtonDepth, eax, 2
 
                 mov     eax, 220
                 mov     @stRect.left, eax

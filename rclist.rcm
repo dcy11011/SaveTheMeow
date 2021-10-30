@@ -1,6 +1,6 @@
 MAIN_ICON           ICON        "img/icon.ico"
 MAIN_BACKGROUND     BITMAP      "img/background.bmp"
-BOTTON_START        BITMAP      "img/login.bmp"
+BUTTON_START        BITMAP      "img/login.bmp"
 MAP_BLOCK           BITMAP      "img/map_block.bmp"
 TURRENT_A           BITMAP      "img/turrentA.bmp"
 TURRENT_B           BITMAP      "img/turrentB.bmp"
