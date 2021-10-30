@@ -552,14 +552,14 @@ CompareByDepth  PROC C   uses ebx esi edi pbuttonAptr: DWORD, pbuttonBptr: DWORD
     .ELSE
         mov     eax, [esi].bottom
         mov     ebx, [edi].bottom
-        .IF         eax < ebx
+        .IF         eax > ebx
             mov     eax, -1
-        .ELSEIF     eax > ebx
+        .ELSEIF     eax < ebx
             mov     eax, 1
         .ELSE
-            .IF         esi < edi
+            .IF         esi > edi
                 mov     eax, -1
-            .ELSEIF     esi > edi
+            .ELSEIF     esi < edi
                 mov     eax, 1
             .ELSE
                 mov     eax, 0

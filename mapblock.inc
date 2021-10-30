@@ -11,6 +11,8 @@ MAPB_DISABLED       EQU     00000010h
 
 MAPB_BLOCKWIDTH     EQU     50
 MAPB_BLOCKHEIGHT    EQU     50
+MAPB_BLOCKMARGINY   EQU     50
+MAPB_BLOCKMARGINX   EQu     50
 
 
 MAPB_BTNDISTANCE    EQU     60  ; distance of pop
@@ -22,6 +24,8 @@ MAPB_BTNHEIGHT      EQU     30
 
 MAP_HEIGHT          EQU     10
 MAP_WIDTH           EQU     15
+
+MAX_ROUTEPOINT      EQU     20
 
 
 MAPBLOCKDATA    struct
@@ -40,4 +44,4 @@ BindMapBlockPopButtonsClick     PROTO    pMapBlock: ptr MAPBLOCKDATA, id:DWORD, 
 BindMapBlockPopButtonsBitmap    PROTO    pMapBlock: ptr MAPBLOCKDATA, id:DWORD, IDBitmap:DWORD ; 根据按键编号绑定图片
 SetMapBlockDisplaySet           PROTO    pMapBlock: ptr MAPBLOCKDATA, id:DWORD  ; 切换按键组。在defualtButtonGroupID中设置按键组
 
-LoadMapFromFile                 PROTO    offsetX:DWORD, offsetY:DWORD
+LoadMapFromFile                 PROTO    offsetX:DWORD, offsetY:DWORD ; 读取地图，创建图格。读取的路径列表指针在eax，路径点数量在edx
