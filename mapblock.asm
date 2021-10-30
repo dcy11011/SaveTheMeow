@@ -242,24 +242,43 @@ s8:     pop     edx
 MapBlockUpdate  ENDP
 
 TurrentUpdate   PROC uses ebx esi edi  cnt:DWORD, pButton: ptr BUTTONDATA
-    local   @integer:DWORD, @siz:D_POINT
+    local   @integer:DWORD, @siz:D_POINT, @tx:REAL4, @ty:REAL4
     mov     esi, pButton
     assume  esi: PTR BUTTONDATA
     mov     edi, [esi].bParam
     assume  edi: PTR MAPBLOCKDATA
 
+    invoke  dword2real4, [edi].centerX
+    mov     @tx, eax
+    invoke  dword2real4, [edi].centerY
+    mov     @ty, eax
     invoke  FindInrangeEnemyi, [edi].centerX, [edi].centerY, [edi].turretRange
     mov     [edi].pTurretTarget, eax
     .IF eax
         .IF     [edi].turretID == A_TURRET
-            nop
+            mov     eax, [edi].pTurretTarget
+            assume  eax: ptr ENEMYDATA
+            mov     eax, [eax].pAsButton
+            invoke  GetCenterButton, eax
+            invoke  DirectionTo, @tx, @ty, eax, edx
+            invoke  Lerp, [edi].turretAngle, eax, real2of3
+            mov     [edi].turretAngle, eax
+
+            xor     edx, edx
+            mov     eax, cnt
+            mov     ecx, 20
+            div     ecx
+            .IF     edx <= 1
+                invoke  PrefabProjA, [edi].centerX, [edi].centerY, [edi].turretAngle
+            .ENDIF
+
         .ELSEIF [edi].turretID == B_TURRET
             xor     edx, edx
             mov     eax, cnt
             mov     ecx, 5
             div     ecx
             .IF     edx <= 1
-                invoke  PrefabTestProjectile, [edi].centerX, [edi].centerY
+                invoke  PrefabProjB, [edi].centerX, [edi].centerY, real0
                 assume  eax:PTR PROJTDATA
                 mov     ebx, 30
                 mov     [eax].lifetime, ebx
@@ -277,7 +296,21 @@ TurrentUpdate   PROC uses ebx esi edi  cnt:DWORD, pButton: ptr BUTTONDATA
                 invoke  ProjtSetSpeed, edx, three
             .ENDIF
         .ELSEIF [edi].turretID == C_TURRET
-            nop
+            mov     eax, [edi].pTurretTarget
+            assume  eax: ptr ENEMYDATA
+            mov     eax, [eax].pAsButton
+            invoke  GetCenterButton, eax
+            invoke  DirectionTo, @tx, @ty, eax, edx
+            invoke  Lerp, [edi].turretAngle, eax, real2of3
+            mov     [edi].turretAngle, eax
+
+            xor     edx, edx
+            mov     eax, cnt
+            mov     ecx, 40
+            div     ecx
+            .IF     edx <= 1
+                invoke  PrefabProjC, [edi].centerX, [edi].centerY, [edi].turretAngle
+            .ENDIF
         .ENDIF
     .ENDIF 
 
@@ -302,6 +335,7 @@ TurrentUpdate   ENDP
 PaintTurret     PROC    uses ebx esi edi    hdc:DWORD, pButton: PTR BUTTONDATA
     local   @rect:RECT
     local   @integer:DWORD
+    local   @tmp:REAL4
     mov     esi, pButton
     assume  esi: PTR BUTTONDATA
     .IF     [esi].cParam == 0
@@ -310,7 +344,11 @@ PaintTurret     PROC    uses ebx esi edi    hdc:DWORD, pButton: PTR BUTTONDATA
     mov     edi, [esi].bParam
     assume  edi: PTR MAPBLOCKDATA
     invoke  GetButtonRect, esi, addr @rect
-    invoke  RotateDC, hdc, [edi].turretAngle,[edi].centerX, [edi].centerY 
+    fld     DWORD ptr [edi].turretAngle
+    fld     DWORD ptr PIby2
+    fadd
+    fstp    DWORD ptr @tmp
+    invoke  RotateDC, hdc, @tmp,[edi].centerX, [edi].centerY 
     invoke  PaintBitmapTransEx, hdc, [esi].aParam, addr @rect ,STRETCH_XY
     invoke  ClearDCRotate, hdc
     ret
@@ -349,17 +387,17 @@ CreateTurret        PROC uses ebx esi edi    pMapBlock: PTR MAPBLOCKDATA, turret
     .IF     eax == A_TURRET
         mov     eax, TURRENT_A
         mov     [esi].aParam, eax
-        mov     eax, 120
+        mov     eax, 180
         mov     [edi].turretRange, eax
     .ELSEIF eax == B_TURRET
         mov     eax, TURRENT_B
         mov     [esi].aParam, eax
-        mov     eax, 80
+        mov     eax, 120
         mov     [edi].turretRange, eax
     .ELSEIF eax == C_TURRET
         mov     eax, TURRENT_C
         mov     [esi].aParam, eax
-        mov     eax, 200
+        mov     eax, 250
         mov     [edi].turretRange, eax
     .ENDIF
     mov     [esi].pPaint, PaintTurret

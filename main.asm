@@ -131,7 +131,6 @@ pProjt1         DWORD  ?
                         invoke  GetClientRect, hWnd, addr @stRect
 
                         invoke  RoadmapCalcCurrent, real100
-                        invoke  FindInrangeEnemyi, 0, 0, 1000
                         
                         invoke  InvalidateRect, hWnd, addr @stRect, 0
                         invoke  SortButtons ; IMPORTANT!
@@ -148,7 +147,7 @@ pProjt1         DWORD  ?
                 ; ------- test enemy
                 ; invoke  PrefabTestEnemy, 200, 200
                 ; invoke  PrefabHurtEffectProj, 200, 200
-                invoke  PrefabTestProjectile, 200, 200
+                ; invoke  PrefabTestProjectile, 200, 200
                 invoke  SortButtons ; IMPORTANT!
                 ; ------------------
                 invoke DefWindowProc, hWnd, uMsg, wParam, lParam
@@ -162,7 +161,7 @@ pProjt1         DWORD  ?
                 ; ------- test enemy
                 invoke  PrefabTestEnemy, -200, -200
                 ; invoke  PrefabHurtEffectProj, 200, 200
-                invoke  PrefabTestProjectile, 200, 200
+                ; invoke  PrefabTestProjectile, 200, 200
                 invoke  SortButtons ; IMPORTANT!
                 ; ------------------
             .ELSEIF eax == WM_LBUTTONUP

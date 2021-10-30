@@ -13,6 +13,7 @@ szdPrint3Format     byte    "%d %d %d", 0dh, 0ah, 0
 szdPrintFloatFormat byte    "%f", 0dh, 0ah, 0
 szdPrint2FloatFormat byte    "(%f %f)", 0dh, 0ah, 0
 PI                  REAL4   3.1415926
+PIby2               REAL4   1.5707963
 real0               REAL4   0.0
 real1               REAL4   1.0
 real2               REAL4   2.0
@@ -21,6 +22,7 @@ real1of2            REAL4   0.5
 real1of3            REAL4   0.33333
 real2of3            REAL4   0.66666
 real9of10           REAL4   0.9
+real5               REAL4   5.0
 real11              REAL4   11.0
 real100             REAL4   100.0
 MouseXi             DWORD   0

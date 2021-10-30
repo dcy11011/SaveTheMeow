@@ -379,6 +379,29 @@ ProjtDefaultUpdate PROC uses esi edi cnt:DWORD, pProjt: ptr PROJTDATA
     ret
 ProjtDefaultUpdate endp
 
+ProjtMissleUpdate PROC uses esi edi cnt:DWORD, pProjt: ptr PROJTDATA
+    push    edi
+    mov     edi, pProjt
+    assume  edi: ptr PROJTDATA
+    mov     edx, [edi].pAsButton
+    assume  edx: ptr BUTTONDATA
+
+    invoke  FindInrangeEnemyf, [edi].xf, [edi].yf, real100
+    .IF     eax
+        assume  eax: ptr ENEMYDATA
+        mov     eax, [eax].pAsButton
+        invoke  GetCenterButton, eax
+        invoke  DirectionTo, [edi].xf, [edi].yf, eax, edx
+        invoke  ProjtSetDirection, pProjt, eax
+        ; change dir
+    .ENDIF
+
+    invoke  ProjtHitEnemies, pProjt, cnt
+    invoke  ProjtStepForward, pProjt
+
+    pop     edi
+    ret
+ProjtMissleUpdate endp
 
 ProjtHurtEffectUpdate PROC uses esi edi cnt:DWORD, pProjt: ptr PROJTDATA
     local   tmpf: DWORD
