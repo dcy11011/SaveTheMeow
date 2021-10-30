@@ -7,7 +7,7 @@ BTNS_CLICK       EQU     0004h
 BTNI_DISABLE     EQU     0001h ; 禁用按钮，将不会收到鼠标事件
 BTNI_RUNNING     EQU     0002h
 
-MAXBTNCNT        EQU     2500   ; 最大的按钮数量； Note：没有溢出保护
+MAXBTNCNT        EQU     4000   ; 最大的按钮数量； Note：没有溢出保护
 
 
 BUTTONDATA struct
@@ -50,12 +50,4 @@ SortButtons             PROTO
 SetButtonDepth          PROTO    pButton: ptr BUTTONDATA, depth:DWORD       ; 设置按钮的深度。深度越小越上层
 GetButtonDepth          PROTO    pButton: ptr BUTTONDATA                    ; 获取按钮的深度
 
-<<<<<<< HEAD
-<<<<<<< HEAD
 BindButtonToBitmap      PROTO    pButton:ptr BUTTONDATA, BitmapID:DWORD
-=======
-BindButtonToBitmap      PROTO    pButton:ptr BUTTONDATA, BitmapID:DWORD
->>>>>>> 1537a7a... Added bind bitmap to button
-=======
-BindButtonToBitmap      PROTO    pButton:ptr BUTTONDATA, BitmapID:DWORD
->>>>>>> 00cda7c... Added transparent bitmap paint

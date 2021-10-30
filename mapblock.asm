@@ -24,6 +24,7 @@ defaultAngset              DWORD    120, 90, 60, 135, 45, 0
 defualtButtonGroupID       DWORD    1, 1, 1, 2, 2, 3, 3
 popRatio                   REAL4    0.3
 one                        REAL4    1.0
+szMapFileName              BYTE     "map0.data", 0
 
 .data?
 arrayMapBlockList MAPBLOCKDATA MAXMAPBLOCKCNT DUP(<?>)
@@ -240,7 +241,9 @@ RegisterMapBlock    PROC uses ebx esi edi    posX:DWORD, posY:DWORD
     invoke  GetAvilaibleMapBlockData
     mov     edi, eax
     assume  edi: ptr MAPBLOCKDATA
-    invoke  RegisterButton, addr @rect, MapBlockBasePaint, MapBlockClicked,0,MapBlockUpdate
+    invoke  RegisterButton, addr @rect, 0, MapBlockClicked,0,MapBlockUpdate
+    invoke  BindButtonToBitmap, eax, BMP_BASE
+    invoke  SetButtonSize, eax, MAPB_BLOCKWIDTH, MAPB_BLOCKHEIGHT
     mov     [edi].pAsButton, eax
     mov     esi, eax
     assume  esi: ptr BUTTONDATA
@@ -343,5 +346,85 @@ SetMapBlockDisplaySet   PROC  uses ebx edi esi pMapBlock: ptr MAPBLOCKDATA, id:D
     mov     [edi].diaplaySet, eax
     ret
 SetMapBlockDisplaySet  ENDP
+
+LoadMapFromFile     PROC uses ebx edi esi offsetX:DWORD, offsetY:DWORD
+    local   @file:DWORD, @x:DWORD, @y:DWORD, @rect:RECT
+    invoke  OpenTextFile, offset szMapFileName
+    mov     @file, eax
+    invoke  dPrint2, 300, @file
+    
+    mov     ecx, 0
+    mov     edx, 0
+
+    .WHILE ecx < MAP_HEIGHT
+        push    ecx
+        invoke  GetFileLine, @file
+        pop     ecx
+        push    ecx
+        mov     esi, eax 
+        mov     ebx, 0
+        .WHILE ebx < MAP_WIDTH
+            
+            dec     edx
+            push    ecx
+            push    ebx
+
+            mov     eax, ecx
+            mov     ecx, MAPB_BLOCKHEIGHT 
+            mul     ecx
+            mov     ecx, eax
+            add     ecx, offsetY
+            mov     @y, ecx ; y = offsetY + MAPB_BLOCKWIDTH  * ecx
+
+            mov     eax, ebx
+            mov     ebx, MAPB_BLOCKWIDTH
+            mul     ebx
+            mov     ebx, eax
+            add     ebx, offsetX
+            mov     @x, ebx ; X = offsetX + MAPB_BLOCKHEIGHT * ecx
+            
+            pop     ebx
+            pop     ecx
+            xor     eax, eax
+            mov     al, BYTE PTR [esi]
+            .IF     al == 43 || (al >=48 && al <= 64) 
+                invoke dPrint3, 999999,99999,99999
+                push ecx
+                push edx
+                mov  eax, @x
+                mov  @rect.left, eax
+                mov  eax, @y
+                mov  @rect.top, eax
+                invoke  RegisterButton, addr @rect, 0, 0, 0, 0
+                assume  eax: ptr BUTTONDATA
+                mov  dx, BTNI_DISABLE
+                mov  WORD PTR [eax].isActive, dx
+                invoke BindButtonToBitmap, eax, BMP_ROAD
+                invoke SetButtonSize, eax, MAPB_BLOCKWIDTH, MAPB_BLOCKHEIGHT
+                invoke dPrint2, [eax].top, [eax].left
+                invoke dPrint2, [eax].bottom, [eax].right
+                pop  edx
+                pop  ecx
+                mov [eax].isActive, BTNI_DISABLE
+            .ELSEIF al == 111
+                push ecx
+                push edx
+                invoke  RegisterMapBlock, @x, @y
+                pop  edx
+                pop  ecx
+            .ELSEIF   al < 78
+                nop
+            .ENDIF
+
+            inc     esi
+            inc     ebx
+        .ENDW
+        pop     ecx
+        inc     ecx 
+    .ENDW
+    invoke CloseFile, @file
+    ret
+LoadMapFromFile     ENDP
+
 
 end

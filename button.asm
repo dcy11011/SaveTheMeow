@@ -130,7 +130,7 @@ PaintButton     ENDP
 
 ; 绘制所有注册过的按钮
 PaintAllButton  PROC    uses ebx ecx edi hDc:DWORD
-    invoke  SortButtons
+    
     mov     ecx, nButtonListCnt
     lea     ebx, arrayPaintOrder
     mov     eax, nButtonListCnt
@@ -142,9 +142,7 @@ PaintAllButton  PROC    uses ebx ecx edi hDc:DWORD
     
 @@: push    ecx
     .IF [edi].status != BTNS_UNUSED 
-        .IF [edi].isActive != BTNI_DISABLE
-            invoke  PaintButton, hDc, edi
-        .ENDIF
+        invoke  PaintButton, hDc, edi
     .ENDIF
     pop     ecx
     sub     ebx, sizeof DWORD
@@ -195,10 +193,23 @@ ButtonBitmapPaint   PROC uses ebx edi esi hdc:DWORD, pButton: ptr BUTTONDATA
     mov     edi, pButton
     assume  edi: ptr BUTTONDATA
     invoke  GetButtonRect, pButton, addr @stRect
+
+    push    eax
+    mov     eax, @stRect.top
+    sub     eax, @stRect.bottom
+    .IF     eax <= 1
+        pop     eax
+        ret
+    .ENDIF
+    pop     eax
     ;invoke  GetColorAdjustment, hdc, addr @colorAdjustment
     ;invoke  memcpy, addr @oldColorAdjustment, addr @colorAdjustment, sizeof COLORADJUSTMENT
     ;lea     esi, @colorAdjustment
     ;assume  esi: ptr COLORADJUSTMENT
+
+    ;invoke  SetColorAdjustment, hdc, addr @colorAdjustment
+    invoke  PaintBitmapTransEx, hdc, [edi].aParam, addr @stRect, STRETCH_XY
+    ;invoke  SetColorAdjustment, hdc, addr @oldColorAdjustment
     
     push    edi
     mov     bx, [edi].status
@@ -233,10 +244,6 @@ ButtonBitmapPaint   PROC uses ebx edi esi hdc:DWORD, pButton: ptr BUTTONDATA
         .ENDIF
     .ENDIF
     pop     edi
-
-    ;invoke  SetColorAdjustment, hdc, addr @colorAdjustment
-    invoke  PaintBitmapTransEx, hdc, [edi].aParam, addr @stRect, STRETCH_XY
-    ;invoke  SetColorAdjustment, hdc, addr @oldColorAdjustment
 
     xor     eax, eax
     ret
@@ -535,18 +542,24 @@ CompareByDepth  PROC C   uses ebx esi edi pbuttonAptr: DWORD, pbuttonBptr: DWORD
     mov     eax, [esi].depth
     mov     ebx, [edi].depth
 
-    assume  esi: SDWORD
-    assume  edi: SDWORD
+    assume  eax: SDWORD
+    assume  ebx: SDWORD
 
-    xor     eax, eax
-    .IF     esi < edi
+    .IF         eax < ebx
+        mov     eax, -1
+    .ELSEIF     eax > ebx
+        mov     eax, 1
+    .ELSE
+        mov     eax, [esi].bottom
+        mov     ebx, [edi].bottom
+        .IF         eax < ebx
             mov     eax, -1
         .ELSEIF     eax > ebx
             mov     eax, 1
         .ELSE
-            .IF     esi<edi
+            .IF         esi < edi
                 mov     eax, -1
-            .ELSEIF  esi>edi
+            .ELSEIF     esi > edi
                 mov     eax, 1
             .ELSE
                 mov     eax, 0

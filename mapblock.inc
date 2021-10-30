@@ -1,6 +1,6 @@
 
 
-MAXMAPBLOCKCNT      EQU     250
+MAXMAPBLOCKCNT      EQU     350
 
 MAPB_UNUSED         EQU     00000000h
 MAPB_WAITING        EQU     00000001h
@@ -20,6 +20,9 @@ MAPB_BTNTOTAL       EQU     6
 MAPB_BTNWIDTH       EQU     30
 MAPB_BTNHEIGHT      EQU     30
 
+MAP_HEIGHT          EQU     10
+MAP_WIDTH           EQU     15
+
 
 MAPBLOCKDATA    struct
     centerX         DWORD   ?
@@ -37,3 +40,4 @@ BindMapBlockPopButtonsClick     PROTO    pMapBlock: ptr MAPBLOCKDATA, id:DWORD, 
 BindMapBlockPopButtonsBitmap    PROTO    pMapBlock: ptr MAPBLOCKDATA, id:DWORD, IDBitmap:DWORD ; 根据按键编号绑定图片
 SetMapBlockDisplaySet           PROTO    pMapBlock: ptr MAPBLOCKDATA, id:DWORD  ; 切换按键组。在defualtButtonGroupID中设置按键组
 
+LoadMapFromFile                 PROTO    offsetX:DWORD, offsetY:DWORD
