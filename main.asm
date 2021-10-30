@@ -120,7 +120,7 @@ pProjt1         DWORD  ?
             local   @stRect:RECT
 
             mov eax, uMsg
-
+            invoke dPrint, 999
             .IF eax ==  WM_PAINT
                 invoke  _DoPaint, hWnd
             .ELSEIF eax == WM_ERASEBKGND
@@ -128,6 +128,7 @@ pProjt1         DWORD  ?
                 invoke  _SetupDevice, hWnd
             .ELSEIF eax == WM_TIMER
                 .IF     wParam == TIMER_TICK
+                invoke dPrint, 123
                         invoke  SortButtons ; IMPORTANT!
 
                         mov     eax, cnt
@@ -230,6 +231,7 @@ pProjt1         DWORD  ?
                 invoke DefWindowProc, hWnd, uMsg, wParam, lParam
                 ret
             .ENDIF
+            invoke dPrint, 888
             xor eax, eax
             ret
     _ProcWinMain ENDP
