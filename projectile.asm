@@ -315,10 +315,6 @@ ProjtHitEnemies proc uses esi edi self: ptr PROJTDATA, cnt:DWORD
                 ; invoke hurt event
                 mov     eax, [edi].attack
                 sub     [esi].health, eax
-                pushad
-                invoke  dPrint, [esi].health
-                invoke  dPrint, 98
-                popad
                 .IF     [esi].health <= 0
                     mov     eax, [esi].pDeathEvent
                     .IF eax

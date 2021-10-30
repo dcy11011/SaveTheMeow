@@ -131,6 +131,7 @@ pProjt1         DWORD  ?
                         invoke  GetClientRect, hWnd, addr @stRect
 
                         invoke  RoadmapCalcCurrent, real100
+                        invoke  FindInrangeEnemyi, 0, 0, 1000
                         
                         invoke  InvalidateRect, hWnd, addr @stRect, 0
                         invoke  SortButtons ; IMPORTANT!

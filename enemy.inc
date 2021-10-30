@@ -54,3 +54,6 @@ RoadmapAddi             PROTO    x:DWORD, y:DWORD
 RoadmapAddf             PROTO    x:REAL4, y:REAL4
 RoadmapTotalDist        PROTO   
 RoadmapCalcCurrent      PROTO    s:REAL4 ; 依据一维距离计算当前位置 返回-> eax, edx
+
+FindInrangeEnemyf       PROTO    xi:REAL4, yi:REAL4, radius:REAL4    ; -> ptr ENEMYDATA
+FindInrangeEnemyi       PROTO    xi:DWORD, yi:DWORD, radius:DWORD
