@@ -55,6 +55,16 @@ PrefabHurtEffectProj proc   x:DWORD, y:DWORD
     ret
 PrefabHurtEffectProj endp
 
+PrefabHurtEffectProjf proc   x:REAL4, y:REAL4
+    invoke  real42dword, x
+    push    eax
+    invoke  real42dword, y
+    mov     edx, eax
+    pop     eax
+    invoke  PrefabHurtEffectProj, eax, edx
+    ret
+PrefabHurtEffectProjf endp
+
 PrefabTestProjectile proc   x:DWORD, y:DWORD
     local   @stRect:RECT, pButton1:DWORD, pProjt1:DWORD
     mov     eax, x
@@ -79,6 +89,7 @@ PrefabTestProjectile proc   x:DWORD, y:DWORD
 
     mov     edx, pProjt1
     assume  edx: ptr PROJTDATA
+    mov     [edx].penetrate, 2
     invoke  DirectionTo, [edx].xf, [edx].yf, MouseXf, MouseYf
     invoke  ProjtSetDirection, edx, eax
 

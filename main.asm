@@ -146,6 +146,7 @@ pProjt1         DWORD  ?
                         invoke  RoadmapCalcCurrent, real100
                         
                         invoke  InvalidateRect, hWnd, addr @stRect, 0
+                        invoke  SortButtons ; IMPORTANT!
                 .ENDIF
             .ELSEIF eax == WM_MOUSEMOVE
                 mov     eax, lParam
@@ -166,7 +167,9 @@ pProjt1         DWORD  ?
                 invoke  SendClickInfo, ebx, eax
                 ; ------- test enemy
                 ; invoke  PrefabTestEnemy, 200, 200
-                invoke  PrefabHurtEffectProj, 200, 200
+                ; invoke  PrefabHurtEffectProj, 200, 200
+                invoke  PrefabTestProjectile, 200, 200
+                invoke  SortButtons ; IMPORTANT!
                 ; ------------------
             .ELSEIF eax == WM_LBUTTONUP
                 invoke  ClearClick
@@ -197,11 +200,11 @@ pProjt1         DWORD  ?
 
                 invoke  RoadmapClear
                 invoke  RoadmapAddi, 20, 20
-                ; invoke  RoadmapAddi, 40, 50
-                ; invoke  RoadmapAddi, 30, 120
-                ; invoke  RoadmapAddi, 300, 20
+                invoke  RoadmapAddi, 40, 50
+                invoke  RoadmapAddi, 30, 120
+                invoke  RoadmapAddi, 300, 20
                 invoke  RoadmapAddi, 10, 10
-                ; invoke  RoadmapAddi, 300, 320
+                invoke  RoadmapAddi, 300, 320
                 invoke  PrefabTestEnemy, 200, 200
                 mov     ecx, 2
                 @@:

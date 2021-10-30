@@ -56,10 +56,11 @@ CircleCollision proc  x1:REAL4, y1:REAL4, r1:REAL4, x2:REAL4, y2:REAL4, r2:REAL4
     fcompp  ; if r1+r2 > dist return 0
     fstsw   ax
     sahf
-    xor     eax, eax
-    ja      @f
+    jb      @f
     mov     eax, 1
+    ret
     @@:
+    xor     eax, eax
     ret
 CircleCollision endp
 
@@ -172,6 +173,7 @@ GetRadiusButton proc btn: DWORD
     fild    DWORD ptr t
     fdiv
     ;
+    fadd
     fild    DWORD ptr t
     fdiv
     fstp    DWORD ptr t

@@ -14,6 +14,8 @@ include paint.inc
 nEnemyListCnt           DWORD    0
 bIfInitEnemyData        DWORD    0
 nRoadmapCnt             DWORD    0
+arrayEnemyListHead      DWORD    0
+arrayRoadmapListHead    DWORD    0
 
 .data?
 arrayEnemyList ENEMYDATA MAXENYCNT DUP(<?>) ; 内存池
@@ -22,6 +24,11 @@ arrayRoadmapList F_POINT MAXROADMAPCNT DUP(<?>)
 .code
 
 InitEnemyData proc uses  ebx edi
+    lea     eax, arrayEnemyList
+    mov     arrayEnemyListHead, eax
+    lea     eax, arrayRoadmapList
+    mov     arrayRoadmapListHead, eax
+
     lea     edi, arrayEnemyList
     mov     ebx, MAXENYCNT
     mov     ecx, 0
@@ -126,6 +133,7 @@ EnemyBindButton proc self: ptr ENEMYDATA, btn: ptr BUTTONDATA
     mov     [edx].pAsButton, eax
     assume  eax: ptr BUTTONDATA
     invoke  EnemySetPositioni, self, [eax].left, [eax].top
+    invoke  EnemyUpdateRadius, self
     ret
 EnemyBindButton endp
 
@@ -200,6 +208,20 @@ EnemyMovePositionf proc    self: ptr ENEMYDATA, x:REAL4, y:REAL4
     ret
 EnemyMovePositionf endp
 
+EnemyUpdateRadius proc    self: ptr ENEMYDATA
+    mov     edx, self
+    assume  edx: ptr ENEMYDATA
+    push    edx
+    invoke  GetRadiusButton, [edx].pAsButton
+    pop     edx
+    mov     [edx].radius, eax
+    ret
+EnemyUpdateRadius endp
+
+;
+;   Events
+;
+
 EnemyStepForward proc uses edi self: ptr ENEMYDATA
     local   tx:REAL4, ty:REAL4
     mov     edi, self
@@ -211,6 +233,8 @@ EnemyStepForward proc uses edi self: ptr ENEMYDATA
     invoke  RoadmapCalcCurrent, [edi].progress
     mov     tx, eax
     mov     ty, edx
+    invoke  EnemySetPositionf, self, tx, ty
+    ret
 
     mov     edx, [edi].pAsButton
     assume  edx: ptr BUTTONDATA
@@ -232,10 +256,6 @@ EnemyStepForward proc uses edi self: ptr ENEMYDATA
     invoke  EnemySetPositionf, self, tx, ty
     ret
 EnemyStepForward endp
-
-;
-;   Events
-;
 
 EnemyDefaultUpdate PROC uses ebx edi esi cnt:DWORD, pEnemy: ptr ENEMYDATA
     local   tmpf: DWORD

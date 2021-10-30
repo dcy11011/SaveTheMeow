@@ -3,12 +3,15 @@
 option casemap:none
 
 include projectile.inc
+include enemy.inc
 include collision.inc
 
 include windows.inc
 include gdi32.inc
 include util.inc 
 include paint.inc
+
+include prefab.inc
 
 .data
 nProjtListCnt           DWORD    0
@@ -82,8 +85,7 @@ RegisterProjectile proc atk: DWORD, speed: REAL4, dir:REAL4
     mov     [edx].penetrate, 1
     mov     [edx].lifetime, 100
     mov     [edx].pUpdateEvent, 0
-    mov     [edx].pHurtEvent, 0
-    mov     [edx].pDeathEvent, 0
+    mov     [edx].pHitEvent, 0
     mov     eax, edx
     ret
 RegisterProjectile endp
@@ -125,6 +127,7 @@ ProjtBindButton proc self: ptr PROJTDATA, btn: ptr BUTTONDATA
     mov     [edx].pAsButton, eax
     assume  eax: ptr BUTTONDATA
     invoke  ProjtSetPositioni, self, [eax].left, [eax].top
+    invoke  ProjtUpdateRadius, self
     ret
 ProjtBindButton endp
 
@@ -216,6 +219,16 @@ ProjtSetDirection proc   self: ptr PROJTDATA, direction:REAL4
     ret
 ProjtSetDirection endp
 
+ProjtUpdateRadius proc    self: ptr PROJTDATA
+    mov     edx, self
+    assume  edx: ptr PROJTDATA
+    push    edx
+    invoke  GetRadiusButton, [edx].pAsButton
+    pop     edx
+    mov     [edx].radius, eax
+    ret
+ProjtUpdateRadius endp
+
 ;
 ;   Events
 ;
@@ -273,6 +286,61 @@ ProjtCheckDeath proc uses edi self: ptr PROJTDATA
     ret
 ProjtCheckDeath endp
 
+ProjtHitEnemies proc uses esi edi self: ptr PROJTDATA, cnt:DWORD
+    local   x1:REAL4, x2:REAL4, y1:REAL4, y2:REAL4
+    mov     edi, self
+    assume  edi: ptr PROJTDATA
+    mov     ecx, 0
+    mov     esi, arrayEnemyListHead
+    .WHILE  ecx < nEnemyListCnt
+        assume  esi: ptr ENEMYDATA
+        mov     ax, [esi].isActive
+        .IF ax
+            push    ecx
+            invoke  GetCenterButton, [esi].pAsButton
+            mov     x1, eax
+            mov     y1, edx
+            invoke  GetCenterButton, [edi].pAsButton
+            mov     x2, eax
+            mov     y2, edx
+            invoke  CircleCollision, x1, y1, [esi].radius, \
+                                     x2, y2, [edi].radius
+            .IF eax
+                mov     eax, [esi].pHurtEvent
+                .IF eax
+                    push    esi
+                    push    cnt
+                    call    eax
+                .ENDIF
+                ; invoke hurt event
+                mov     eax, [edi].pHitEvent
+                .IF eax
+                    push    edi
+                    push    cnt
+                    call    eax
+                .ENDIF
+                ; invoke projectile hit event
+                sub     [edi].penetrate, 1
+                .IF     [edi].penetrate == 0
+                    invoke  PrefabHurtEffectProjf, [edi].xf, [edi].yf
+                    invoke  ProjtCheckDeath, self
+                    pop     ecx
+                    ret
+                .ENDIF
+                ; check penetrate
+            .ENDIF
+            pop     ecx
+        .ENDIF
+        add     esi, sizeof ENEMYDATA
+        add     ecx, 1
+    .ENDW
+    ret
+ProjtHitEnemies endp
+
+;
+;   Update Events
+;
+
 ProjtDefaultUpdate PROC uses esi edi cnt:DWORD, pProjt: ptr PROJTDATA
     local   tmpf: DWORD
     push    edi
@@ -286,6 +354,7 @@ ProjtDefaultUpdate PROC uses esi edi cnt:DWORD, pProjt: ptr PROJTDATA
     ; invoke  ProjtSetDirection, pProjt, eax
     ; change dir
 
+    invoke  ProjtHitEnemies, pProjt, cnt
     invoke  ProjtStepForward, pProjt
 
     pop     edi
