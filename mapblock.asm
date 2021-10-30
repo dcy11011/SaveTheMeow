@@ -10,6 +10,7 @@ include kernel32.inc
 include button.inc
 include paint.inc
 include util.inc
+include collision.inc
 
 include rclist.inc
 
@@ -19,6 +20,10 @@ include mapblock.inc
 .data
 nMapBlockListCnt           DWORD    0
 bIfInitMapBlockData        DWORD    0
+defaultAngset              DWORD    120, 90, 60, 135, 45, 0
+defualtButtonGroupID       DWORD    1, 1, 1, 2, 2, 3, 3
+popRatio                   REAL4    0.3
+one                        REAL4    1.0
 
 .data?
 arrayMapBlockList MAPBLOCKDATA MAXMAPBLOCKCNT DUP(<?>)
@@ -103,10 +108,10 @@ MapBlockClicked PROC uses ebx esi edi   pButton: ptr BUTTONDATA
     .IF     eax == MAPB_DISABLED
         ret
     .ENDIF
-    .IF     eax == MAPB_WAITING || eax == MAPB_CONTRACTING
+    .IF     eax == MAPB_CONTRACTING 
         mov     eax, MAPB_POPPING
         mov     [edi].status, eax
-    .ELSEIF eax == MAPB_POPPING  || eax == MAPB_POPPED
+    .ELSEIF eax == MAPB_POPPING  
         mov     eax, MAPB_CONTRACTING
         mov     [edi].status, eax
     .ENDIF
@@ -114,41 +119,107 @@ MapBlockClicked PROC uses ebx esi edi   pButton: ptr BUTTONDATA
 MapBlockClicked ENDP
 
 MapBlockUpdate  PROC uses ebx esi edi   cnt:DWORD, pButton: ptr BUTTONDATA
+    local   @float:REAL4, @ang:REAL4, @intager:DWORD, @x:DWORD, @y:DWORD, @currentDisplay:DWORD
     mov     edi, pButton
     assume  edi: ptr BUTTONDATA
     mov     edi, [edi].bParam
     assume  edi: ptr MAPBLOCKDATA
-    mov     eax, [edi].status
     
-    .IF     eax == MAPB_POPPING
-        mov     eax, [edi].action_step
-        invoke  dPrint, eax
-        .IF     eax <= 0
-            invoke  MoveButtonTo, [edi].pButton1, [edi].centerX, [edi].centerY
-            invoke  MoveButtonTo, [edi].pButton2, [edi].centerX, [edi].centerY
-            invoke  MoveButtonTo, [edi].pButton3, [edi].centerX, [edi].centerY
+    mov     ebx, [edi].diaplaySet
+    mov     @currentDisplay, ebx
+    mov     ebx, [edi].action_step
+    mov     @float, ebx
+
+    push    edi
+    push    esi
+    mov     ecx, MAPB_BTNTOTAL
+    lea     esi, [edi].pButton
+    lea     edi, [edi].angButton
+    lea     edx, defualtButtonGroupID
+    s9:     
+        push    edx
+        mov     edx, DWORD PTR [edx]
+        .IF     edx != @currentDisplay
+            mov     eax, [esi]
+            invoke  MoveButtonCenterTo, eax, -100, -100
+            jmp     s8
         .ENDIF
-        mov     eax, [edi].action_step
-        inc     eax
-        mov     [edi].action_step, eax
-        .IF     eax >= MAPB_MAXSTEP
-            mov     ebx, MAPB_POPPED
-            mov     [edi].status, ebx
-        .ENDIF 
-    .ELSEIF eax == MAPB_CONTRACTING
-        mov     eax, [edi].action_step
-        sub     eax, 1
-        mov     [edi].action_step, eax
-        .IF     eax <= 0
-            mov     ebx, MAPB_WAITING
-            mov     [edi].status, ebx
-        .ENDIF 
-        .IF     eax <= 0
-            invoke  MoveButtonTo, [edi].pButton1, -100, -100
-            invoke  MoveButtonTo, [edi].pButton2, -100, -100
-            invoke  MoveButtonTo, [edi].pButton3, -100, -100
-        .ENDIF
+        mov     edx, DWORD ptr [edi]          ;  edx = angle ( in degree )
+        mov     @intager,  edx
+        fild    DWORD ptr @intager
+        mov     eax, 180
+        mov     @intager, eax
+        fidiv   DWORD ptr @intager
+        fldpi   
+        fmul
+        fstp    DWORD ptr @ang    ; @ang = angle (in rad )
+
+        fld     @ang
+        fcos    
+        mov     @intager, MAPB_BTNDISTANCE
+        fimul   DWORD ptr @intager
+        mov     @float, ebx         ; @float   = action_step
+        fmul    DWORD ptr @float
+        fistp   DWORD ptr @x  ; @x = cos(ang)*d*action_step
+
+        fld     @ang
+        fsin    
+        mov     @intager, MAPB_BTNDISTANCE
+        fimul   DWORD ptr @intager
+        mov     @float, ebx         ; @float   = action_step
+        fmul    DWORD ptr @float
+        fistp   DWORD ptr @y  ; @y = sin(ang)*d*action_step
+
+        push    edi
+        mov     edi, pButton
+        assume  edi: ptr BUTTONDATA
+        mov     edi, [edi].bParam
+        assume  edi: ptr MAPBLOCKDATA
+        mov     eax, [edi].centerX
+        add     eax, @x
+        mov     @x, eax
+        mov     edx, [edi].centerY
+        sub     edx, @y
+        mov     @y, edx
+        mov     eax, [esi]
+        invoke  MoveButtonCenterTo, eax, @x, @y
+
+        pop     edi
+
+        mov     edx, MAPB_BTNWIDTH
+        mov     @intager, edx
+        fild    @intager
+        mov     @float, ebx
+        fmul    @float
+        fistp   @x
+
+        mov     edx, MAPB_BTNHEIGHT
+        mov     @intager, edx
+        fild    @intager
+        mov     @float, ebx
+        fmul    @float
+        fistp   @y
+        invoke  SetButtonSize, eax, @x, @y
         
+s8:     pop     edx
+        add     edx, sizeof DWORD
+        add     esi, sizeof DWORD
+        add     edi, sizeof DWORD
+        dec     ecx
+        test    ecx, ecx
+    jnz   s9
+
+    pop     esi
+    pop     edi
+
+    assume  edi: ptr MAPBLOCKDATA
+    mov     eax, [edi].status
+    .IF     eax == MAPB_POPPING
+        invoke  Lerp, one, ebx, popRatio
+        mov     [edi].action_step, eax
+    .ELSEIF eax == MAPB_CONTRACTING
+        invoke  Lerp, 0, ebx, popRatio
+        mov     [edi].action_step, eax
     .ENDIF
     ret
 MapBlockUpdate  ENDP
@@ -171,37 +242,42 @@ RegisterMapBlock    PROC uses ebx esi edi    posX:DWORD, posY:DWORD
     assume  edi: ptr MAPBLOCKDATA
     invoke  RegisterButton, addr @rect, MapBlockBasePaint, MapBlockClicked,0,MapBlockUpdate
     mov     [edi].pAsButton, eax
-    invoke  dPrint, eax
     mov     esi, eax
     assume  esi: ptr BUTTONDATA
     mov     [esi].bParam, edi
 
-    lea     esi, @rect
-    assume  esi: ptr RECT
-    mov     ebx, 20
-    mov     [esi].top, ebx
-    mov     [esi].left, ebx
-    mov     ebx, 30
-    mov     [esi].bottom, ebx
-    mov     [esi].right, ebx
-    invoke  RegisterButton, addr @rect, 0,0,0,0
-    ;invoke  SetButtonSize, eax, 30, 30
-    ;invoke  BindButtonToBitmap, eax, MAP_BLOCK
-    mov     [edi].pButton1, eax
-    invoke  SetButtonDepth, eax, -1
-    
-    invoke  RegisterButton, addr @rect, 0,0,0,0
-    invoke  BindButtonToBitmap, eax, MAP_BLOCK
-    mov     [edi].pButton2, eax
-    invoke  SetButtonDepth, eax, -2
+    ; Create pop out buttons 
+    mov     ecx, MAPB_BTNTOTAL
+    lea     esi, [edi].pButton
+    push    ebx
+@@: 
+    invoke  RegisterButton, addr @rect, 0, 0, 0, 0
+    mov     DWORD ptr [esi], eax
+    invoke  SetButtonSize, eax, MAPB_BTNWIDTH, MAPB_BTNHEIGHT
+    invoke  MoveButtonTo, eax, -100, -100
+    assume  eax: PTR BUTTONDATA
+    mov     [eax].bParam, edi
+    mov     ebx, -10
+    sub     ebx, ecx
+    invoke  SetButtonDepth, eax, ebx
+    add     esi, sizeof DWORD
+    loop    @B
 
-    invoke  RegisterButton, addr @rect, 0,0,0,0
-    invoke  BindButtonToBitmap, eax, MAP_BLOCK
-    mov     [edi].pButton3, eax
-    invoke  SetButtonDepth, eax, -3
+    ; set pop button angles
+    mov     ecx, MAPB_BTNTOTAL
+    lea     esi, [edi].angButton
+    push    edi
+    lea     edi, defaultAngset
+@@: mov     eax, DWORD ptr [edi]
+    mov     DWORD ptr [esi], eax
+    add     esi, sizeof DWORD
+    add     edi, sizeof DWORD
+    loop    @B
 
+    pop     edi
+    pop     ebx
 
-    mov     ebx, MAPB_WAITING
+    mov     ebx, MAPB_CONTRACTING
     mov     [edi].status, ebx
     mov     ebx, 0
     mov     [edi].action_step, ebx
@@ -213,9 +289,59 @@ RegisterMapBlock    PROC uses ebx esi edi    posX:DWORD, posY:DWORD
     shr     ebx, 1
     add     ebx, posY
     mov     [edi].centerY, ebx
-    invoke  dPrint3, 0, 0 ,edi
+
+    mov     eax, 1
+    mov     [edi].diaplaySet, eax       ; set initial display set 
+
+    invoke  BindMapBlockPopButtonsBitmap, edi, 0, TURRENT_A
+    invoke  BindMapBlockPopButtonsBitmap, edi, 1, TURRENT_B
+    invoke  BindMapBlockPopButtonsBitmap, edi, 2, TURRENT_C
+    invoke  BindMapBlockPopButtonsBitmap, edi, 3, ICON_UP
+    invoke  BindMapBlockPopButtonsBitmap, edi, 4, ICON_DELETE
+
     mov     eax, edi
     ret
 RegisterMapBlock    ENDP
+
+GetButtonptrByID    PROC uses ebx esi edi pMapBlock: ptr MAPBLOCKDATA, id:DWORD
+    mov     edi, pMapBlock
+    assume  edi: ptr MAPBLOCKDATA
+    lea     edi, [edi].pButton
+    mov     eax, id
+    .IF     eax >= MAPB_BTNTOTAL
+        ret
+    .ENDIF
+    shl     eax, 2
+    add     edi, eax
+    mov     eax, DWORD PTR [edi]
+    ret 
+GetButtonptrByID    ENDP
+
+BindMapBlockPopButtonsClick PROC uses ebx esi edi pMapBlock: ptr MAPBLOCKDATA, id:DWORD, pClickEvent:DWORD
+    invoke  GetButtonptrByID, pMapBlock, id
+    mov     edi, eax
+    assume  edi: ptr BUTTONDATA
+    mov     eax, pClickEvent
+    mov     [edi].pClickEvent, eax
+    mov     eax, pMapBlock
+    ret
+BindMapBlockPopButtonsClick ENDP
+
+BindMapBlockPopButtonsBitmap  PROC uses ebx esi edi pMapBlock: ptr MAPBLOCKDATA, id:DWORD, IDBitmap:DWORD
+    invoke  GetButtonptrByID, pMapBlock, id
+    mov     edi, eax
+    assume  edi: ptr BUTTONDATA
+    invoke  dPrint2, edi, IDBitmap
+    invoke  BindButtonToBitmap, edi, IDBitmap
+    ret
+BindMapBlockPopButtonsBitmap  ENDP
+
+SetMapBlockDisplaySet   PROC  uses ebx edi esi pMapBlock: ptr MAPBLOCKDATA, id:DWORD
+    mov     edi, pMapBlock
+    assume  edi: PTR MAPBLOCKDATA
+    mov     eax, id
+    mov     [edi].diaplaySet, eax
+    ret
+SetMapBlockDisplaySet  ENDP
 
 end

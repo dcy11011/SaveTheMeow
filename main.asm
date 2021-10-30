@@ -6,7 +6,7 @@ option casemap:none
 ;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 TIMER_TICK      EQU     1
-TICK_INTERVAL   EQU     35
+TICK_INTERVAL   EQU     16
 
 ;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 ; Include 
@@ -26,7 +26,10 @@ include rclist.inc
 include testobj.inc
 Include button.inc            
 include enemy.inc
+include projectile.inc
 include mapblock.inc
+
+include prefab.inc
 
 include main.inc
 
@@ -36,13 +39,19 @@ include main.inc
 .data
 testObj         OBJDATA  <100,100,20>
 cnt             dd  0
+hDc             DWORD 0
+hMemDc          DWORD 0
+hBitmap         DWORD 0
+
+real100         REAL4 100.0
 
 .data?
+tmp             QWORD  ?
 hInstance       DWORD  ?
 hWinMain        DWORD  ?
 pButton1        DWORD  ?
 pEnemy1         DWORD  ?
-tmp             QWORD  ?
+pProjt1         DWORD  ?
 
 
 .const
@@ -54,67 +63,87 @@ tmp             QWORD  ?
 ;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 .code
     ;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+    _SetupDevice    proc    uses ebx edi esi hWnd
+            local   @stRect:RECT
+            .IF hMemDc != 0
+                invoke  DeleteDC, hMemDc
+            .ENDIF
+            .IF hBitmap != 0
+                invoke  DeleteObject, hBitmap
+            .ENDIF
+            ;
+            invoke  CreateCompatibleDC, hDc
+            mov     hMemDc, eax
+            invoke  GetClientRect, hWnd, addr @stRect
+            invoke  CreateCompatibleBitmap, hDc, @stRect.right, @stRect.bottom
+            mov     hBitmap, eax
+            ret
+    _SetupDevice    endp 
+    ;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+    _DoPaint        proc    uses ebx edi esi hWnd
+            local   @stPs:PAINTSTRUCT
+            local   @stRect:RECT
+            local   @tPen
+
+            invoke  GetClientRect, hWnd, addr @stRect
+            invoke  SelectObject, hMemDc, hBitmap
+
+            invoke  CreatePen, PS_SOLID, 5, 00000000h
+            mov     @tPen, eax
+
+            invoke  SelectObject, hMemDc, eax
+
+            invoke  PaintBitmapEx, hMemDc, MAIN_BACKGROUND,\
+                    addr @stRect, STRETCH_XY or CENTER_XY
+            
+            invoke  DrawText, hMemDc, addr szText, -1, addr @stRect, \
+                    DT_SINGLELINE or DT_CENTER or DT_VCENTER
+            invoke  PaintAllButton, hMemDc
+
+            invoke  RotateDC, hMemDc, cnt, 135, 61
+            invoke  PaintBitmapEx, hMemDc, BOTTON_START,\
+                    addr @stRect, 0 
+            invoke  ClearDCRotate, hMemDc
+
+            invoke  PaintBitmapTrans, hMemDc, MAP_BLOCK, 200, 50
+
+            invoke  BitBlt, hDc, 0, 0, @stRect.right, @stRect.bottom, \
+                    hMemDc, 0, 0, SRCCOPY
+            
+            invoke  DeleteObject, @tPen 
+            invoke  ValidateRect, hWnd, 0
+            ret
+    _DoPaint        endp
+    ;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
     _ProcWinMain    proc    uses ebx edi esi hWnd, uMsg, wParam, lParam
             local   @stPs:PAINTSTRUCT
             local   @stRect:RECT
-            local   @hDc, @hMemDc, @tPen
-            local   @hBitmap: HBITMAP
 
             mov eax, uMsg
-
+            invoke dPrint, 999
             .IF eax ==  WM_PAINT
-                invoke  BeginPaint, hWnd,addr @stPs
-                mov     @hDc, eax
-                invoke  CreateCompatibleDC, @hDc
-                mov     @hMemDc, eax
-                invoke  GetClientRect, hWnd, addr @stRect
-                invoke  CreateCompatibleBitmap, @hDc, @stRect.right, @stRect.bottom
-                mov     @hBitmap, eax
-                invoke  SelectObject, @hMemDc, @hBitmap
-                ; begin paint
-
-                invoke  CreatePen, PS_SOLID, 5, 00000000h
-                mov     @tPen, eax
-                invoke  SelectObject, @hMemDc, eax
-
-                invoke  PaintBitmapEx, @hMemDc, MAIN_BACKGROUND,\
-                        addr @stRect, STRETCH_XY or CENTER_XY
-                
-                invoke  DrawText, @hMemDc, addr szText, -1, addr @stRect, \
-                        DT_SINGLELINE or DT_CENTER or DT_VCENTER
-                invoke  PaintObj, @hMemDc, addr testObj
-                invoke  PaintAllButton, @hMemDc
-
-                invoke  RotateDC, @hMemDc, cnt, 135, 61
-                invoke  PaintBitmapEx, @hMemDc, BOTTON_START,\
-                        addr @stRect, 0 
-                invoke  ClearDCRotate, @hMemDc
-
-                invoke  PaintBitmapTrans, @hMemDc, MAP_BLOCK, 200, 50
-                ; end paint
-                invoke  BitBlt, @hDc, 0, 0, @stRect.right, @stRect.bottom, \
-                        @hMemDc, 0, 0, SRCCOPY
-                
-                invoke  DeleteDC, @hMemDc
-                invoke  DeleteObject, @hBitmap
-                invoke  DeleteObject, @tPen 
-                invoke  EndPaint, hWnd, addr @stPs
-                
+                invoke  _DoPaint, hWnd
+            .ELSEIF eax == WM_ERASEBKGND
+            .ELSEIF eax == WM_SIZE
+                invoke  _SetupDevice, hWnd
             .ELSEIF eax == WM_TIMER
                 .IF     wParam == TIMER_TICK
+                invoke dPrint, 123
+                        invoke  SortButtons ; IMPORTANT!
+
                         mov     eax, cnt
                         inc     eax
                         mov     cnt, eax
                         
                         invoke  SendUpdateInfo, cnt
-                        ;invoke  EnemyUpdateAll, cnt
+                        invoke  ProjtUpdateAll, cnt
+                        invoke  EnemyUpdateAll, cnt
                         invoke  GetClientRect, hWnd, addr @stRect
                         invoke  MoveObj, offset testObj, addr @stRect
+
+                        invoke  RoadmapCalcCurrent, real100
                         
                         invoke  InvalidateRect, hWnd, addr @stRect, 0
-                        
-                        invoke  SortButtons
-                        
                 .ENDIF
             .ELSEIF eax == WM_MOUSEMOVE
                 mov     eax, lParam
@@ -133,15 +162,27 @@ tmp             QWORD  ?
                 and     ebx, 0000FFFFh
                 shr     eax, 16
                 invoke  SendClickInfo, ebx, eax
+                ; ------- test enemy
+                invoke  PrefabTestEnemy, 200, 200
+                ; ------------------
             .ELSEIF eax == WM_LBUTTONUP
                 invoke  ClearClick
             .ELSEIF eax == WM_CLOSE
                 invoke  DestroyWindow, hWinMain
                 invoke  PostQuitMessage, NULL
                 invoke  KillTimer, hInstance, TIMER_TICK
+                invoke  DeleteDC, hMemDc
+                invoke  DeleteObject, hBitmap
             .ELSEIF eax == WM_CREATE
 
+                invoke  GetDC, hWnd
+                mov     hDc, eax
+                invoke  _SetupDevice, hWnd
+
                 invoke  SetTimer, hWnd, TIMER_TICK, TICK_INTERVAL, NULL   
+
+                invoke  RegisterMapBlock, 300, 100
+
                 mov     eax, 100
                 mov     @stRect.left, eax
                 mov     @stRect.top,  eax
@@ -149,22 +190,23 @@ tmp             QWORD  ?
                 mov     @stRect.right, eax
                 mov     @stRect.bottom,eax
                 invoke  RegisterButton, addr @stRect, 0, 0, 0, 0
+                invoke  dPrint3, 0,2, eax
 
-                mov     eax, 120
-                mov     @stRect.left, eax
-                mov     @stRect.top,  eax
-                mov     eax, 170
-                mov     @stRect.right, eax
-                mov     @stRect.bottom,eax
-                invoke  RegisterButton, addr @stRect, 0, 0, 0, 0
-                
-                mov     pButton1, eax
-                invoke  SetButtonDepth, eax, 1
-                
-                invoke  RegisterEnemy, 10, 10, 10
-                mov     pEnemy1, eax
-                invoke  EnemyBindButton, pEnemy1, pButton1
-                invoke  EnemyBindUpdate, pEnemy1, EnemyDefaultUpdate
+                invoke  RoadmapClear
+                invoke  RoadmapAddi, 20, 20
+                invoke  RoadmapAddi, 40, 50
+                invoke  RoadmapAddi, 30, 120
+                invoke  RoadmapAddi, 300, 20
+                invoke  RoadmapAddi, 300, 320
+                invoke  PrefabTestEnemy, 200, 200
+                mov     ecx, 23
+                @@:
+                mov     eax, 20
+                mul     ecx
+                push    ecx
+                invoke  PrefabTestProjectile, ecx, eax
+                pop     ecx
+                loop    @b
 
                 mov     eax, 200
                 mov     @stRect.left, eax
@@ -174,6 +216,7 @@ tmp             QWORD  ?
                 mov     @stRect.bottom,eax
                 invoke  RegisterButton, addr @stRect, 0, 0, 0, 0
                 invoke  SetButtonDepth, eax, 2
+
                 mov     eax, 220
                 mov     @stRect.left, eax
                 mov     @stRect.top,  eax
@@ -183,11 +226,12 @@ tmp             QWORD  ?
                 invoke  RegisterButton, addr @stRect, 0, 0, 0, 0
                 invoke  BindButtonToBitmap, eax, BOTTON_START
                 invoke  SetButtonDepth, eax, 3
-                invoke  RegisterMapBlock, 300, 100
+                
             .ELSE
                 invoke DefWindowProc, hWnd, uMsg, wParam, lParam
                 ret
             .ENDIF
+            invoke dPrint, 888
             xor eax, eax
             ret
     _ProcWinMain ENDP
@@ -217,7 +261,7 @@ tmp             QWORD  ?
 
             invoke  CreateWindowEx, WS_EX_CLIENTEDGE, offset szClassName, \
                     offset szCaptionMain, WS_OVERLAPPEDWINDOW, \
-                    100, 100, 600, 400, \
+                    100, 100, 900, 600, \
                     NULL, NULL, hInstance, NULL
             mov     hWinMain, eax
             invoke  ShowWindow, hWinMain, SW_SHOWNORMAL

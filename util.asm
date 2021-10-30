@@ -11,12 +11,17 @@ szdPrint3Format     byte    "%d %d %d", 0dh, 0ah, 0
 szdPrintFloatFormat byte    "%f", 0dh, 0ah, 0
 szdPrint2FloatFormat byte    "(%f %f)", 0dh, 0ah, 0
 PI                  REAL4   3.1415926
+real0               REAL4   0.0
+real1               REAL4   1.0
+real1n              REAL4   -1.0
+real1of2            REAL4   0.5
+real1of3            REAL4   0.33333
+real2of3            REAL4   0.66666
+real9of10           REAL4   0.9
 MouseXi             DWORD   0
 MouseYi             DWORD   0
 MouseXf             REAL4   0.0
 MouseYf             REAL4   0.0
-
-szdPrintReal4Format byte    "%f", 0dh, 0ah, 0
 
 .code
 dPrint      proc  data:DWORD

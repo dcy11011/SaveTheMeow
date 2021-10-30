@@ -19,6 +19,7 @@ szDefaultButtonUpdate   BYTE     "Button Update : %d", 0dh, 0ah, 0
 
 .data?
 arrayButtonList BUTTONDATA MAXBTNCNT DUP(<?>) ; 存储BUTTONDATA内存池
+arrayPaintOrder    DWORD      MAXBTNCNT DUP(?)   ; 用于排序临时存储
 
 .code
 
@@ -129,13 +130,16 @@ PaintButton     ENDP
 
 ; 绘制所有注册过的按钮
 PaintAllButton  PROC    uses ebx ecx edi hDc:DWORD
+    invoke  SortButtons
     mov     ecx, nButtonListCnt
-    lea     edi, arrayButtonList
-    mov     eax, sizeof BUTTONDATA
-    mul     ecx
-    add     edi, eax
+    lea     ebx, arrayPaintOrder
+    mov     eax, nButtonListCnt
+    dec     eax
+    shl     eax, 2
+    add     ebx, eax
+    mov     edi, [ebx]
     assume  edi: ptr BUTTONDATA
-    inc     ecx
+    
 @@: push    ecx
     .IF [edi].status != BTNS_UNUSED 
         .IF [edi].isActive != BTNI_DISABLE
@@ -143,14 +147,15 @@ PaintAllButton  PROC    uses ebx ecx edi hDc:DWORD
         .ENDIF
     .ENDIF
     pop     ecx
-    sub     edi, sizeof BUTTONDATA
+    sub     ebx, sizeof DWORD
+    mov     edi, [ebx]
     loop    @b
 
     xor     eax, eax
     ret
 PaintAllButton  ENDP
 
-ButtonDefaultPaint  PROC  uses ebx edi hDc: DWORD, pButton: ptr BUTTONDATA
+ButtonDefaultPaint  PROC  uses ebx edi esi hDc: DWORD, pButton: ptr BUTTONDATA
     local   @oldPen, @oldBrush, @stRect:RECT
     mov     edi, pButton
     assume  edi: ptr BUTTONDATA
@@ -186,30 +191,53 @@ ButtonDefaultPaint  ENDP
 
 ButtonBitmapPaint   PROC uses ebx edi esi hdc:DWORD, pButton: ptr BUTTONDATA
     local   @oldPen, @oldBrush, @stRect:RECT
-    local   @colorAdjustment:COLORADJUSTMENT, @oldColorAdjustment:COLORADJUSTMENT
+    ;ocal   @colorAdjustment:COLORADJUSTMENT, @oldColorAdjustment:COLORADJUSTMENT
     mov     edi, pButton
     assume  edi: ptr BUTTONDATA
     invoke  GetButtonRect, pButton, addr @stRect
-    invoke  GetColorAdjustment, hdc, addr @colorAdjustment
-    invoke  memcpy, addr @oldColorAdjustment, addr @colorAdjustment, sizeof COLORADJUSTMENT
-    lea     esi, @colorAdjustment
-    assume  esi: ptr COLORADJUSTMENT
-    mov     bx, [edi].status
-    and     bx, BTNS_HOVER
-    .IF     bx
-        mov     ax, 50
-        mov     [esi].caBrightness, ax
-    .ENDIF
+    ;invoke  GetColorAdjustment, hdc, addr @colorAdjustment
+    ;invoke  memcpy, addr @oldColorAdjustment, addr @colorAdjustment, sizeof COLORADJUSTMENT
+    ;lea     esi, @colorAdjustment
+    ;assume  esi: ptr COLORADJUSTMENT
+    
+    push    edi
     mov     bx, [edi].status
     and     bx, BTNS_CLICK
     .IF     bx
-        mov     ax, -50
-        mov     [esi].caBrightness, ax
+        ;mov     ax, -50
+        ;mov     [esi].caBrightness, ax
+        invoke  SetPen, hdc, PS_SOLID, 2, 00111111h
+        mov     @oldPen, eax
+        invoke  GetStockObject, NULL_BRUSH
+        invoke  SelectObject, hdc, eax
+        mov     @oldBrush, eax
+        invoke  PaintRoundRect, hdc, addr @stRect, 10
+        invoke  SelectObject, hdc, @oldBrush
+        invoke  SelectObject, hdc, @oldPen
+        invoke  DeleteObject, eax
+    .ELSE
+        mov     bx, [edi].status
+        and     bx, BTNS_HOVER
+        .IF     bx
+            ;mov     ax, 50
+            ;mov     [esi].caBrightness, ax
+            invoke  SetPen, hdc, PS_SOLID, 2, 00ffffffh
+            mov     @oldPen, eax
+            invoke  GetStockObject, NULL_BRUSH
+            invoke  SelectObject, hdc, eax
+            mov     @oldBrush, eax
+            invoke  PaintRoundRect, hdc, addr @stRect, 10
+            invoke  SelectObject, hdc, @oldBrush
+            invoke  SelectObject, hdc, @oldPen
+            invoke  DeleteObject, eax
+        .ENDIF
     .ENDIF
+    pop     edi
 
-    invoke  SetColorAdjustment, hdc, addr @colorAdjustment
-    invoke  PaintBitmapTrans, hdc, [edi].aParam, addr @stRect, STRETCH_XY
-    invoke  SetColorAdjustment, hdc, addr @oldColorAdjustment
+    ;invoke  SetColorAdjustment, hdc, addr @colorAdjustment
+    invoke  PaintBitmapTransEx, hdc, [edi].aParam, addr @stRect, STRETCH_XY
+    ;invoke  SetColorAdjustment, hdc, addr @oldColorAdjustment
+
     xor     eax, eax
     ret
 ButtonBitmapPaint   ENDP
@@ -262,7 +290,7 @@ DeleteButton    proc uses esi  pButton:ptr BUTTONDATA
 DeleteButton    ENDP
 
 
-MoveButton    proc pButton: ptr BUTTONDATA, x:DWORD, y:DWORD
+MoveButton    proc uses edx eax pButton: ptr BUTTONDATA, x:DWORD, y:DWORD
     mov     edx, pButton
     assume  edx: ptr BUTTONDATA
     mov     eax, [edx].left
@@ -280,28 +308,17 @@ MoveButton    proc pButton: ptr BUTTONDATA, x:DWORD, y:DWORD
     ret     
 MoveButton    endp
 
-MoveButtonTo    proc pButton: ptr BUTTONDATA, x:DWORD, y:DWORD
-    mov     edx, pButton
-    assume  edx: ptr BUTTONDATA
-    mov     ecx, x
-    sub     ecx, [edx].left
-    mov     eax, y 
-    sub     eax, [edx].top
-    invoke  MoveButton, pButton, ecx, eax
-    ret
-MoveButtonTo    endp 
-
 
 SetButtonSize  PROC  uses ebx edi esi pButton:ptr BUTTONDATA, w:DWORD, h:DWORD
     mov     edi, pButton
     assume  edi: ptr BUTTONDATA
     mov     eax, [edi].left
     add     eax, w
-    mov     eax, [edi].right
+    mov     [edi].right, eax ;fixed bug
     mov     eax, [edi].top
     add     eax, h
-    mov     eax, [edi].bottom
-    xor     eax, eax
+    mov     [edi].bottom, eax
+    mov     eax, pButton
     ret
 SetButtonSize endp
 
@@ -314,12 +331,12 @@ GetButtonSize  PROC uses ebx edi esi pButton: ptr BUTTONDATA, pPoint: ptr D_POIN
     sub     ebx, [edi].left
     mov     [esi].x, ebx
     mov     ebx, [edi].bottom
-    mov     ebx, [edi].top
+    sub     ebx, [edi].top
     mov     [esi].y, ebx
     ret
 GetButtonSize   ENDP
 
-MoveButtonTo    proc pButton: ptr BUTTONDATA, x:DWORD, y:DWORD
+MoveButtonTo    proc uses edx eax pButton: ptr BUTTONDATA, x:DWORD, y:DWORD
     mov     edx, pButton
     assume  edx: ptr BUTTONDATA
     mov     eax, x
@@ -331,6 +348,25 @@ MoveButtonTo    proc pButton: ptr BUTTONDATA, x:DWORD, y:DWORD
     invoke  MoveButton, pButton, x, y
     ret     
 MoveButtonTo    endp
+
+MoveButtonCenterTo  PROC  uses edx eax pButton: ptr BUTTONDATA, x:DWORD, y:DWORD
+    local     @wh:D_POINT
+    mov     edx, pButton
+    assume  edx: ptr BUTTONDATA
+    invoke  GetButtonSize, pButton, addr @wh
+    mov     eax, @wh.x
+    shr     eax, 1
+    sub     eax, x
+    neg     eax
+    mov     @wh.x, eax
+    mov     eax, @wh.y
+    shr     eax, 1
+    sub     eax, y
+    neg     eax
+    mov     @wh.y, eax
+    invoke  MoveButtonTo, pButton, @wh.x, @wh.y
+    ret
+MoveButtonCenterTo  ENDP
 
 
 InButtonRange   proc uses ebx edi pButton:ptr BUTTONDATA, x:DWORD, y:DWORD
@@ -357,85 +393,86 @@ InButtonRange ENDP
 
 SendClickInfo proc uses  ebx edi esi x:DWORD, y:DWORD
     local   @cnt
-
-    xor     ecx, ecx
-    mov     ebx, nButtonListCnt
-    mov     edi, offset arrayButtonList
+    
+    mov     ecx, nButtonListCnt
+    lea     ebx, arrayPaintOrder
+    mov     edi, [ebx]
     assume  edi: ptr BUTTONDATA
-    xor     eax, eax
+    mov     eax, 0
     mov     @cnt, eax
     
-    .WHILE ecx < ebx
-        push    ecx
-        push    ebx
-        invoke  InButtonRange, edi, x, y
-        mov     dx, [edi].isActive
-        and     dx, BTNI_DISABLE
-        .IF !dx
-            .IF eax
-                push    edi
-                call    [edi].pClickEvent
-                mov     dx, [edi].status
-                or      dx, BTNS_CLICK
-                mov     [edi].status, dx
-                mov     eax, @cnt
-                inc     eax
-                mov     @cnt, eax
-                jmp     @f
-            .ENDIF
+@@: push    ecx
+    push    ebx
+    invoke  InButtonRange, edi, x, y
+    mov     dx, [edi].isActive
+    and     dx, BTNI_DISABLE
+    .IF !dx
+        mov     ebx, @cnt
+        .IF eax && !ebx
+            push    edi
+            call    [edi].pClickEvent
+            mov     dx, [edi].status
+            or      dx, BTNS_CLICK
+            mov     [edi].status, dx
+            mov     eax, @cnt
+            inc     eax
+            mov     @cnt, eax
+        .ELSE
+            mov     dx, BTNS_HOVER
+            not     dx
+            and     dx, [edi].status
+            mov     [edi].status, dx
         .ENDIF
-        xor     ebx, ebx
-        mov     bx, [edi].status
-        pop     ebx
-        pop     ecx
-        add     edi, sizeof BUTTONDATA
-        inc     ecx
-    .ENDW
-@@:
+    .ENDIF
+    pop     ebx
+    pop     ecx
+    add     ebx, sizeof DWORD
+    mov     edi, [ebx]
+    loop    @b
+
     mov     eax, @cnt
     ret
 SendClickInfo ENDP
 
 SendHoverInfo proc uses ebx edi x:DWORD, y:DWORD 
     local   @cnt
-
-    xor     ecx, ecx
-    mov     ebx, nButtonListCnt
-    mov     edi, offset arrayButtonList
+    
+    mov     ecx, nButtonListCnt
+    lea     ebx, arrayPaintOrder
+    mov     edi, [ebx]
     assume  edi: ptr BUTTONDATA
-    xor     eax, eax
+    mov     eax, 0
     mov     @cnt, eax
     
-    .WHILE ecx < ebx
-        push    ecx
-        push    ebx
-        invoke  InButtonRange, edi, x, y
-        mov     dx, [edi].isActive
-        and     dx, BTNI_DISABLE
-        .IF !dx
-            mov     ebx, @cnt
-            .IF eax && !ebx
-                push    edi
-                call    [edi].pHoverEvent
-                mov     dx, [edi].status
-                or      dx, BTNS_HOVER
-                mov     [edi].status, dx
-                mov     eax, @cnt
-                inc     eax
-                mov     @cnt, eax
-            .ELSE
-                mov     dx, BTNS_HOVER
-                not     dx
-                and     dx, [edi].status
-                mov     [edi].status, dx
-            .ENDIF
+@@: push    ecx
+    push    ebx
+    invoke  InButtonRange, edi, x, y
+    mov     dx, [edi].isActive
+    and     dx, BTNI_DISABLE
+    .IF !dx
+        mov     ebx, @cnt
+        .IF eax && !ebx
+            push    edi
+            call    [edi].pHoverEvent
+            mov     dx, [edi].status
+            or      dx, BTNS_HOVER
+            mov     [edi].status, dx
+            mov     eax, @cnt
+            inc     eax
+            mov     @cnt, eax
+        .ELSE
+            mov     dx, BTNS_HOVER
+            not     dx
+            and     dx, [edi].status
+            mov     [edi].status, dx
         .ENDIF
-        pop     ebx
-        pop     ecx
-        add     edi, sizeof BUTTONDATA
-        inc     ecx
-    .ENDW
-@@:
+    .ENDIF
+    pop     ebx
+    pop     ecx
+    add     ebx, sizeof DWORD
+    mov     edi, [ebx]
+    loop    @b
+
     mov     eax, @cnt
     ret
 SendHoverInfo ENDP
@@ -486,18 +523,20 @@ ClearClick proc uses ebx edi
     ret
 ClearClick ENDP
 
-CompareByDepth  PROC C   uses ebx esi edi buttonA: DWORD, buttonB: DWORD
-    mov     esi, buttonA
-    mov     edi, buttonB
-    .IF esi< 1000
-        mov eax, 0
-        ret
-    .ENDIF
+CompareByDepth  PROC C   uses ebx esi edi pbuttonAptr: DWORD, pbuttonBptr: DWORD
+    mov     esi, pbuttonAptr
+    mov     esi, DWORD ptr [esi]
+    mov     edi, pbuttonBptr
+    mov     edi, DWORD ptr [edi]
+
     assume  esi: PTR BUTTONDATA
     assume  edi: PTR BUTTONDATA
 
     mov     esi, [esi].depth
     mov     edi, [edi].depth
+
+    assume  esi: SDWORD
+    assume  edi: SDWORD
 
     xor     eax, eax
     .IF     esi < edi
@@ -530,9 +569,16 @@ GetButtonDepth  ENDP
 
 
 SortButtons     PROC    uses ebx esi edi
-    mov     edi, offset arrayButtonList
+    lea     edi, arrayButtonList
     mov     ecx, nButtonListCnt
-    invoke  qsort, edi, ecx, sizeof BUTTONDATA, CompareByDepth
+    mov     esi, edi
+    lea     ebx, arrayPaintOrder
+@@: mov     [ebx], esi
+    add     esi, sizeof BUTTONDATA
+    add     ebx, sizeof DWORD
+    loop    @B
+    mov     ecx, nButtonListCnt
+    invoke  qsort, offset arrayPaintOrder , ecx, sizeof DWORD, CompareByDepth
     ret
 SortButtons     ENDP 
 
