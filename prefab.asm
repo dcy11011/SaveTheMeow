@@ -119,12 +119,12 @@ PrefabTestProjectile proc   x:DWORD, y:DWORD
     local   @stRect:RECT, pButton1:DWORD, pProjt1:DWORD
     mov     eax, x
     mov     @stRect.left, eax
-    add     eax, 10
+    add     eax, 11
     mov     @stRect.right, eax
 
     mov     eax, y
     mov     @stRect.top, eax
-    add     eax, 10
+    add     eax, 11
     mov     @stRect.bottom, eax
     invoke  RegisterButton, addr @stRect, 0, 0, 0, 0
     mov     pButton1, eax
@@ -132,6 +132,8 @@ PrefabTestProjectile proc   x:DWORD, y:DWORD
     mov     eax, pButton1
     assume  eax: ptr BUTTONDATA
     or      [eax].isActive, BTNI_DISABLE
+    invoke  BindButtonToBitmap, pButton1, BULLET_C
+
     invoke  RegisterProjectile, 5, real11, real0
     mov     pProjt1, eax
     invoke  ProjtBindButton, pProjt1, pButton1

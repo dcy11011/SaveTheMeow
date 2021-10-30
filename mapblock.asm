@@ -436,7 +436,7 @@ RegisterMapBlock    PROC uses ebx esi edi    posX:DWORD, posY:DWORD
     mov     [edi].diaplaySet, eax       ; set initial display set 
 
     assume  esi: PTR BUTTONDATA
-    invoke  BindMapBlockPopButtonsBitmap, edi, 0, TURRENT_A
+    invoke  BindMapBlockPopButtonsBitmap, edi, 0, TURRENT_A_ICON
     mov     esi, eax
     mov     eax, CreateTurretA
     mov     [esi].pClickEvent, eax
