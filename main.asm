@@ -122,7 +122,6 @@ pProjt1         DWORD  ?
             local   @stRect:RECT
 
             mov eax, uMsg
-            ; invoke dPrint, 999
             .IF eax ==  WM_PAINT
                 invoke  _DoPaint, hWnd
             .ELSEIF eax == WM_ERASEBKGND
@@ -130,16 +129,14 @@ pProjt1         DWORD  ?
                 invoke  _SetupDevice, hWnd
             .ELSEIF eax == WM_TIMER
                 .IF     wParam == TIMER_TICK
-                ; invoke dPrint, 123
-                        invoke  SortButtons ; IMPORTANT!
-
+                        invoke  SortButtons
                         mov     eax, cnt
                         inc     eax
                         mov     cnt, eax
                         
                         invoke  SendUpdateInfo, cnt
                         invoke  ProjtUpdateAll, cnt
-                        invoke  EnemyUpdateAll, cnt
+                        ;invoke  EnemyUpdateAll, cnt
                         invoke  GetClientRect, hWnd, addr @stRect
                         invoke  MoveObj, offset testObj, addr @stRect
 
@@ -185,15 +182,18 @@ pProjt1         DWORD  ?
                 invoke  KillTimer, hInstance, TIMER_TICK
                 invoke  DeleteDC, hMemDc
                 invoke  DeleteObject, hBitmap
+                invoke  ReleaseAllBitmap ; IMPORTANT!
             .ELSEIF eax == WM_CREATE
-
+    
                 invoke  GetDC, hWnd
                 mov     hDc, eax
                 invoke  _SetupDevice, hWnd
 
+                invoke  LoadAllBitmap ; IMPORTANT!
+
                 invoke  SetTimer, hWnd, TIMER_TICK, TICK_INTERVAL, NULL   
 
-                invoke  RegisterMapBlock, 300, 100
+                invoke  LoadMapFromFile, 50, 50
 
                 mov     eax, 100
                 mov     @stRect.left, eax
@@ -230,12 +230,11 @@ pProjt1         DWORD  ?
                 invoke  RegisterButton, addr @stRect, 0, 0, 0, 0
                 invoke  BindButtonToBitmap, eax, BOTTON_START
                 invoke  SetButtonDepth, eax, 3
-                
+                invoke  SortButtons
             .ELSE
                 invoke DefWindowProc, hWnd, uMsg, wParam, lParam
                 ret
             .ENDIF
-            ; invoke dPrint, 888
             xor eax, eax
             ret
     _ProcWinMain ENDP
