@@ -308,17 +308,6 @@ MoveButton    proc uses edx eax pButton: ptr BUTTONDATA, x:DWORD, y:DWORD
     ret     
 MoveButton    endp
 
-MoveButtonTo    proc pButton: ptr BUTTONDATA, x:DWORD, y:DWORD
-    mov     edx, pButton
-    assume  edx: ptr BUTTONDATA
-    mov     ecx, x
-    sub     ecx, [edx].left
-    mov     eax, y 
-    sub     eax, [edx].top
-    invoke  MoveButton, pButton, ecx, eax
-    ret
-MoveButtonTo    endp 
-
 
 SetButtonSize  PROC  uses ebx edi esi pButton:ptr BUTTONDATA, w:DWORD, h:DWORD
     mov     edi, pButton
@@ -546,17 +535,11 @@ CompareByDepth  PROC C   uses ebx esi edi pbuttonAptr: DWORD, pbuttonBptr: DWORD
     mov     eax, [esi].depth
     mov     ebx, [edi].depth
 
-    assume  eax: SDWORD
-    assume  ebx: SDWORD
+    assume  esi: SDWORD
+    assume  edi: SDWORD
 
-    .IF     eax < ebx
-        mov     eax, -1
-    .ELSEIF     eax > ebx
-        mov     eax, 1
-    .ELSE
-        mov   eax, [esi].bottom
-        mov   ebx, [edi].bottom
-        .IF     eax < ebx
+    xor     eax, eax
+    .IF     esi < edi
             mov     eax, -1
         .ELSEIF     eax > ebx
             mov     eax, 1
