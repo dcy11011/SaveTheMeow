@@ -3,6 +3,7 @@
 option casemap:none
 
 include util.inc
+include button.inc
 
 .data
 
@@ -55,10 +56,11 @@ CircleCollision proc  x1:REAL4, y1:REAL4, r1:REAL4, x2:REAL4, y2:REAL4, r2:REAL4
     fcompp  ; if r1+r2 > dist return 0
     fstsw   ax
     sahf
-    xor     eax, eax
-    ja      @f
+    jb      @f
     mov     eax, 1
+    ret
     @@:
+    xor     eax, eax
     ret
 CircleCollision endp
 
@@ -129,5 +131,54 @@ LerpXY proc   x1:REAL4, y1:REAL4, x2:REAL4, y2:REAL4, a:REAL4
     pop     edx
     ret
 LerpXY endp
+
+GetCenterButton proc btn: DWORD
+    local   t:DWORD
+    mov     edx, btn
+    assume  edx: ptr BUTTONDATA
+    fild    DWORD ptr [edx].left
+    fild    DWORD ptr [edx].right
+    fadd
+    fld     DWORD ptr real2
+    fdiv
+    ;
+    fild    DWORD ptr [edx].top
+    fild    DWORD ptr [edx].bottom
+    fadd
+    fld     DWORD ptr real2
+    fdiv
+    ;
+    fstp    DWORD ptr t
+    mov     edx, t
+    fstp    DWORD ptr t
+    mov     eax, t
+    ret
+GetCenterButton endp
+
+GetRadiusButton proc btn: DWORD
+    local   t:DWORD
+    mov     edx, btn
+    assume  edx: ptr BUTTONDATA
+    mov     eax, 2
+    mov     t, eax
+    fild    DWORD ptr [edx].right
+    fild    DWORD ptr [edx].left
+    fsub
+    fild    DWORD ptr t
+    fdiv
+    ;
+    fild    DWORD ptr [edx].bottom
+    fild    DWORD ptr [edx].top
+    fsub
+    fild    DWORD ptr t
+    fdiv
+    ;
+    fadd
+    fild    DWORD ptr t
+    fdiv
+    fstp    DWORD ptr t
+    mov     eax, t
+    ret
+GetRadiusButton endp
 
 end

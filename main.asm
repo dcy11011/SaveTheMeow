@@ -43,8 +43,6 @@ hDc             DWORD 0
 hMemDc          DWORD 0
 hBitmap         DWORD 0
 
-real100         REAL4 100.0
-
 .data?
 tmp             QWORD  ?
 hInstance       DWORD  ?
@@ -77,6 +75,10 @@ pProjt1         DWORD  ?
             invoke  GetClientRect, hWnd, addr @stRect
             invoke  CreateCompatibleBitmap, hDc, @stRect.right, @stRect.bottom
             mov     hBitmap, eax
+            mov     eax, @stRect.right
+            mov     stageWidth, eax
+            mov     eax, @stRect.bottom
+            mov     stageHeight, eax
             ret
     _SetupDevice    endp 
     ;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -101,7 +103,7 @@ pProjt1         DWORD  ?
             invoke  PaintAllButton, hMemDc
 
             invoke  RotateDC, hMemDc, cnt, 135, 61
-            invoke  PaintBitmapEx, hMemDc, BOTTON_START,\
+            invoke  PaintBitmapEx, hMemDc, BUTTON_START,\
                     addr @stRect, 0 
             invoke  ClearDCRotate, hMemDc
 
@@ -120,7 +122,6 @@ pProjt1         DWORD  ?
             local   @stRect:RECT
 
             mov eax, uMsg
-            invoke dPrint, 999
             .IF eax ==  WM_PAINT
                 invoke  _DoPaint, hWnd
             .ELSEIF eax == WM_ERASEBKGND
@@ -128,22 +129,21 @@ pProjt1         DWORD  ?
                 invoke  _SetupDevice, hWnd
             .ELSEIF eax == WM_TIMER
                 .IF     wParam == TIMER_TICK
-                invoke dPrint, 123
-                        invoke  SortButtons ; IMPORTANT!
-
+                        invoke  SortButtons
                         mov     eax, cnt
                         inc     eax
                         mov     cnt, eax
                         
                         invoke  SendUpdateInfo, cnt
                         invoke  ProjtUpdateAll, cnt
-                        invoke  EnemyUpdateAll, cnt
+                        ;invoke  EnemyUpdateAll, cnt
                         invoke  GetClientRect, hWnd, addr @stRect
                         invoke  MoveObj, offset testObj, addr @stRect
 
                         invoke  RoadmapCalcCurrent, real100
                         
                         invoke  InvalidateRect, hWnd, addr @stRect, 0
+                        invoke  SortButtons ; IMPORTANT!
                 .ENDIF
             .ELSEIF eax == WM_MOUSEMOVE
                 mov     eax, lParam
@@ -154,6 +154,12 @@ pProjt1         DWORD  ?
                 invoke  SendHoverInfo, ebx, eax
                 pop     eax ; save eax
                 invoke  UpdateMousePos, ebx, eax
+                ; ------- test enemy
+                ; invoke  PrefabTestEnemy, 200, 200
+                ; invoke  PrefabHurtEffectProj, 200, 200
+                invoke  PrefabTestProjectile, 200, 200
+                invoke  SortButtons ; IMPORTANT!
+                ; ------------------
                 invoke DefWindowProc, hWnd, uMsg, wParam, lParam
                 ret
             .ELSEIF eax == WM_LBUTTONDOWN
@@ -164,6 +170,9 @@ pProjt1         DWORD  ?
                 invoke  SendClickInfo, ebx, eax
                 ; ------- test enemy
                 invoke  PrefabTestEnemy, 200, 200
+                ; invoke  PrefabHurtEffectProj, 200, 200
+                invoke  PrefabTestProjectile, 200, 200
+                invoke  SortButtons ; IMPORTANT!
                 ; ------------------
             .ELSEIF eax == WM_LBUTTONUP
                 invoke  ClearClick
@@ -173,15 +182,18 @@ pProjt1         DWORD  ?
                 invoke  KillTimer, hInstance, TIMER_TICK
                 invoke  DeleteDC, hMemDc
                 invoke  DeleteObject, hBitmap
+                invoke  ReleaseAllBitmap ; IMPORTANT!
             .ELSEIF eax == WM_CREATE
-
+    
                 invoke  GetDC, hWnd
                 mov     hDc, eax
                 invoke  _SetupDevice, hWnd
 
+                invoke  LoadAllBitmap ; IMPORTANT!
+
                 invoke  SetTimer, hWnd, TIMER_TICK, TICK_INTERVAL, NULL   
 
-                invoke  RegisterMapBlock, 300, 100
+                invoke  LoadMapFromFile, 50, 50
 
                 mov     eax, 100
                 mov     @stRect.left, eax
@@ -190,16 +202,17 @@ pProjt1         DWORD  ?
                 mov     @stRect.right, eax
                 mov     @stRect.bottom,eax
                 invoke  RegisterButton, addr @stRect, 0, 0, 0, 0
-                invoke  dPrint3, 0,2, eax
+                ; invoke  dPrint3, 0,2, eax
 
                 invoke  RoadmapClear
                 invoke  RoadmapAddi, 20, 20
                 invoke  RoadmapAddi, 40, 50
                 invoke  RoadmapAddi, 30, 120
                 invoke  RoadmapAddi, 300, 20
+                invoke  RoadmapAddi, 10, 10
                 invoke  RoadmapAddi, 300, 320
                 invoke  PrefabTestEnemy, 200, 200
-                mov     ecx, 23
+                mov     ecx, 2
                 @@:
                 mov     eax, 20
                 mul     ecx
@@ -208,15 +221,6 @@ pProjt1         DWORD  ?
                 pop     ecx
                 loop    @b
 
-                mov     eax, 200
-                mov     @stRect.left, eax
-                mov     @stRect.top,  eax
-                mov     eax, 250
-                mov     @stRect.right, eax
-                mov     @stRect.bottom,eax
-                invoke  RegisterButton, addr @stRect, 0, 0, 0, 0
-                invoke  SetButtonDepth, eax, 2
-
                 mov     eax, 220
                 mov     @stRect.left, eax
                 mov     @stRect.top,  eax
@@ -224,14 +228,13 @@ pProjt1         DWORD  ?
                 mov     @stRect.right, eax
                 mov     @stRect.bottom,eax
                 invoke  RegisterButton, addr @stRect, 0, 0, 0, 0
-                invoke  BindButtonToBitmap, eax, BOTTON_START
+                invoke  BindButtonToBitmap, eax, BUTTON_START
                 invoke  SetButtonDepth, eax, 3
-                
+                invoke  SortButtons
             .ELSE
                 invoke DefWindowProc, hWnd, uMsg, wParam, lParam
                 ret
             .ENDIF
-            invoke dPrint, 888
             xor eax, eax
             ret
     _ProcWinMain ENDP
@@ -261,7 +264,7 @@ pProjt1         DWORD  ?
 
             invoke  CreateWindowEx, WS_EX_CLIENTEDGE, offset szClassName, \
                     offset szCaptionMain, WS_OVERLAPPEDWINDOW, \
-                    100, 100, 900, 600, \
+                    100, 100, 890, 630, \
                     NULL, NULL, hInstance, NULL
             mov     hWinMain, eax
             invoke  ShowWindow, hWinMain, SW_SHOWNORMAL

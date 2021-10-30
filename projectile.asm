@@ -3,12 +3,15 @@
 option casemap:none
 
 include projectile.inc
+include enemy.inc
 include collision.inc
 
 include windows.inc
 include gdi32.inc
 include util.inc 
 include paint.inc
+
+include prefab.inc
 
 .data
 nProjtListCnt           DWORD    0
@@ -59,7 +62,7 @@ GetAvilaibleProjtData proc uses ebx edx edi
 GetAvilaibleProjtData endp
 
 
-RegisterProjectile proc atk: DWORD, speed: REAL4
+RegisterProjectile proc atk: DWORD, speed: REAL4, dir:REAL4
     invoke  GetAvilaibleProjtData
     mov     edx, eax
     assume  edx: ptr PROJTDATA
@@ -73,19 +76,25 @@ RegisterProjectile proc atk: DWORD, speed: REAL4
     mov     eax, real0
     mov     [edx].yf, eax
     mov     eax, real0
+    mov     eax, dir
     mov     [edx].direction, eax
+    mov     eax, real1
+    mov     [edx].radius, eax
+
     mov     [edx].isActive, 1
-    mov     [edx].aParam, 0
-    mov     [edx].bParam, 0
+    mov     [edx].penetrate, 1
+    mov     [edx].lifetime, 100
     mov     [edx].pUpdateEvent, 0
-    mov     [edx].pHurtEvent, 0
-    mov     [edx].pDeathEvent, 0
+    mov     [edx].pHitEvent, 0
     mov     eax, edx
     ret
 RegisterProjectile endp
 
 
 ProjtUpdateAll proc uses esi cnt: DWORD
+    ; pushad
+    ; invoke  dPrint, nProjtListCnt
+    ; popad
     mov     ecx, nProjtListCnt
     and     ecx, ecx
     jnz     @f
@@ -118,6 +127,7 @@ ProjtBindButton proc self: ptr PROJTDATA, btn: ptr BUTTONDATA
     mov     [edx].pAsButton, eax
     assume  eax: ptr BUTTONDATA
     invoke  ProjtSetPositioni, self, [eax].left, [eax].top
+    invoke  ProjtUpdateRadius, self
     ret
 ProjtBindButton endp
 
@@ -135,7 +145,7 @@ ProjtBindUpdate endp
 ;   Geometry
 ;
 
-ProjtUpdatePosition proc uses edi self: ptr PROJTDATA        ; update buttom pos to enemy pos
+ProjtUpdatePosition proc uses edi self: ptr PROJTDATA        ; update button pos to enemy pos
     local   tx:DWORD, ty:DWORD
     mov     edi, self
     assume  edi: ptr PROJTDATA
@@ -209,39 +219,171 @@ ProjtSetDirection proc   self: ptr PROJTDATA, direction:REAL4
     ret
 ProjtSetDirection endp
 
-ProjtStepForward proc    self: ptr PROJTDATA
+ProjtUpdateRadius proc    self: ptr PROJTDATA
     mov     edx, self
     assume  edx: ptr PROJTDATA
-    invoke  GetDirVector, [edi].direction, [edi].speed
-    invoke  ProjtMovePositionf, edi, eax, edx
+    push    edx
+    invoke  GetRadiusButton, [edx].pAsButton
+    pop     edx
+    mov     [edx].radius, eax
     ret
-ProjtStepForward endp
+ProjtUpdateRadius endp
+
 ;
 ;   Events
 ;
 
-ProjtDefaultUpdate PROC uses esi cnt:DWORD, pProjt: ptr PROJTDATA
+ProjtStepForward proc uses edi self: ptr PROJTDATA
+    mov     edi, self
+    assume  edi: ptr PROJTDATA
+    invoke  GetDirVector, [edi].direction, [edi].speed
+    invoke  ProjtMovePositionf, edi, eax, edx
+    sub     [edi].lifetime, 1
+    invoke  ProjtCheckDeath, self
+    ret
+ProjtStepForward endp
+
+
+ProjtSetDeath proc uses edi self: ptr PROJTDATA
+    mov     edi, self
+    assume  edi: ptr PROJTDATA
+    mov     [edi].isActive, 0
+    invoke  DeleteButton, [edi].pAsButton
+    ret
+ProjtSetDeath endp
+
+ProjtCheckDeath proc uses edi self: ptr PROJTDATA
+    mov     edi, self
+    assume  edi: ptr PROJTDATA
+    .IF     [edi].penetrate == 0
+        invoke  ProjtSetDeath, self
+        ret
+    .ENDIF
+    .IF     [edi].lifetime == 0
+        invoke  ProjtSetDeath, self
+        ret
+    .ENDIF
+    mov     edx, [edi].pAsButton
+    assume  edx: ptr BUTTONDATA
+    .IF     [edx].right < 0
+        invoke  ProjtSetDeath, self
+        ret
+    .ENDIF
+    mov     eax, stageWidth
+    .IF     [edx].left > eax
+        invoke  ProjtSetDeath, self
+        ret
+    .ENDIF
+    .IF     [edx].bottom < 0
+        invoke  ProjtSetDeath, self
+        ret
+    .ENDIF
+    mov     eax, stageHeight
+    .IF     [edx].top > eax
+        invoke  ProjtSetDeath, self
+        ret
+    .ENDIF
+    ret
+ProjtCheckDeath endp
+
+ProjtHitEnemies proc uses esi edi self: ptr PROJTDATA, cnt:DWORD
+    local   x1:REAL4, x2:REAL4, y1:REAL4, y2:REAL4
+    mov     edi, self
+    assume  edi: ptr PROJTDATA
+    mov     ecx, 0
+    mov     esi, arrayEnemyListHead
+    .WHILE  ecx < nEnemyListCnt
+        assume  esi: ptr ENEMYDATA
+        mov     ax, [esi].isActive
+        .IF ax
+            push    ecx
+            invoke  GetCenterButton, [esi].pAsButton
+            mov     x1, eax
+            mov     y1, edx
+            invoke  GetCenterButton, [edi].pAsButton
+            mov     x2, eax
+            mov     y2, edx
+            invoke  CircleCollision, x1, y1, [esi].radius, \
+                                     x2, y2, [edi].radius
+            .IF eax
+                mov     eax, [esi].pHurtEvent
+                .IF eax
+                    push    esi
+                    push    cnt
+                    call    eax
+                .ENDIF
+                ; invoke hurt event
+                mov     eax, [edi].pHitEvent
+                .IF eax
+                    push    edi
+                    push    cnt
+                    call    eax
+                .ENDIF
+                ; invoke projectile hit event
+                sub     [edi].penetrate, 1
+                .IF     [edi].penetrate == 0
+                    invoke  PrefabHurtEffectProjf, [edi].xf, [edi].yf
+                    invoke  ProjtCheckDeath, self
+                    pop     ecx
+                    ret
+                .ENDIF
+                ; check penetrate
+            .ENDIF
+            pop     ecx
+        .ENDIF
+        add     esi, sizeof ENEMYDATA
+        add     ecx, 1
+    .ENDW
+    ret
+ProjtHitEnemies endp
+
+;
+;   Update Events
+;
+
+ProjtDefaultUpdate PROC uses esi edi cnt:DWORD, pProjt: ptr PROJTDATA
     local   tmpf: DWORD
-    push    edi ; 'uses edi' statement not suitable when using call rather than invoke
+    push    edi
     ; invoke  dPrint2, cnt, pProjt
     mov     edi, pProjt
     assume  edi: ptr PROJTDATA
     mov     edx, [edi].pAsButton
     assume  edx: ptr BUTTONDATA
 
-    invoke  DirectionTo, [edi].xf, [edi].yf, MouseXf, MouseYf
-    invoke  ProjtSetDirection, pProjt, eax
-    ; push    eax
-    ; invoke  dPrintFloat, eax
-    ; pop     eax
-    ; invoke  GetDirVector, eax, real1
-    ; invoke  ProjtMovePositionf, edi, eax, edx
-    ; invoke  LerpXY, [edi].xf, [edi].yf, MouseXf, MouseYf, real9of10
-    ; invoke  ProjtSetPositionf, edi, eax, edx
+    ; invoke  DirectionTo, [edi].xf, [edi].yf, MouseXf, MouseYf
+    ; invoke  ProjtSetDirection, pProjt, eax
+    ; change dir
+
+    invoke  ProjtHitEnemies, pProjt, cnt
     invoke  ProjtStepForward, pProjt
 
     pop     edi
     ret
 ProjtDefaultUpdate endp
+
+
+ProjtHurtEffectUpdate PROC uses esi edi cnt:DWORD, pProjt: ptr PROJTDATA
+    local   tmpf: DWORD
+    push    edi 
+    ; invoke  dPrint2, cnt, pProjt
+    mov     edi, pProjt
+    assume  edi: ptr PROJTDATA
+    mov     edx, [edi].pAsButton
+    assume  edx: ptr BUTTONDATA
+    add     [edx].top, 1
+    sub     [edx].bottom, 1
+    sub     [edx].left, 2
+    add     [edx].right, 2
+    invoke  ProjtBindButton, pProjt, edx
+
+    ; invoke  DirectionTo, [edi].xf, [edi].yf, MouseXf, MouseYf
+    ; invoke  ProjtSetDirection, pProjt, eax
+    ; change dir
+
+    invoke  ProjtStepForward, pProjt
+
+    pop     edi
+    ret
+ProjtHurtEffectUpdate endp
 
 end

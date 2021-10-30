@@ -20,10 +20,13 @@ include mapblock.inc
 .data
 nMapBlockListCnt           DWORD    0
 bIfInitMapBlockData        DWORD    0
-defaultAngset              DWORD    120, 90, 60, 135, 45, 0
+defaultAngset              DWORD    210, 90, 330, 135, 45, 0
 defualtButtonGroupID       DWORD    1, 1, 1, 2, 2, 3, 3
 popRatio                   REAL4    0.3
 one                        REAL4    1.0
+szMapFileName              BYTE     "map0.data", 0
+pLastMapBlock              DWORD    0
+ptRoutePoint               D_POINT  MAX_ROUTEPOINT DUP(<?>)
 
 .data?
 arrayMapBlockList MAPBLOCKDATA MAXMAPBLOCKCNT DUP(<?>)
@@ -105,6 +108,13 @@ MapBlockClicked PROC uses ebx esi edi   pButton: ptr BUTTONDATA
     mov     edi, [edi].bParam
     assume  edi: ptr MAPBLOCKDATA
     mov     eax, [edi].status
+    mov     esi, pLastMapBlock
+    assume  esi: ptr MAPBLOCKDATA
+    .IF     esi != edi && esi !=0
+        mov     eax, MAPB_CONTRACTING
+        mov     [esi].status, eax
+    .ENDIF
+    mov     pLastMapBlock, edi
     .IF     eax == MAPB_DISABLED
         ret
     .ENDIF
@@ -140,7 +150,7 @@ MapBlockUpdate  PROC uses ebx esi edi   cnt:DWORD, pButton: ptr BUTTONDATA
         push    edx
         mov     edx, DWORD PTR [edx]
         .IF     edx != @currentDisplay
-            mov     eax, [esi]
+            mov     eax, DWORD ptr [esi]
             invoke  MoveButtonCenterTo, eax, -100, -100
             jmp     s8
         .ENDIF
@@ -181,7 +191,7 @@ MapBlockUpdate  PROC uses ebx esi edi   cnt:DWORD, pButton: ptr BUTTONDATA
         mov     edx, [edi].centerY
         sub     edx, @y
         mov     @y, edx
-        mov     eax, [esi]
+        mov     eax, DWORD ptr [esi]
         invoke  MoveButtonCenterTo, eax, @x, @y
 
         pop     edi
@@ -240,7 +250,9 @@ RegisterMapBlock    PROC uses ebx esi edi    posX:DWORD, posY:DWORD
     invoke  GetAvilaibleMapBlockData
     mov     edi, eax
     assume  edi: ptr MAPBLOCKDATA
-    invoke  RegisterButton, addr @rect, MapBlockBasePaint, MapBlockClicked,0,MapBlockUpdate
+    invoke  RegisterButton, addr @rect, 0, MapBlockClicked,0,MapBlockUpdate
+    invoke  BindButtonToBitmap, eax, BMP_BASE
+    invoke  SetButtonSize, eax, MAPB_BLOCKWIDTH, MAPB_BLOCKHEIGHT
     mov     [edi].pAsButton, eax
     mov     esi, eax
     assume  esi: ptr BUTTONDATA
@@ -257,7 +269,7 @@ RegisterMapBlock    PROC uses ebx esi edi    posX:DWORD, posY:DWORD
     invoke  MoveButtonTo, eax, -100, -100
     assume  eax: PTR BUTTONDATA
     mov     [eax].bParam, edi
-    mov     ebx, -10
+    mov     ebx, -5000
     sub     ebx, ecx
     invoke  SetButtonDepth, eax, ebx
     add     esi, sizeof DWORD
@@ -331,7 +343,6 @@ BindMapBlockPopButtonsBitmap  PROC uses ebx esi edi pMapBlock: ptr MAPBLOCKDATA,
     invoke  GetButtonptrByID, pMapBlock, id
     mov     edi, eax
     assume  edi: ptr BUTTONDATA
-    invoke  dPrint2, edi, IDBitmap
     invoke  BindButtonToBitmap, edi, IDBitmap
     ret
 BindMapBlockPopButtonsBitmap  ENDP
@@ -343,5 +354,147 @@ SetMapBlockDisplaySet   PROC  uses ebx edi esi pMapBlock: ptr MAPBLOCKDATA, id:D
     mov     [edi].diaplaySet, eax
     ret
 SetMapBlockDisplaySet  ENDP
+
+LoadMapFromFile     PROC uses ebx edi esi offsetX:DWORD, offsetY:DWORD
+    local   @file:DWORD, @x:DWORD, @y:DWORD, @rect:RECT, @route_point_cnt:DWORD
+    invoke  OpenTextFile, offset szMapFileName
+    mov     @file, eax
+    
+    mov     ecx, 0
+    mov     edx, 0
+
+    mov     @route_point_cnt, ecx
+
+    .WHILE ecx < MAP_HEIGHT
+        push    ecx
+        invoke  GetFileLine, @file
+        pop     ecx
+        push    ecx
+        mov     esi, eax 
+        mov     ebx, 0
+        .WHILE ebx < MAP_WIDTH
+            
+            dec     edx
+            push    ecx
+            push    ebx
+
+            mov     eax, ecx
+            mov     ecx, MAPB_BLOCKMARGINY 
+            mul     ecx
+            mov     ecx, eax
+            add     ecx, offsetY
+            mov     @y, ecx ; y = offsetY + MAPB_BLOCKWIDTH  * ecx
+
+            mov     eax, ebx
+            mov     ebx, MAPB_BLOCKMARGINX
+            mul     ebx
+            mov     ebx, eax
+            add     ebx, offsetX
+            mov     @x, ebx ; X = offsetX + MAPB_BLOCKHEIGHT * ecx
+            
+            pop     ebx
+            pop     ecx
+            xor     eax, eax
+            mov     al, BYTE PTR [esi]
+            .IF     al == 43 || (al >=48 && al <= 64) 
+                push    ecx
+                push    edx
+                mov     eax, @x
+                mov     @rect.left, eax
+                mov     eax, @y
+                add     eax, 5
+                mov     @rect.top, eax
+                invoke  RegisterButton, addr @rect, 0, 0, 0, 0
+                assume  eax: ptr BUTTONDATA
+                mov     dx, BTNI_DISABLE
+                mov     WORD PTR [eax].isActive, dx
+                invoke  BindButtonToBitmap, eax, BMP_ROAD
+                invoke  SetButtonSize, eax, MAPB_BLOCKWIDTH, MAPB_BLOCKHEIGHT
+                pop     edx
+                pop     ecx
+                mov     [eax].isActive, BTNI_DISABLE
+            .ELSEIF al == 111
+                push    ecx
+                push    edx
+                invoke  RegisterMapBlock, @x, @y
+
+                mov     eax, @x
+                mov     @rect.left, eax
+                mov     eax, @y
+                add     eax, MAPB_BLOCKHEIGHT
+                mov     @rect.top, eax
+                invoke  RegisterButton, addr @rect, 0, 0, 0, 0
+                assume  eax: ptr BUTTONDATA
+                mov     dx, BTNI_DISABLE
+                mov     WORD PTR [eax].isActive, dx
+                invoke  BindButtonToBitmap, eax, BMP_EMPTY
+                invoke  SetButtonSize, eax, MAPB_BLOCKWIDTH, 15
+                pop     edx
+                pop     ecx
+            .ELSEIF al == 95
+                push    ecx
+                push    edx
+                mov     eax, @x
+                mov     @rect.left, eax
+                mov     eax, @y
+                sub     eax, 10
+                mov     @rect.top, eax
+                invoke  RegisterButton, addr @rect, 0, 0, 0, 0
+                assume  eax: ptr BUTTONDATA
+                mov     dx, BTNI_DISABLE
+                mov     WORD PTR [eax].isActive, dx
+                invoke  BindButtonToBitmap, eax, BMP_EMPTY
+                invoke  SetButtonSize, eax, MAPB_BLOCKWIDTH, MAPB_BLOCKHEIGHT
+                mov     eax, @x
+                mov     @rect.left, eax
+                mov     eax, @y
+                sub     eax, 10
+                add     eax, MAPB_BLOCKHEIGHT
+                mov     @rect.top, eax
+                invoke  RegisterButton, addr @rect, 0, 0, 0, 0
+                assume  eax: ptr BUTTONDATA
+                mov     dx, BTNI_DISABLE
+                mov     WORD PTR [eax].isActive, dx
+                invoke  BindButtonToBitmap, eax, BMP_EMPTY
+                invoke  SetButtonSize, eax, MAPB_BLOCKWIDTH, 25
+                pop     edx
+                pop     ecx
+                mov [eax].isActive, BTNI_DISABLE
+            .ELSEIF   al > 48 && al < 78
+                sub     eax, 48
+                inc     eax
+                .IF     eax > @route_point_cnt
+                    mov     @route_point_cnt, eax
+                .ENDIF
+                dec     eax
+                push    ebx
+                mov     ebx, sizeof D_POINT
+                mul     ebx
+                add     eax, offset ptRoutePoint
+                assume  eax: ptr D_POINT
+                
+                mov     ebx, MAPB_BLOCKWIDTH
+                shr     ebx, 1
+                add     ebx, @x
+                mov     [eax].x, ebx
+                mov     ebx, MAPB_BLOCKHEIGHT
+                shr     ebx, 1
+                add     ebx, @y
+                mov     [eax].y, ebx
+                pop     ebx
+            .ENDIF
+
+            inc     esi
+            inc     ebx
+        .ENDW
+        pop     ecx
+        inc     ecx 
+    .ENDW
+    invoke CloseFile, @file
+    mov     eax, offset ptRoutePoint
+    mov     edx, @route_point_cnt
+    ret
+LoadMapFromFile     ENDP
+
 
 end

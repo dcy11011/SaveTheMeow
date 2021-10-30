@@ -5,6 +5,8 @@ option casemap:none
 include util.inc
 
 .data
+szOpenFile          byte    "r", 0
+szFileGetLineFormat byte    "%s", 0
 szdPrintFormat      byte    "%d", 0dh, 0ah, 0
 szdPrint2Format     byte    "%d %d", 0dh, 0ah, 0
 szdPrint3Format     byte    "%d %d %d", 0dh, 0ah, 0
@@ -13,15 +15,21 @@ szdPrint2FloatFormat byte    "(%f %f)", 0dh, 0ah, 0
 PI                  REAL4   3.1415926
 real0               REAL4   0.0
 real1               REAL4   1.0
+real2               REAL4   2.0
 real1n              REAL4   -1.0
 real1of2            REAL4   0.5
 real1of3            REAL4   0.33333
 real2of3            REAL4   0.66666
 real9of10           REAL4   0.9
+real11              REAL4   11.0
+real100             REAL4   100.0
 MouseXi             DWORD   0
 MouseYi             DWORD   0
 MouseXf             REAL4   0.0
 MouseYf             REAL4   0.0
+
+.data?
+fileBuffer          BYTE    1024 DUP(?)
 
 .code
 dPrint      proc  data:DWORD
@@ -98,5 +106,22 @@ UpdateMousePos proc x:DWORD, y:DWORD
     ret
 UpdateMousePos endp
 
+OpenTextFile        PROC uses ebx edi esi szFileName:DWORD
+    invoke  printf, szFileName
+    invoke  fopen, szFileName, offset szOpenFile
+    ret
+OpenTextFile        ENDP
+
+GetFileLine     PROC uses ebx edi esi pFile:DWORD
+    invoke  fscanf, pFile, offset szFileGetLineFormat, offset fileBuffer
+    mov     eax, offset fileBuffer
+    ret
+GetFileLine     ENDP
+
+CloseFile      PROC uses ebx esi edi  pFile:DWORD
+    invoke  fclose, pFile
+    ret
+CloseFile       ENDP
+    
 
 end

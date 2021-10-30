@@ -7,7 +7,7 @@ BTNS_CLICK       EQU     0004h
 BTNI_DISABLE     EQU     0001h ; 禁用按钮，将不会收到鼠标事件
 BTNI_RUNNING     EQU     0002h
 
-MAXBTNCNT        EQU     2500   ; 最大的按钮数量； Note：没有溢出保护
+MAXBTNCNT        EQU     4000   ; 最大的按钮数量； Note：没有溢出保护
 
 
 BUTTONDATA struct

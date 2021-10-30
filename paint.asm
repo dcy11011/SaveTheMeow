@@ -11,12 +11,67 @@ include msimg32.inc
 include paint.inc
 include util.inc
 include main.inc
+include rclist.inc
+
+.data 
+BitmapbufferCnt DWORD   0
+
+.data
+stageWidth      DWORD 0
+stageHeight     DWORD 0
 
 .data?
 blendFunction   BLENDFUNCTION   <?>
 
+BitmapBuffer    HBITMAP  MAXBITMAP DUP(?)
+
 
 .code
+
+ReleaseAllBitmap PROC  uses ebx edi esi
+    lea     edi, BitmapBuffer
+    mov     ecx, MIN_BITMAP_ID
+    mov     eax, sizeof HBITMAP
+    mul     ecx
+    add     edi, eax
+    .WHILE ecx <= MAX_BITMAP_ID
+        push    ecx
+        mov     ebx, DWORD ptr [edi]
+        invoke  DeleteObject, ebx
+        add     edi, sizeof HBITMAP
+        pop     ecx
+        inc     ecx
+    .ENDW
+    ret
+ReleaseAllBitmap ENDP
+
+LoadAllBitmap PROC  uses ebx edi esi
+    lea     edi, BitmapBuffer
+    mov     ecx, MIN_BITMAP_ID
+    mov     eax, sizeof HBITMAP
+    mul     ecx
+    add     edi, eax
+    .WHILE ecx <= MAX_BITMAP_ID
+        invoke  dPrint, ecx
+        push    ecx
+        invoke  LoadBitmap, hInstance, ecx
+        mov     DWORD ptr [edi], eax
+        add     edi, sizeof HBITMAP
+        pop     ecx
+        inc     ecx
+    .ENDW
+    ret
+LoadAllBitmap ENDP
+
+LoadBitmapFromBuffer PROC  uses ebx edi esi  BitmapID:DWORD
+    lea     edi, BitmapBuffer
+    mov     eax, sizeof HBITMAP
+    mul     BitmapID
+    add     edi, eax
+    mov     eax, DWORD PTR [edi]
+    ret
+LoadBitmapFromBuffer ENDP
+
 
 InitPaint   PROC    uses ebx edi esi 
     mov     al, AC_SRC_OVER
@@ -89,7 +144,7 @@ PrepareBitmapPaint  PROC  uses edi ebx  hDc:DWORD, bitmapID:DWORD, lpBitmapData:
     invoke  CreateCompatibleDC, hDc
     mov     @hDcBitmap, eax
     mov     [edi].hDcBitmap, eax
-    invoke  LoadBitmap, hInstance, bitmapID
+    invoke  LoadBitmapFromBuffer, bitmapID
     mov     @hBitmap, eax
     mov     [edi].hBitmap, eax
     invoke  SelectObject, @hDcBitmap, @hBitmap
@@ -124,7 +179,6 @@ ReleaseBitmapData  PROC uses edi lpBitmapData: ptr BITMAPDATA
     assume  edi: ptr BITMAPDATA
 
     invoke  DeleteDC, [edi].hDcBitmap
-    invoke  DeleteObject, [edi].hBitmap
 
     xor     eax, eax
     ret

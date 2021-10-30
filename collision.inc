@@ -9,3 +9,6 @@ GetDirVector    PROTO   dir:REAL4, len:REAL4           ; returns (x, y) -> eax, 
 
 Lerp            PROTO   x1:REAL4, x2:REAL4, a:REAL4
 LerpXY          PROTO   x1:REAL4, y1:REAL4, x2:REAL4, y2:REAL4, a:REAL4 ; -> eax, edx
+
+GetCenterButton PROTO   btn: DWORD                  ; return (x, y) -> eax, edx
+GetRadiusButton PROTO   btn: DWORD                 
