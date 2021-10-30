@@ -100,6 +100,16 @@ pProjt1         DWORD  ?
                     DT_SINGLELINE or DT_CENTER or DT_VCENTER
             invoke  PaintAllButton, hMemDc
 
+<<<<<<< HEAD
+=======
+            invoke  RotateDCi, hMemDc, cnt, 135, 61
+            invoke  PaintBitmapEx, hMemDc, BUTTON_START,\
+                    addr @stRect, 0 
+            invoke  ClearDCRotate, hMemDc
+
+            invoke  PaintBitmapTrans, hMemDc, MAP_BLOCK, 200, 50
+
+>>>>>>> upstream/dcy11011
             invoke  BitBlt, hDc, 0, 0, @stRect.right, @stRect.bottom, \
                     hMemDc, 0, 0, SRCCOPY
             
