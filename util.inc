@@ -3,6 +3,11 @@ D_POINT     struct
     y   DWORD   ?
 D_POINT     ends
 
+F_POINT     struct
+    x   REAL4   ?
+    y   REAL4   ?
+F_POINT     ends
+
 printf          PROTO C :ptr sbyte, :VARARG
 qsort           PROTO C :DWORD, :DWORD, :DWORD, :DWORD
 memset          PROTO C :DWORD, :DWORD, :DWORD

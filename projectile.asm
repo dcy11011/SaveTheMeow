@@ -92,8 +92,8 @@ ProjtUpdateAll proc uses esi cnt: DWORD
     ret
     @@:
     lea     esi, arrayProjtList
-    assume  esi: ptr PROJTDATA
     @@:
+        assume  esi: ptr PROJTDATA
         mov     ax, [esi].isActive
         .IF ax
             mov     eax, [esi].pUpdateEvent
@@ -105,8 +105,7 @@ ProjtUpdateAll proc uses esi cnt: DWORD
             .ENDIF
             pop     ecx
         .ENDIF
-        add     eax, sizeof PROJTDATA
-        add     esi, eax
+        add     esi, sizeof PROJTDATA
     loop @b
     ret
 ProjtUpdateAll endp
@@ -128,6 +127,7 @@ ProjtBindUpdate proc self: ptr PROJTDATA, upd: DWORD
     mov     edx, self
     assume  edx: ptr PROJTDATA
     mov     [edx].pUpdateEvent, eax
+    ; invoke  dPrint, self
     ret
 ProjtBindUpdate endp
 
@@ -220,13 +220,14 @@ ProjtStepForward endp
 ;   Events
 ;
 
-ProjtDefaultUpdate PROC uses ebx edi esi cnt:DWORD, pProjt: ptr PROJTDATA
+ProjtDefaultUpdate PROC uses esi cnt:DWORD, pProjt: ptr PROJTDATA
     local   tmpf: DWORD
+    push    edi ; 'uses edi' statement not suitable when using call rather than invoke
+    ; invoke  dPrint2, cnt, pProjt
     mov     edi, pProjt
     assume  edi: ptr PROJTDATA
     mov     edx, [edi].pAsButton
     assume  edx: ptr BUTTONDATA
-
 
     invoke  DirectionTo, [edi].xf, [edi].yf, MouseXf, MouseYf
     invoke  ProjtSetDirection, pProjt, eax
@@ -239,6 +240,7 @@ ProjtDefaultUpdate PROC uses ebx edi esi cnt:DWORD, pProjt: ptr PROJTDATA
     ; invoke  ProjtSetPositionf, edi, eax, edx
     invoke  ProjtStepForward, pProjt
 
+    pop     edi
     ret
 ProjtDefaultUpdate endp
 

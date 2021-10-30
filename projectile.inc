@@ -21,7 +21,7 @@ PROJTDATA struct
 PROJTDATA ends
 
 
-RegisterProjectile        PROTO    atk: DWORD, speed: REAL4
+RegisterProjectile      PROTO    atk: DWORD, speed: REAL4
 ProjtBindButton         PROTO    self: ptr PROJTDATA, btn: ptr BUTTONDATA
 ProjtBindUpdate         PROTO    self: ptr PROJTDATA, upd: DWORD
 
