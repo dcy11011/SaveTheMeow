@@ -82,10 +82,11 @@ int main(int argc, char * argv[]){
 	for(int i=0;i<cnt;i++){
 		fprintf(rcOut,"%s %s %s\n",ri[i].name.c_str(),ri[i].type.c_str(),ri[i].path.c_str());
 	}
+	fprintf(incOut,"MIN_BITMAP_ID  EQU  %d\n", 1);
 	for(int i=0;i<cnt;i++){
 		fprintf(incOut,"%s  EQU  %d\n",ri[i].name.c_str(),i+1);
 	}
-	
+	fprintf(incOut,"MAX_BITMAP_ID  EQU  %d\n", cnt);
 	fclose(rcOut);
 	fclose(incOut);
 	return 0;

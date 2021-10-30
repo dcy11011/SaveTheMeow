@@ -170,11 +170,14 @@ pProjt1         DWORD  ?
                 invoke  KillTimer, hInstance, TIMER_TICK
                 invoke  DeleteDC, hMemDc
                 invoke  DeleteObject, hBitmap
+                invoke  ReleaseAllBitmap ; IMPORTANT!
             .ELSEIF eax == WM_CREATE
     
                 invoke  GetDC, hWnd
                 mov     hDc, eax
                 invoke  _SetupDevice, hWnd
+
+                invoke  LoadAllBitmap ; IMPORTANT!
 
                 invoke  SetTimer, hWnd, TIMER_TICK, TICK_INTERVAL, NULL   
 

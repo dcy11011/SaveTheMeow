@@ -20,7 +20,7 @@ include mapblock.inc
 .data
 nMapBlockListCnt           DWORD    0
 bIfInitMapBlockData        DWORD    0
-defaultAngset              DWORD    120, 90, 60, 135, 45, 0
+defaultAngset              DWORD    210, 90, 330, 135, 45, 0
 defualtButtonGroupID       DWORD    1, 1, 1, 2, 2, 3, 3
 popRatio                   REAL4    0.3
 one                        REAL4    1.0
@@ -334,7 +334,6 @@ BindMapBlockPopButtonsBitmap  PROC uses ebx esi edi pMapBlock: ptr MAPBLOCKDATA,
     invoke  GetButtonptrByID, pMapBlock, id
     mov     edi, eax
     assume  edi: ptr BUTTONDATA
-    invoke  dPrint2, edi, IDBitmap
     invoke  BindButtonToBitmap, edi, IDBitmap
     ret
 BindMapBlockPopButtonsBitmap  ENDP
@@ -351,7 +350,6 @@ LoadMapFromFile     PROC uses ebx edi esi offsetX:DWORD, offsetY:DWORD
     local   @file:DWORD, @x:DWORD, @y:DWORD, @rect:RECT
     invoke  OpenTextFile, offset szMapFileName
     mov     @file, eax
-    invoke  dPrint2, 300, @file
     
     mov     ecx, 0
     mov     edx, 0
@@ -388,7 +386,6 @@ LoadMapFromFile     PROC uses ebx edi esi offsetX:DWORD, offsetY:DWORD
             xor     eax, eax
             mov     al, BYTE PTR [esi]
             .IF     al == 43 || (al >=48 && al <= 64) 
-                invoke dPrint3, 999999,99999,99999
                 push ecx
                 push edx
                 mov  eax, @x
@@ -401,8 +398,6 @@ LoadMapFromFile     PROC uses ebx edi esi offsetX:DWORD, offsetY:DWORD
                 mov  WORD PTR [eax].isActive, dx
                 invoke BindButtonToBitmap, eax, BMP_ROAD
                 invoke SetButtonSize, eax, MAPB_BLOCKWIDTH, MAPB_BLOCKHEIGHT
-                invoke dPrint2, [eax].top, [eax].left
-                invoke dPrint2, [eax].bottom, [eax].right
                 pop  edx
                 pop  ecx
                 mov [eax].isActive, BTNI_DISABLE
@@ -413,7 +408,6 @@ LoadMapFromFile     PROC uses ebx edi esi offsetX:DWORD, offsetY:DWORD
                 pop  edx
                 pop  ecx
             .ELSEIF al == 95
-                invoke dPrint3, 999999,99999,99999
                 push ecx
                 push edx
                 mov  eax, @x
@@ -426,8 +420,6 @@ LoadMapFromFile     PROC uses ebx edi esi offsetX:DWORD, offsetY:DWORD
                 mov  WORD PTR [eax].isActive, dx
                 invoke BindButtonToBitmap, eax, BMP_EMPTY
                 invoke SetButtonSize, eax, MAPB_BLOCKWIDTH, MAPB_BLOCKHEIGHT
-                invoke dPrint2, [eax].top, [eax].left
-                invoke dPrint2, [eax].bottom, [eax].right
                 pop  edx
                 pop  ecx
                 mov [eax].isActive, BTNI_DISABLE

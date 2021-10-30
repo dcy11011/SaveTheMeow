@@ -8,6 +8,8 @@ CENTER_MASK     EQU     000000f0h
 CENTER_NONE     EQU     00000000h
 CENTER_XY       EQU     00000030h
 
+MAXBITMAP       EQU     1000h
+
 
 
 CIRCLEDATA struct
@@ -24,6 +26,9 @@ BITMAPDATA struct
 BITMAPDATA ends
 
 InitPaint       PROTO   
+
+LoadAllBitmap       PROTO
+ReleaseAllBitmap    PROTO
 
 GetCircleRect   PROTO   lpCircle: ptr CIRCLEDATA, lpRect: ptr RECT
 PaintCircleCR   PROTO   hDc:DWORD, centerX:DWORD, centerY:DWORD, r:DWORD
