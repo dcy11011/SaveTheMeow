@@ -26,8 +26,10 @@ include rclist.inc
 include testobj.inc
 Include button.inc            
 include enemy.inc
+include projectile.inc
 include mapblock.inc
 
+include prefab.inc
 
 include main.inc
 
@@ -40,6 +42,8 @@ cnt             dd  0
 hDc             DWORD 0
 hMemDc          DWORD 0
 hBitmap         DWORD 0
+
+real100         REAL4 100.0
 
 .data?
 tmp             QWORD  ?
@@ -118,7 +122,6 @@ pProjt1         DWORD  ?
             mov eax, uMsg
             invoke dPrint, 999
             .IF eax ==  WM_PAINT
-                
                 invoke  _DoPaint, hWnd
             .ELSEIF eax == WM_ERASEBKGND
             .ELSEIF eax == WM_SIZE
@@ -133,11 +136,12 @@ pProjt1         DWORD  ?
                         mov     cnt, eax
                         
                         invoke  SendUpdateInfo, cnt
-                        ;invoke  EnemyUpdateAll, cnt
+                        invoke  ProjtUpdateAll, cnt
+                        invoke  EnemyUpdateAll, cnt
                         invoke  GetClientRect, hWnd, addr @stRect
                         invoke  MoveObj, offset testObj, addr @stRect
 
-                        invoke  dPrint2, @stRect.right, @stRect.bottom
+                        invoke  RoadmapCalcCurrent, real100
                         
                         invoke  InvalidateRect, hWnd, addr @stRect, 0
                 .ENDIF
@@ -158,6 +162,9 @@ pProjt1         DWORD  ?
                 and     ebx, 0000FFFFh
                 shr     eax, 16
                 invoke  SendClickInfo, ebx, eax
+                ; ------- test enemy
+                invoke  PrefabTestEnemy, 200, 200
+                ; ------------------
             .ELSEIF eax == WM_LBUTTONUP
                 invoke  ClearClick
             .ELSEIF eax == WM_CLOSE
@@ -184,6 +191,22 @@ pProjt1         DWORD  ?
                 mov     @stRect.bottom,eax
                 invoke  RegisterButton, addr @stRect, 0, 0, 0, 0
                 invoke  dPrint3, 0,2, eax
+
+                invoke  RoadmapClear
+                invoke  RoadmapAddi, 20, 20
+                invoke  RoadmapAddi, 40, 50
+                invoke  RoadmapAddi, 30, 120
+                invoke  RoadmapAddi, 300, 20
+                invoke  RoadmapAddi, 300, 320
+                invoke  PrefabTestEnemy, 200, 200
+                mov     ecx, 23
+                @@:
+                mov     eax, 20
+                mul     ecx
+                push    ecx
+                invoke  PrefabTestProjectile, ecx, eax
+                pop     ecx
+                loop    @b
 
                 mov     eax, 200
                 mov     @stRect.left, eax
