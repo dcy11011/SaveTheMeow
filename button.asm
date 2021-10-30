@@ -191,30 +191,53 @@ ButtonDefaultPaint  ENDP
 
 ButtonBitmapPaint   PROC uses ebx edi esi hdc:DWORD, pButton: ptr BUTTONDATA
     local   @oldPen, @oldBrush, @stRect:RECT
-    local   @colorAdjustment:COLORADJUSTMENT, @oldColorAdjustment:COLORADJUSTMENT
+    ;ocal   @colorAdjustment:COLORADJUSTMENT, @oldColorAdjustment:COLORADJUSTMENT
     mov     edi, pButton
     assume  edi: ptr BUTTONDATA
     invoke  GetButtonRect, pButton, addr @stRect
-    invoke  GetColorAdjustment, hdc, addr @colorAdjustment
-    invoke  memcpy, addr @oldColorAdjustment, addr @colorAdjustment, sizeof COLORADJUSTMENT
-    lea     esi, @colorAdjustment
-    assume  esi: ptr COLORADJUSTMENT
-    mov     bx, [edi].status
-    and     bx, BTNS_HOVER
-    .IF     bx
-        mov     ax, 50
-        mov     [esi].caBrightness, ax
-    .ENDIF
+    ;invoke  GetColorAdjustment, hdc, addr @colorAdjustment
+    ;invoke  memcpy, addr @oldColorAdjustment, addr @colorAdjustment, sizeof COLORADJUSTMENT
+    ;lea     esi, @colorAdjustment
+    ;assume  esi: ptr COLORADJUSTMENT
+    
+    push    edi
     mov     bx, [edi].status
     and     bx, BTNS_CLICK
     .IF     bx
-        mov     ax, -50
-        mov     [esi].caBrightness, ax
+        ;mov     ax, -50
+        ;mov     [esi].caBrightness, ax
+        invoke  SetPen, hdc, PS_SOLID, 2, 00111111h
+        mov     @oldPen, eax
+        invoke  GetStockObject, NULL_BRUSH
+        invoke  SelectObject, hdc, eax
+        mov     @oldBrush, eax
+        invoke  PaintRoundRect, hdc, addr @stRect, 10
+        invoke  SelectObject, hdc, @oldBrush
+        invoke  SelectObject, hdc, @oldPen
+        invoke  DeleteObject, eax
+    .ELSE
+        mov     bx, [edi].status
+        and     bx, BTNS_HOVER
+        .IF     bx
+            ;mov     ax, 50
+            ;mov     [esi].caBrightness, ax
+            invoke  SetPen, hdc, PS_SOLID, 2, 00ffffffh
+            mov     @oldPen, eax
+            invoke  GetStockObject, NULL_BRUSH
+            invoke  SelectObject, hdc, eax
+            mov     @oldBrush, eax
+            invoke  PaintRoundRect, hdc, addr @stRect, 10
+            invoke  SelectObject, hdc, @oldBrush
+            invoke  SelectObject, hdc, @oldPen
+            invoke  DeleteObject, eax
+        .ENDIF
     .ENDIF
+    pop     edi
 
-    invoke  SetColorAdjustment, hdc, addr @colorAdjustment
-    invoke  PaintBitmapTrans, hdc, [edi].aParam, addr @stRect, STRETCH_XY
-    invoke  SetColorAdjustment, hdc, addr @oldColorAdjustment
+    ;invoke  SetColorAdjustment, hdc, addr @colorAdjustment
+    invoke  PaintBitmapTransEx, hdc, [edi].aParam, addr @stRect, STRETCH_XY
+    ;invoke  SetColorAdjustment, hdc, addr @oldColorAdjustment
+
     xor     eax, eax
     ret
 ButtonBitmapPaint   ENDP
@@ -302,11 +325,11 @@ SetButtonSize  PROC  uses ebx edi esi pButton:ptr BUTTONDATA, w:DWORD, h:DWORD
     assume  edi: ptr BUTTONDATA
     mov     eax, [edi].left
     add     eax, w
-    mov     eax, [edi].right
+    mov     [edi].right, eax ;fixed bug
     mov     eax, [edi].top
     add     eax, h
-    mov     eax, [edi].bottom
-    xor     eax, eax
+    mov     [edi].bottom, eax
+    mov     eax, pButton
     ret
 SetButtonSize endp
 
@@ -319,7 +342,7 @@ GetButtonSize  PROC uses ebx edi esi pButton: ptr BUTTONDATA, pPoint: ptr D_POIN
     sub     ebx, [edi].left
     mov     [esi].x, ebx
     mov     ebx, [edi].bottom
-    mov     ebx, [edi].top
+    sub     ebx, [edi].top
     mov     [esi].y, ebx
     ret
 GetButtonSize   ENDP
@@ -336,6 +359,25 @@ MoveButtonTo    proc uses edx eax pButton: ptr BUTTONDATA, x:DWORD, y:DWORD
     invoke  MoveButton, pButton, x, y
     ret     
 MoveButtonTo    endp
+
+MoveButtonCenterTo  PROC  uses edx eax pButton: ptr BUTTONDATA, x:DWORD, y:DWORD
+    local     @wh:D_POINT
+    mov     edx, pButton
+    assume  edx: ptr BUTTONDATA
+    invoke  GetButtonSize, pButton, addr @wh
+    mov     eax, @wh.x
+    shr     eax, 1
+    sub     eax, x
+    neg     eax
+    mov     @wh.x, eax
+    mov     eax, @wh.y
+    shr     eax, 1
+    sub     eax, y
+    neg     eax
+    mov     @wh.y, eax
+    invoke  MoveButtonTo, pButton, @wh.x, @wh.y
+    ret
+MoveButtonCenterTo  ENDP
 
 
 InButtonRange   proc uses ebx edi pButton:ptr BUTTONDATA, x:DWORD, y:DWORD

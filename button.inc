@@ -38,6 +38,7 @@ DeleteButton            PROTO    pButton: ptr BUTTONDATA                    ; �
 
 MoveButton              PROTO    pButton: ptr BUTTONDATA, detx:DWORD, dety:DWORD; 移动按钮
 MoveButtonTo            PROTO    pButton: ptr BUTTONDATA, x:DWORD, y:DWORD  ; 移动按钮到指定位置
+MoveButtonCenterTo      PROTO    pButton: ptr BUTTONDATA, x:DWORD, y:DWORD
 SetButtonSize           PROTO    pButton: ptr BUTTONDATA, w:DWORD, h:DWORD  ; 设置按钮大小，以左上角为基准调整
 GetButtonSize           PROTO    pButton: ptr BUTTONDATA, pPoint: ptr D_POINT; 获取按钮的宽高
 
