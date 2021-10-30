@@ -38,7 +38,7 @@ PrefabHurtEffectProj proc   x:DWORD, y:DWORD
     mov     eax, pButton1
     assume  eax: ptr BUTTONDATA
     or      [eax].isActive, BTNI_DISABLE
-    invoke  BindButtonToBitmap, pButton1, BOTTON_START
+    invoke  BindButtonToBitmap, pButton1, BUTTON_START
     invoke  SetButtonSize, pButton1, 6, 20
 
     invoke  RegisterProjectile, 0, real0, real0

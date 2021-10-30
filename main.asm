@@ -103,7 +103,7 @@ pProjt1         DWORD  ?
             invoke  PaintAllButton, hMemDc
 
             invoke  RotateDC, hMemDc, cnt, 135, 61
-            invoke  PaintBitmapEx, hMemDc, BOTTON_START,\
+            invoke  PaintBitmapEx, hMemDc, BUTTON_START,\
                     addr @stRect, 0 
             invoke  ClearDCRotate, hMemDc
 
@@ -228,7 +228,7 @@ pProjt1         DWORD  ?
                 mov     @stRect.right, eax
                 mov     @stRect.bottom,eax
                 invoke  RegisterButton, addr @stRect, 0, 0, 0, 0
-                invoke  BindButtonToBitmap, eax, BOTTON_START
+                invoke  BindButtonToBitmap, eax, BUTTON_START
                 invoke  SetButtonDepth, eax, 3
                 invoke  SortButtons
             .ELSE
@@ -264,7 +264,7 @@ pProjt1         DWORD  ?
 
             invoke  CreateWindowEx, WS_EX_CLIENTEDGE, offset szClassName, \
                     offset szCaptionMain, WS_OVERLAPPEDWINDOW, \
-                    100, 100, 900, 600, \
+                    100, 100, 890, 630, \
                     NULL, NULL, hInstance, NULL
             mov     hWinMain, eax
             invoke  ShowWindow, hWinMain, SW_SHOWNORMAL
