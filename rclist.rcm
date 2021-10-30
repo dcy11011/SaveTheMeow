@@ -10,7 +10,6 @@ ICON_DELETE         BITMAP      "img/icon_delete.bmp"
 ICON_OK             BITMAP      "img/icon_ok.bmp"
 ICON_CANCEL         BITMAP      "img/icon_cancel.bmp"
 BMP_ROAD            BITMAP      "img/road_block.bmp"
-<<<<<<< HEAD
 BMP_BASE            BITMAP      "img/turret_base.bmp"
 BMP_EMPTY           BITMAP      "img/map_empty.bmp"
 BMP_SIDE            BITMAP      "img/map_side.bmp"
@@ -19,7 +18,3 @@ ENEMY_SPRITE_1      BITMAP      "img/enemy1.bmp"
 ENEMY_SPRITE_2      BITMAP      "img/enemy2.bmp"
 EFFECT_SPRITE       BITMAP      "img/effect.bmp"
 EFFECT2_SPRITE      BITMAP      "img/effect2.bmp"
-=======
-BMP_BASE            BITMAP      "img/turrent_base.bmp"
-BMP_EMPTY           BITMAP      "img/map_empty.bmp"
->>>>>>> upstream/dcy11011
