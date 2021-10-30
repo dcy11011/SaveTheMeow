@@ -17,7 +17,7 @@ MAPB_BLOCKMARGINX   EQu     50
 
 MAPB_BTNDISTANCE    EQU     60  ; distance of pop
 
-MAPB_BTNTOTAL       EQU     6
+MAPB_BTNTOTAL       EQU     7
 
 MAPB_BTNWIDTH       EQU     30
 MAPB_BTNHEIGHT      EQU     30
@@ -37,6 +37,11 @@ MAPBLOCKDATA    struct
     angButton       DWORD   MAPB_BTNTOTAL DUP(?) ; angle of poping
     action_step     REAL4   ?   ; for animation
     diaplaySet      DWORD   ?   ; which set of pop buttons to diaplay; set the setID by 'defualtButtonGroupID' in .asm
+    pTurret         DWORD   ? 
+    turretID        DWORD   ?
+    turretAngle     REAL4   ?
+    pTurretUpdate   DWORD   ?
+    pTurretTarget   DWORD   ?
 MAPBLOCKDATA    ends
 
 RegisterMapBlock                PROTO    posX:DWORD, posY:DWORD     ; 注册地图块，传入左上角坐标
@@ -45,3 +50,11 @@ BindMapBlockPopButtonsBitmap    PROTO    pMapBlock: ptr MAPBLOCKDATA, id:DWORD, 
 SetMapBlockDisplaySet           PROTO    pMapBlock: ptr MAPBLOCKDATA, id:DWORD  ; 切换按键组。在defualtButtonGroupID中设置按键组
 
 LoadMapFromFile                 PROTO    offsetX:DWORD, offsetY:DWORD ; 读取地图，创建图格。读取的路径列表指针在eax，路径点数量在edx
+
+
+
+NO_TURRET       EQU     0
+A_TURRET   EQU     1
+B_TURRET    EQU     2
+C_TURRET  EQU     3
+

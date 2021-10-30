@@ -4,8 +4,13 @@ BTNS_WAIT        EQU     0001h ; 等待状态，表示按钮未被触发。
 BTNS_HOVER       EQU     0002h 
 BTNS_CLICK       EQU     0004h
 
-BTNI_DISABLE     EQU     0001h ; 禁用按钮，将不会收到鼠标事件
-BTNI_RUNNING     EQU     0002h
+BTNI_DISABLE     EQU     0007h ; 禁用按钮，将不会收到鼠标事件
+BTNI_HIDE        EQU     000Eh ; 隐藏按钮，但仍然接受更新事件
+BTNI_DISABLE_UPDATE         EQU     0001h
+BTNI_DISABLE_HOVER          EQU     0002h
+BTNI_DISABLE_CLICK          EQU     0004h
+BTNI_DISABLE_PAINT          EQU     0008h
+BTNI_RUNNING     EQU     0000h
 
 MAXBTNCNT        EQU     4000   ; 最大的按钮数量； Note：没有溢出保护
 
@@ -21,6 +26,7 @@ BUTTONDATA struct
     pPaint          DWORD   ?
     aParam          DWORD   ? ; use for restore some data
     bParam          DWORD   ? ; use for restore some data
+    cParam          REAL4   ?
     pClickEvent     DWORD   ?
     pHoverEvent     DWORD   ?
     pUpdateEvent    DWORD   ?

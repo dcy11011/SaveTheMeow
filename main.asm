@@ -102,7 +102,7 @@ pProjt1         DWORD  ?
                     DT_SINGLELINE or DT_CENTER or DT_VCENTER
             invoke  PaintAllButton, hMemDc
 
-            invoke  RotateDC, hMemDc, cnt, 135, 61
+            invoke  RotateDCi, hMemDc, cnt, 135, 61
             invoke  PaintBitmapEx, hMemDc, BUTTON_START,\
                     addr @stRect, 0 
             invoke  ClearDCRotate, hMemDc

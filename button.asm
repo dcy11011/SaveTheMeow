@@ -117,11 +117,16 @@ RegisterButton      PROC    uses ebx edi esi pRect: ptr RECT, pPaint:DWORD, pCli
 RegisterButton ENDP
 
 ; 绘制单个按钮
-PaintButton     PROC    hDc:DWORD, pButton: ptr BUTTONDATA
-    push    pButton
-    push    hDc
+PaintButton     PROC uses ebx   hDc:DWORD, pButton: ptr BUTTONDATA
     mov     eax, pButton
     assume  eax: ptr BUTTONDATA
+    mov     bx, [eax].isActive
+    and     bx, BTNI_DISABLE_PAINT
+    .IF bx
+        ret
+    .ENDIF
+    push    pButton
+    push    hDc
     mov     eax, [eax].pPaint
     call    eax
     xor     eax, eax
@@ -412,7 +417,7 @@ SendClickInfo proc uses  ebx edi esi x:DWORD, y:DWORD
     push    ebx
     invoke  InButtonRange, edi, x, y
     mov     dx, [edi].isActive
-    and     dx, BTNI_DISABLE
+    and     dx, BTNI_DISABLE_CLICK
     .IF !dx
         mov     ebx, @cnt
         .IF eax && !ebx
@@ -455,7 +460,7 @@ SendHoverInfo proc uses ebx edi x:DWORD, y:DWORD
     push    ebx
     invoke  InButtonRange, edi, x, y
     mov     dx, [edi].isActive
-    and     dx, BTNI_DISABLE
+    and     dx, BTNI_DISABLE_HOVER
     .IF !dx
         mov     ebx, @cnt
         .IF eax && !ebx
@@ -498,7 +503,7 @@ SendUpdateInfo proc uses ebx edi cnt:DWORD
         push    ecx
         push    ebx
         mov     dx, [edi].isActive
-        and     dx, BTNI_DISABLE
+        and     dx, BTNI_DISABLE_UPDATE
         .IF !dx
             push    edi
             push    cnt

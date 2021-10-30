@@ -43,7 +43,8 @@ PaintBitmap     PROTO   hDc:DWORD, bitmapID:DWORD, posX:DWORD, posY:DWORD
 PaintBitmapEx   PROTO   hDc:DWORD, bitmapID:DWORD, lpRect:ptr RECT, optionCode:DWORD
 PaintBitmapTrans     PROTO   hDc:DWORD, bitmapID:DWORD, posX:DWORD, posY:DWORD
 PaintBitmapTransEx   PROTO   hDc:DWORD, bitmapID:DWORD, lpRect:ptr RECT, optionCode:DWORD
-RotateDC        PROTO   hdc:DWORD, iAngle:DWORD, x:DWORD, y:DWORD
+RotateDCi       PROTO   hdc:DWORD, iAngle:DWORD, x:DWORD, y:DWORD
+RotateDC        PROTO   hdc:DWORD, fAngle:DWORD, x:DWORD, y:DWORD
 ClearDCRotate   PROTO   hdc:DWORD
 
 

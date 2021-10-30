@@ -354,19 +354,16 @@ PaintRoundRect  proc   hDc:DWORD, lpRect:ptr RECT, r:DWORD
     ret
 PaintRoundRect ENDP
 
-RotateDC    PROC uses ebx esi edi hdc:DWORD, iAngle:DWORD, x:DWORD, y:DWORD
+RotateDC    PROC uses ebx esi edi hdc:DWORD, Angle:DWORD, x:DWORD, y:DWORD
     local   @nGraphicsMode:DWORD, @fangle:REAL4, @ftmp:REAL4
     local   @xform:XFORM
-    local   @f180: DWORD
+    
     lea     edi, @xform
     assume  edi: PTR XFORM
     invoke  SetGraphicsMode, hdc, GM_ADVANCED
-    .IF     iAngle != 0
-        fild    DWORD ptr iAngle
-        mov     @f180, 180
-        fidiv   @f180
-        fmul    PI
-        fstp    DWORD ptr @fangle
+    .IF     Angle != 0
+        mov     eax, Angle
+        mov     @fangle, eax
         fld     DWORD ptr @fangle
         fcos    
         fstp    DWORD ptr @ftmp
@@ -414,6 +411,18 @@ RotateDC    PROC uses ebx esi edi hdc:DWORD, iAngle:DWORD, x:DWORD, y:DWORD
     mov     eax, @nGraphicsMode
     ret
 RotateDC    ENDP
+
+RotateDCi  PROC uses ebx esi edi hdc:DWORD, iAngle:DWORD, x:DWORD, y:DWORD
+    local   @fangle:REAL4
+    local   @f180: DWORD
+    fild    DWORD ptr iAngle
+    mov     @f180, 180
+    fidiv   @f180
+    fmul    PI
+    fstp    DWORD ptr @fangle
+    invoke  RotateDC, hdc, @fangle, x, y
+    ret
+RotateDCi  ENDP
 
 ClearDCRotate  PROC uses ebx esi edi hdc:DWORD
     local   @xform:XFORM, @tmp:DWORD
