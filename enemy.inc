@@ -12,6 +12,7 @@ ENEMYDATA struct
     xf              REAL4   ?
     yf              REAL4   ?
     speed           REAL4   ?
+    radius          REAL4   ?
     attack          DWORD   ?
     progress        REAL4   ? ; total dist (1D)
 

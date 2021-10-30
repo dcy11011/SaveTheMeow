@@ -331,7 +331,7 @@ BindMapBlockPopButtonsBitmap  PROC uses ebx esi edi pMapBlock: ptr MAPBLOCKDATA,
     invoke  GetButtonptrByID, pMapBlock, id
     mov     edi, eax
     assume  edi: ptr BUTTONDATA
-    invoke  dPrint2, edi, IDBitmap
+    ; invoke  dPrint2, edi, IDBitmap
     invoke  BindButtonToBitmap, edi, IDBitmap
     ret
 BindMapBlockPopButtonsBitmap  ENDP

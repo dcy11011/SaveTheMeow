@@ -12,6 +12,10 @@ include paint.inc
 include util.inc
 include main.inc
 
+.data
+stageWidth      DWORD 0
+stageHeight     DWORD 0
+
 .data?
 blendFunction   BLENDFUNCTION   <?>
 

@@ -43,8 +43,6 @@ hDc             DWORD 0
 hMemDc          DWORD 0
 hBitmap         DWORD 0
 
-real100         REAL4 100.0
-
 .data?
 tmp             QWORD  ?
 hInstance       DWORD  ?
@@ -77,6 +75,10 @@ pProjt1         DWORD  ?
             invoke  GetClientRect, hWnd, addr @stRect
             invoke  CreateCompatibleBitmap, hDc, @stRect.right, @stRect.bottom
             mov     hBitmap, eax
+            mov     eax, @stRect.right
+            mov     stageWidth, eax
+            mov     eax, @stRect.bottom
+            mov     stageHeight, eax
             ret
     _SetupDevice    endp 
     ;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -120,7 +122,7 @@ pProjt1         DWORD  ?
             local   @stRect:RECT
 
             mov eax, uMsg
-            invoke dPrint, 999
+            ; invoke dPrint, 999
             .IF eax ==  WM_PAINT
                 invoke  _DoPaint, hWnd
             .ELSEIF eax == WM_ERASEBKGND
@@ -128,7 +130,7 @@ pProjt1         DWORD  ?
                 invoke  _SetupDevice, hWnd
             .ELSEIF eax == WM_TIMER
                 .IF     wParam == TIMER_TICK
-                invoke dPrint, 123
+                ; invoke dPrint, 123
                         invoke  SortButtons ; IMPORTANT!
 
                         mov     eax, cnt
@@ -163,7 +165,8 @@ pProjt1         DWORD  ?
                 shr     eax, 16
                 invoke  SendClickInfo, ebx, eax
                 ; ------- test enemy
-                invoke  PrefabTestEnemy, 200, 200
+                ; invoke  PrefabTestEnemy, 200, 200
+                invoke  PrefabHurtEffectProj, 200, 200
                 ; ------------------
             .ELSEIF eax == WM_LBUTTONUP
                 invoke  ClearClick
@@ -190,16 +193,17 @@ pProjt1         DWORD  ?
                 mov     @stRect.right, eax
                 mov     @stRect.bottom,eax
                 invoke  RegisterButton, addr @stRect, 0, 0, 0, 0
-                invoke  dPrint3, 0,2, eax
+                ; invoke  dPrint3, 0,2, eax
 
                 invoke  RoadmapClear
                 invoke  RoadmapAddi, 20, 20
-                invoke  RoadmapAddi, 40, 50
-                invoke  RoadmapAddi, 30, 120
-                invoke  RoadmapAddi, 300, 20
-                invoke  RoadmapAddi, 300, 320
+                ; invoke  RoadmapAddi, 40, 50
+                ; invoke  RoadmapAddi, 30, 120
+                ; invoke  RoadmapAddi, 300, 20
+                invoke  RoadmapAddi, 10, 10
+                ; invoke  RoadmapAddi, 300, 320
                 invoke  PrefabTestEnemy, 200, 200
-                mov     ecx, 23
+                mov     ecx, 2
                 @@:
                 mov     eax, 20
                 mul     ecx
@@ -231,7 +235,7 @@ pProjt1         DWORD  ?
                 invoke DefWindowProc, hWnd, uMsg, wParam, lParam
                 ret
             .ENDIF
-            invoke dPrint, 888
+            ; invoke dPrint, 888
             xor eax, eax
             ret
     _ProcWinMain ENDP

@@ -79,6 +79,9 @@ RegisterEnemy proc hp: DWORD, speed: REAL4, atk: DWORD
     mov     eax, real0
     mov     [edx].progress, eax
 
+    mov     eax, real1
+    mov     [edx].radius, eax
+
     mov     [edx].isActive, 1
     mov     [edx].aParam, 0
     mov     [edx].bParam, 0
@@ -198,6 +201,7 @@ EnemyMovePositionf proc    self: ptr ENEMYDATA, x:REAL4, y:REAL4
 EnemyMovePositionf endp
 
 EnemyStepForward proc uses edi self: ptr ENEMYDATA
+    local   tx:REAL4, ty:REAL4
     mov     edi, self
     assume  edi: ptr ENEMYDATA
     fld     DWORD ptr [edi].progress
@@ -205,7 +209,28 @@ EnemyStepForward proc uses edi self: ptr ENEMYDATA
     fadd
     fstp    DWORD ptr [edi].progress
     invoke  RoadmapCalcCurrent, [edi].progress
-    invoke  EnemySetPositionf, self, eax, edx
+    mov     tx, eax
+    mov     ty, edx
+
+    mov     edx, [edi].pAsButton
+    assume  edx: ptr BUTTONDATA
+    fld     DWORD ptr tx
+    fld     DWORD ptr [edx].right
+    fld     DWORD ptr [edx].left
+    fsub
+    fld     DWORD ptr real2
+    fdiv
+    fsub
+    fstp    DWORD ptr tx
+    ;
+    fld     DWORD ptr ty
+    fld     DWORD ptr [edx].bottom
+    fld     DWORD ptr [edx].top
+    fsub
+    fsub
+    fstp    DWORD ptr ty
+    invoke  dPrint2Float, tx, ty
+    invoke  EnemySetPositionf, self, tx, ty
     ret
 EnemyStepForward endp
 
