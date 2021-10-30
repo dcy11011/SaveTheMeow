@@ -11,6 +11,7 @@ include button.inc
 include paint.inc
 include util.inc
 include collision.inc
+include enemy.inc
 
 include rclist.inc
 
@@ -26,9 +27,9 @@ popRatio                   REAL4    0.3
 one                        REAL4    1.0
 szMapFileName              BYTE     "map0.data", 0
 pLastMapBlock              DWORD    0
-ptRoutePoint               D_POINT  MAX_ROUTEPOINT DUP(<?>)
 
 .data?
+ptRoutePoint               D_POINT  MAX_ROUTEPOINT DUP(<?>)
 arrayMapBlockList MAPBLOCKDATA MAXMAPBLOCKCNT DUP(<?>)
 
 .code
@@ -397,6 +398,8 @@ LoadMapFromFile     PROC uses ebx edi esi offsetX:DWORD, offsetY:DWORD
             xor     eax, eax
             mov     al, BYTE PTR [esi]
             .IF     al == 43 || (al >=48 && al <= 64) 
+                push    eax
+
                 push    ecx
                 push    edx
                 mov     eax, @x
@@ -413,6 +416,31 @@ LoadMapFromFile     PROC uses ebx edi esi offsetX:DWORD, offsetY:DWORD
                 pop     edx
                 pop     ecx
                 mov     [eax].isActive, BTNI_DISABLE
+
+                pop     eax
+                .IF   al >= 48 && al < 78
+                    sub     eax, 48
+                    inc     eax
+                    .IF     eax > @route_point_cnt
+                        mov     @route_point_cnt, eax
+                    .ENDIF
+                    dec     eax
+                    push    ebx
+                    mov     ebx, sizeof D_POINT
+                    mul     ebx
+                    add     eax, offset ptRoutePoint
+                    assume  eax: ptr D_POINT
+                    
+                    mov     ebx, MAPB_BLOCKWIDTH
+                    shr     ebx, 1
+                    add     ebx, @x
+                    mov     [eax].x, ebx
+                    mov     ebx, MAPB_BLOCKHEIGHT
+                    shr     ebx, 1
+                    add     ebx, @y
+                    mov     [eax].y, ebx
+                    pop     ebx
+                .ENDIF
             .ELSEIF al == 111
                 push    ecx
                 push    edx
@@ -427,7 +455,7 @@ LoadMapFromFile     PROC uses ebx edi esi offsetX:DWORD, offsetY:DWORD
                 assume  eax: ptr BUTTONDATA
                 mov     dx, BTNI_DISABLE
                 mov     WORD PTR [eax].isActive, dx
-                invoke  BindButtonToBitmap, eax, BMP_EMPTY
+                invoke  BindButtonToBitmap, eax, BMP_SIDE
                 invoke  SetButtonSize, eax, MAPB_BLOCKWIDTH, 15
                 pop     edx
                 pop     ecx
@@ -455,35 +483,12 @@ LoadMapFromFile     PROC uses ebx edi esi offsetX:DWORD, offsetY:DWORD
                 assume  eax: ptr BUTTONDATA
                 mov     dx, BTNI_DISABLE
                 mov     WORD PTR [eax].isActive, dx
-                invoke  BindButtonToBitmap, eax, BMP_EMPTY
+                invoke  BindButtonToBitmap, eax, BMP_SIDE2
                 invoke  SetButtonSize, eax, MAPB_BLOCKWIDTH, 25
                 pop     edx
                 pop     ecx
                 mov [eax].isActive, BTNI_DISABLE
-            .ELSEIF   al > 48 && al < 78
-                sub     eax, 48
-                inc     eax
-                .IF     eax > @route_point_cnt
-                    mov     @route_point_cnt, eax
-                .ENDIF
-                dec     eax
-                push    ebx
-                mov     ebx, sizeof D_POINT
-                mul     ebx
-                add     eax, offset ptRoutePoint
-                assume  eax: ptr D_POINT
-                
-                mov     ebx, MAPB_BLOCKWIDTH
-                shr     ebx, 1
-                add     ebx, @x
-                mov     [eax].x, ebx
-                mov     ebx, MAPB_BLOCKHEIGHT
-                shr     ebx, 1
-                add     ebx, @y
-                mov     [eax].y, ebx
-                pop     ebx
             .ENDIF
-
             inc     esi
             inc     ebx
         .ENDW
@@ -491,6 +496,23 @@ LoadMapFromFile     PROC uses ebx edi esi offsetX:DWORD, offsetY:DWORD
         inc     ecx 
     .ENDW
     invoke CloseFile, @file
+    ; roadmap 
+    invoke  RoadmapClear
+    mov     ecx, 0
+    lea     edx, ptRoutePoint
+    .WHILE      ecx < @route_point_cnt
+        assume  edx: ptr D_POINT
+        push    ecx
+        push    edx
+        pushad
+        invoke  dPrint2, [edx].x, [edx].y
+        popad
+        invoke  RoadmapAddi, [edx].x, [edx].y
+        pop     edx
+        pop     ecx
+        add     edx, sizeof D_POINT
+        add     ecx, 1
+    .ENDW
     mov     eax, offset ptRoutePoint
     mov     edx, @route_point_cnt
     ret

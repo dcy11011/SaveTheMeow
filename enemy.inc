@@ -42,6 +42,7 @@ EnemyMovePositionf      PROTO    self: ptr ENEMYDATA, x:REAL4, y:REAL4
 EnemyUpdateRadius       PROTO    self: ptr ENEMYDATA  ; use button size to set radius
 
 EnemyStepForward        PROTO    self: ptr ENEMYDATA
+EnemySetDeath           PROTO    self: ptr ENEMYDATA
 
 EnemyDefaultUpdate      PROTO    cnt:DWORD, pEnemy: ptr ENEMYDATA
 EnemyMouseUpdate        PROTO    cnt:DWORD, pEnemy: ptr ENEMYDATA

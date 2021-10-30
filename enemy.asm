@@ -72,6 +72,7 @@ RegisterEnemy proc hp: DWORD, speed: REAL4, atk: DWORD
     invoke  GetAvilaibleEnemyData
     mov     edx, eax
     assume  edx: ptr ENEMYDATA
+    mov     eax, hp
     mov     [edx].health, eax
     mov     [edx].healthMax, eax
     mov     eax, speed
@@ -233,8 +234,6 @@ EnemyStepForward proc uses edi self: ptr ENEMYDATA
     invoke  RoadmapCalcCurrent, [edi].progress
     mov     tx, eax
     mov     ty, edx
-    invoke  EnemySetPositionf, self, tx, ty
-    ret
 
     mov     edx, [edi].pAsButton
     assume  edx: ptr BUTTONDATA
@@ -256,6 +255,17 @@ EnemyStepForward proc uses edi self: ptr ENEMYDATA
     invoke  EnemySetPositionf, self, tx, ty
     ret
 EnemyStepForward endp
+
+EnemySetDeath proc uses edi self: ptr ENEMYDATA
+    mov     edi, self
+    assume  edi: ptr ENEMYDATA
+    mov     [edi].isActive, 0
+    invoke  DeleteButton, [edi].pAsButton
+    ret
+EnemySetDeath endp
+
+
+
 
 EnemyDefaultUpdate PROC uses ebx edi esi cnt:DWORD, pEnemy: ptr ENEMYDATA
     local   tmpf: DWORD

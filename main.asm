@@ -23,7 +23,6 @@ include kernel32.inc
 include util.inc
 include paint.inc
 include rclist.inc
-include testobj.inc
 Include button.inc            
 include enemy.inc
 include projectile.inc
@@ -37,7 +36,6 @@ include main.inc
 ; Data
 ;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 .data
-testObj         OBJDATA  <100,100,20>
 cnt             dd  0
 hDc             DWORD 0
 hMemDc          DWORD 0
@@ -102,13 +100,6 @@ pProjt1         DWORD  ?
                     DT_SINGLELINE or DT_CENTER or DT_VCENTER
             invoke  PaintAllButton, hMemDc
 
-            invoke  RotateDC, hMemDc, cnt, 135, 61
-            invoke  PaintBitmapEx, hMemDc, BUTTON_START,\
-                    addr @stRect, 0 
-            invoke  ClearDCRotate, hMemDc
-
-            invoke  PaintBitmapTrans, hMemDc, MAP_BLOCK, 200, 50
-
             invoke  BitBlt, hDc, 0, 0, @stRect.right, @stRect.bottom, \
                     hMemDc, 0, 0, SRCCOPY
             
@@ -136,9 +127,8 @@ pProjt1         DWORD  ?
                         
                         invoke  SendUpdateInfo, cnt
                         invoke  ProjtUpdateAll, cnt
-                        ;invoke  EnemyUpdateAll, cnt
+                        invoke  EnemyUpdateAll, cnt
                         invoke  GetClientRect, hWnd, addr @stRect
-                        invoke  MoveObj, offset testObj, addr @stRect
 
                         invoke  RoadmapCalcCurrent, real100
                         
@@ -169,7 +159,7 @@ pProjt1         DWORD  ?
                 shr     eax, 16
                 invoke  SendClickInfo, ebx, eax
                 ; ------- test enemy
-                invoke  PrefabTestEnemy, 200, 200
+                invoke  PrefabTestEnemy, -200, -200
                 ; invoke  PrefabHurtEffectProj, 200, 200
                 invoke  PrefabTestProjectile, 200, 200
                 invoke  SortButtons ; IMPORTANT!
@@ -195,41 +185,6 @@ pProjt1         DWORD  ?
 
                 invoke  LoadMapFromFile, 50, 50
 
-                mov     eax, 100
-                mov     @stRect.left, eax
-                mov     @stRect.top,  eax
-                mov     eax, 150
-                mov     @stRect.right, eax
-                mov     @stRect.bottom,eax
-                invoke  RegisterButton, addr @stRect, 0, 0, 0, 0
-                ; invoke  dPrint3, 0,2, eax
-
-                invoke  RoadmapClear
-                invoke  RoadmapAddi, 20, 20
-                invoke  RoadmapAddi, 40, 50
-                invoke  RoadmapAddi, 30, 120
-                invoke  RoadmapAddi, 300, 20
-                invoke  RoadmapAddi, 10, 10
-                invoke  RoadmapAddi, 300, 320
-                invoke  PrefabTestEnemy, 200, 200
-                mov     ecx, 2
-                @@:
-                mov     eax, 20
-                mul     ecx
-                push    ecx
-                invoke  PrefabTestProjectile, ecx, eax
-                pop     ecx
-                loop    @b
-
-                mov     eax, 220
-                mov     @stRect.left, eax
-                mov     @stRect.top,  eax
-                mov     eax, 270
-                mov     @stRect.right, eax
-                mov     @stRect.bottom,eax
-                invoke  RegisterButton, addr @stRect, 0, 0, 0, 0
-                invoke  BindButtonToBitmap, eax, BUTTON_START
-                invoke  SetButtonDepth, eax, 3
                 invoke  SortButtons
             .ELSE
                 invoke DefWindowProc, hWnd, uMsg, wParam, lParam
@@ -264,7 +219,7 @@ pProjt1         DWORD  ?
 
             invoke  CreateWindowEx, WS_EX_CLIENTEDGE, offset szClassName, \
                     offset szCaptionMain, WS_OVERLAPPEDWINDOW, \
-                    100, 100, 890, 630, \
+                    100, 100, 870, 650, \
                     NULL, NULL, hInstance, NULL
             mov     hWinMain, eax
             invoke  ShowWindow, hWinMain, SW_SHOWNORMAL
