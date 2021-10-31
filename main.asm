@@ -163,7 +163,7 @@ pProjt1         DWORD  ?
                 shr     eax, 16
                 invoke  SendClickInfo, ebx, eax
                 ; ------- test enemy
-                ; invoke  PrefabEnemy3, 1000
+                invoke  PrefabEnemy3, 1000
                 ; invoke  PrefabHurtEffectProj, 200, 200
                 ; invoke  PrefabTestProjectile, 200, 200
                 invoke  SortButtons ; IMPORTANT!

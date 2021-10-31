@@ -114,6 +114,53 @@ PrefabDeathEffectProjf proc   x:REAL4, y:REAL4
     ret
 PrefabDeathEffectProjf endp
 
+PrefabReachEffectProj proc   x:DWORD, y:DWORD
+    local   @stRect:RECT, pButton1:DWORD, pProjt1:DWORD
+    ; ---- Button
+    mov     eax, x
+    sub     eax, 10
+    mov     @stRect.left, eax
+    add     eax, 6
+    mov     @stRect.right, eax
+    ;
+    mov     eax, y
+    sub     eax, 3
+    mov     @stRect.top, eax
+    add     eax, 20
+    mov     @stRect.bottom, eax
+    invoke  RegisterButton, addr @stRect, 0, 0, 0, 0
+    mov     pButton1, eax
+    invoke  SetButtonDepth, pButton1, -1000
+    mov     eax, pButton1
+    assume  eax: ptr BUTTONDATA
+    or      [eax].isActive, BTNI_DISABLE
+    invoke  BindButtonToBitmap, pButton1, BULLET_B
+    invoke  SetButtonSize, pButton1, 20, 20
+    ; ---- Proj
+    invoke  RegisterProjectile, 0, real0, real0
+    mov     pProjt1, eax
+    invoke  ProjtBindButton, pProjt1, pButton1
+    invoke  ProjtBindUpdate, pProjt1, ProjtDeathEffectUpdate
+    ;
+    mov     edx, pProjt1
+    assume  edx: ptr PROJTDATA
+    mov     [edx].penetrate, -1
+    mov     [edx].lifetime, 10
+    ;
+    mov     eax, pProjt1
+    ret
+PrefabReachEffectProj endp
+
+PrefabReachEffectProjf proc   x:REAL4, y:REAL4
+    invoke  real42dword, x
+    push    eax
+    invoke  real42dword, y
+    mov     edx, eax
+    pop     eax
+    invoke  PrefabReachEffectProj, eax, edx
+    ret
+PrefabReachEffectProjf endp
+
 PrefabReplayBtn proc   x:DWORD, y:DWORD
     local   @stRect:RECT, pButton1:DWORD, pProjt1:DWORD
     ; ---- Button

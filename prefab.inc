@@ -5,6 +5,8 @@ PrefabHurtEffectProj    PROTO   x:DWORD, y:DWORD
 PrefabHurtEffectProjf   PROTO   x:REAL4, y:REAL4
 PrefabDeathEffectProj   PROTO   x:DWORD, y:DWORD
 PrefabDeathEffectProjf  PROTO   x:REAL4, y:REAL4
+PrefabReachEffectProj   PROTO   x:DWORD, y:DWORD  ; 到达终点的特效
+PrefabReachEffectProjf  PROTO   x:REAL4, y:REAL4  ; 到达终点的特效
 PrefabReplayBtn         PROTO   x:DWORD, y:DWORD
 
 PrefabProjA             PROTO   x:DWORD, y:DWORD, dir:REAL4

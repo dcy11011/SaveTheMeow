@@ -21,7 +21,7 @@ include statusbar.inc
 
 .data   
 coin        DWORD   15
-health      DWORD   1
+health      DWORD   100
 
 .data?
 textbuffer  BYTE    20 DUP(?)

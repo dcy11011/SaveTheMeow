@@ -239,13 +239,14 @@ EnemyStepForward proc uses edi self: ptr ENEMYDATA
     fadd
     fstp    DWORD ptr [edi].progress
     invoke  RoadmapCalcCurrent, [edi].progress
+    mov     tx, eax
+    mov     ty, edx
     .IF     ecx
         invoke  DecHealth, [edi].attack
+        invoke  PrefabReachEffectProjf, tx, ty
         invoke  EnemySetDeath, self
         ret
     .ENDIF
-    mov     tx, eax
-    mov     ty, edx
 
     mov     edx, [edi].pAsButton
     assume  edx: ptr BUTTONDATA
