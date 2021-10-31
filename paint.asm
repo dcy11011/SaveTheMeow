@@ -446,7 +446,6 @@ ClearDCRotate  PROC uses ebx esi edi hdc:DWORD
 ClearDCRotate    ENDP
 
 SetPen  PROC  uses ebx edi esi  hdc:DWORD, fnPenStyle:DWORD, nWidth:DWORD, crColor:DWORD
-    local   @hpen:HPEN
     invoke  CreatePen, fnPenStyle, nWidth, crColor
     invoke  SelectObject, hdc, eax
     ret

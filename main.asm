@@ -100,16 +100,6 @@ pProjt1         DWORD  ?
                     DT_SINGLELINE or DT_CENTER or DT_VCENTER
             invoke  PaintAllButton, hMemDc
 
-<<<<<<< HEAD
-=======
-            invoke  RotateDCi, hMemDc, cnt, 135, 61
-            invoke  PaintBitmapEx, hMemDc, BUTTON_START,\
-                    addr @stRect, 0 
-            invoke  ClearDCRotate, hMemDc
-
-            invoke  PaintBitmapTrans, hMemDc, MAP_BLOCK, 200, 50
-
->>>>>>> upstream/dcy11011
             invoke  BitBlt, hDc, 0, 0, @stRect.right, @stRect.bottom, \
                     hMemDc, 0, 0, SRCCOPY
             
@@ -141,7 +131,6 @@ pProjt1         DWORD  ?
                         invoke  GetClientRect, hWnd, addr @stRect
 
                         invoke  RoadmapCalcCurrent, real100
-                        invoke  FindInrangeEnemyi, 0, 0, 1000
                         
                         invoke  InvalidateRect, hWnd, addr @stRect, 0
                         invoke  SortButtons ; IMPORTANT!
@@ -158,7 +147,7 @@ pProjt1         DWORD  ?
                 ; ------- test enemy
                 ; invoke  PrefabTestEnemy, 200, 200
                 ; invoke  PrefabHurtEffectProj, 200, 200
-                invoke  PrefabTestProjectile, 200, 200
+                ; invoke  PrefabTestProjectile, 200, 200
                 invoke  SortButtons ; IMPORTANT!
                 ; ------------------
                 invoke DefWindowProc, hWnd, uMsg, wParam, lParam
@@ -172,7 +161,7 @@ pProjt1         DWORD  ?
                 ; ------- test enemy
                 invoke  PrefabTestEnemy, -200, -200
                 ; invoke  PrefabHurtEffectProj, 200, 200
-                invoke  PrefabTestProjectile, 200, 200
+                ; invoke  PrefabTestProjectile, 200, 200
                 invoke  SortButtons ; IMPORTANT!
                 ; ------------------
             .ELSEIF eax == WM_LBUTTONUP
@@ -195,6 +184,8 @@ pProjt1         DWORD  ?
                 invoke  SetTimer, hWnd, TIMER_TICK, TICK_INTERVAL, NULL   
 
                 invoke  LoadMapFromFile, 50, 50
+
+                invoke  RegisterTopPainter
 
                 invoke  SortButtons
             .ELSE

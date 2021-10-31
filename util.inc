@@ -15,6 +15,7 @@ memcpy          PROTO C :DWORD, :DWORD, :DWORD
 fopen           PROTO C :ptr sbyte, :ptr sbyte
 fscanf          PROTO C :DWORD, :ptr sbyte, :VARARG
 fclose          PROTO C :DWORD
+rand            PROTO C 
 
 dPrint          PROTO  data:DWORD
 dPrint2         PROTO  data0:DWORD, data1:DWORD
@@ -31,7 +32,10 @@ OpenTextFile    PROTO  szFileName:DWORD
 GetFileLine     PROTO  pFile:DWORD
 CloseFile       PROTO  pFile:DWORD
 
+Random          PROTO  
+
 EXTERNDEF PI:REAL4
+EXTERNDEF PIby2:REAL4
 EXTERNDEF real0:REAL4
 EXTERNDEF real1:REAL4
 EXTERNDEF real2:REAL4
@@ -40,6 +44,7 @@ EXTERNDEF real1of2:REAL4
 EXTERNDEF real1of3:REAL4
 EXTERNDEF real2of3:REAL4
 EXTERNDEF real9of10:REAL4
+EXTERNDEF real5:REAL4
 EXTERNDEF real11:REAL4
 EXTERNDEF real100:REAL4
 

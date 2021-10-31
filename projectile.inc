@@ -42,6 +42,7 @@ ProjtCheckDeath         PROTO    self: ptr PROJTDATA
 ProjtHitEnemies         PROTO    self: ptr PROJTDATA, cnt:DWORD
 
 ProjtDefaultUpdate      PROTO    cnt:DWORD, pProjt: ptr PROJTDATA
+ProjtMissleUpdate       PROTO    cnt:DWORD, pProjt: ptr PROJTDATA
 ProjtHurtEffectUpdate   PROTO    cnt:DWORD, pProjt: ptr PROJTDATA
 ProjtDeathEffectUpdate  PROTO    cnt:DWORD, pProjt: ptr PROJTDATA
 ProjtUpdateAll          PROTO    cnt:DWORD                                  ; 发送更新消息
