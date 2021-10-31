@@ -123,6 +123,59 @@ Lerp proc   x1:REAL4, x2:REAL4, a:REAL4
     ret
 Lerp endp
 
+LerpAngle proc   x1:REAL4, x2:REAL4, a:REAL4
+    fld     DWORD ptr x1
+    fld     DWORD ptr x2
+    fcompp
+    fstsw   ax
+    sahf
+    ja      @f
+    fld     DWORD ptr x1
+    fld     DWORD ptr x2
+    fstp    DWORD ptr x1
+    fstp    DWORD ptr x2
+    fld1    
+    fld     DWORD ptr a
+    fsub
+    fstp    DWORD ptr a
+    @@:
+    ;
+    fld     DWORD ptr x2
+    fld     DWORD ptr x1
+    fsub
+    fld     DWORD ptr PI
+    fcompp  
+    fstsw   ax
+    sahf
+    jb      @f
+    invoke  Lerp, x1, x2, a
+    ret
+    @@:
+    fld     DWORD ptr x1
+    fldpi
+    fld     DWORD ptr real2
+    fmul
+    fadd
+    fstp    DWORD ptr x1
+    invoke  Lerp, x1, x2, a
+    mov     x1, eax
+    fld     DWORD ptr x1
+    fldpi
+    fcompp
+    fstsw   ax
+    sahf
+    ja      @f
+    fld     DWORD ptr x1
+    fldpi
+    fld     DWORD ptr real2
+    fmul
+    fsub
+    fstp    DWORD ptr x1
+    @@:
+    mov     eax, x1
+    ret
+LerpAngle endp
+
 LerpXY proc   x1:REAL4, y1:REAL4, x2:REAL4, y2:REAL4, a:REAL4
     invoke  Lerp, y1, y2, a
     mov     edx, eax

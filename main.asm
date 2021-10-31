@@ -127,6 +127,7 @@ pProjt1         DWORD  ?
                         mov     cnt, eax
                         
                         invoke  SendUpdateInfo, cnt
+                        invoke  WaveStepForward
                         invoke  ProjtUpdateAll, cnt
                         invoke  EnemyUpdateAll, cnt
                         invoke  GetClientRect, hWnd, addr @stRect
@@ -162,7 +163,7 @@ pProjt1         DWORD  ?
                 invoke  SendClickInfo, ebx, eax
                 popad
                 ; ------- test enemy
-                invoke  PrefabTestEnemy, -200, -200
+                ; invoke  PrefabTestEnemy, -200, -200
                 ; invoke  PrefabHurtEffectProj, 200, 200
                 ; invoke  PrefabTestProjectile, 200, 200
                 invoke  SortButtons ; IMPORTANT!
@@ -186,6 +187,8 @@ pProjt1         DWORD  ?
 
                 invoke  SetTimer, hWnd, TIMER_TICK, TICK_INTERVAL, NULL   
 
+                invoke  WaveReset
+                invoke  WaveStart, 1, 3
                 invoke  LoadMapFromFile, 50, 90
 
                 invoke  GetClientRect, hWnd, addr @stRect
@@ -227,7 +230,7 @@ pProjt1         DWORD  ?
 
             invoke  CreateWindowEx, WS_EX_CLIENTEDGE, offset szClassName, \
                     offset szCaptionMain, WS_OVERLAPPEDWINDOW, \
-                    100, 100, 870, 670, \
+                    100, 100, 870, 690, \
                     NULL, NULL, hInstance, NULL
             mov     hWinMain, eax
             invoke  ShowWindow, hWinMain, SW_SHOWNORMAL

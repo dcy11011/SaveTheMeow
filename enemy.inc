@@ -2,6 +2,9 @@ include button.inc
 
 MAXENYCNT        EQU     250   ; 最大的敌人数量
 MAXROADMAPCNT    EQU     50   ; 最大的路径点数量
+DEFAULTENEMYCD   EQU     40   ; 默认的出怪延迟
+DEFAULTWAVECD    EQU     350  ; 默认的相邻波之间延迟
+DELTAECNT        EQU     3    ; 相邻波之间增加的怪数
 
 
 ENEMYDATA struct
@@ -27,6 +30,10 @@ ENEMYDATA ends
 EXTERNDEF nEnemyListCnt:DWORD
 EXTERNDEF nRoadmapCnt:DWORD
 
+EXTERNDEF nLevelNumber:DWORD
+EXTERNDEF nLevelEnemiesRemain:DWORD
+EXTERNDEF nLevelEnemiesTotal:DWORD
+
 EXTERNDEF arrayEnemyListHead:DWORD
 EXTERNDEF arrayRoadmapListHead:DWORD
 
@@ -48,6 +55,9 @@ EnemyDefaultUpdate      PROTO    cnt:DWORD, pEnemy: ptr ENEMYDATA
 EnemyMouseUpdate        PROTO    cnt:DWORD, pEnemy: ptr ENEMYDATA
 EnemyUpdateAll          PROTO    cnt:DWORD                                  ; 发送更新消息
 
+WaveReset               PROTO 
+WaveStart               PROTO    waven:DWORD, ecnt:DWORD    ; 波数 敌人数
+WaveStepForward         PROTO
 
 RoadmapClear            PROTO  
 RoadmapAddi             PROTO    x:DWORD, y:DWORD

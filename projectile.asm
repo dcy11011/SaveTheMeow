@@ -315,7 +315,9 @@ ProjtHitEnemies proc uses esi edi self: ptr PROJTDATA, cnt:DWORD
                 ; invoke hurt event
                 mov     eax, [edi].attack
                 sub     [esi].health, eax
-                .IF     [esi].health <= 0
+                mov     eax, [esi].health
+                and     eax, eax
+                jg      @f
                     mov     eax, [esi].pDeathEvent
                     .IF eax
                         push    esi
@@ -325,7 +327,7 @@ ProjtHitEnemies proc uses esi edi self: ptr PROJTDATA, cnt:DWORD
                     invoke  GetCenterButton, [esi].pAsButton
                     invoke  PrefabDeathEffectProjf, eax, edx
                     invoke  EnemySetDeath, esi
-                .ENDIF
+                @@:
                 ; apply damage
                 mov     eax, [edi].pHitEvent
                 .IF eax
@@ -392,8 +394,15 @@ ProjtMissleUpdate PROC uses esi edi cnt:DWORD, pProjt: ptr PROJTDATA
         mov     eax, [eax].pAsButton
         invoke  GetCenterButton, eax
         invoke  DirectionTo, [edi].xf, [edi].yf, eax, edx
+        invoke  LerpAngle, [edi].direction, eax, real9of10
         invoke  ProjtSetDirection, pProjt, eax
+
+        invoke  Lerp, [edi].speed, real5, real9of10
+        invoke  ProjtSetSpeed, pProjt, eax
         ; change dir
+    .ELSEIF
+        invoke  Lerp, [edi].speed, real1, real2of3
+        invoke  ProjtSetSpeed, pProjt, eax
     .ENDIF
 
     invoke  ProjtHitEnemies, pProjt, cnt
@@ -402,6 +411,36 @@ ProjtMissleUpdate PROC uses esi edi cnt:DWORD, pProjt: ptr PROJTDATA
     pop     edi
     ret
 ProjtMissleUpdate endp
+
+ProjtFireUpdate PROC uses esi edi cnt:DWORD, pProjt: ptr PROJTDATA
+    push    edi
+    mov     edi, pProjt
+    assume  edi: ptr PROJTDATA
+    mov     edx, [edi].pAsButton
+    assume  edx: ptr BUTTONDATA
+
+    test    [edi].lifetime, 3
+    jne     @f
+    sub     [edx].top, 1
+    add     [edx].bottom, 1
+    @@:
+    test    [edi].lifetime, 5
+    jne     @f
+    sub     [edx].left, 1
+    add     [edx].right, 1
+    @@:
+    invoke  ProjtBindButton, pProjt, edx
+    invoke  ProjtUpdateRadius, pProjt
+
+    invoke  Lerp, [edi].speed, real0, real9of10
+    invoke  ProjtSetSpeed, pProjt, eax
+
+    invoke  ProjtHitEnemies, pProjt, cnt
+    invoke  ProjtStepForward, pProjt
+
+    pop     edi
+    ret
+ProjtFireUpdate endp
 
 ProjtHurtEffectUpdate PROC uses esi edi cnt:DWORD, pProjt: ptr PROJTDATA
     local   tmpf: DWORD

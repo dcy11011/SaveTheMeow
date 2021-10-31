@@ -10,6 +10,7 @@ include windows.inc
 include gdi32.inc
 include util.inc 
 include paint.inc
+include prefab.inc
 
 .data
 nEnemyListCnt           DWORD    0
@@ -17,6 +18,10 @@ bIfInitEnemyData        DWORD    0
 nRoadmapCnt             DWORD    0
 arrayEnemyListHead      DWORD    0
 arrayRoadmapListHead    DWORD    0
+nWaveNumber             DWORD    0
+nWaveEnemiesRemain      DWORD    0
+nWaveEnemiesTotal       DWORD    0
+nWaveEnemyCD            DWORD    0
 
 .data?
 arrayEnemyList ENEMYDATA MAXENYCNT DUP(<?>) ; 内存池
@@ -73,6 +78,11 @@ RegisterEnemy proc hp: DWORD, speed: REAL4, atk: DWORD
     invoke  GetAvilaibleEnemyData
     mov     edx, eax
     assume  edx: ptr ENEMYDATA
+    ;
+    pushad
+    invoke  dPrint, hp
+    popad
+    ;
     mov     eax, hp
     mov     [edx].health, eax
     mov     [edx].healthMax, eax
@@ -317,6 +327,86 @@ EnemyMouseUpdate PROC uses ebx edi esi cnt:DWORD, pEnemy: ptr ENEMYDATA
 
     ret
 EnemyMouseUpdate endp
+
+;
+;   Waves and Roadmap
+; 
+
+WaveReset proc
+    mov     nWaveNumber, 0
+    mov     nWaveEnemiesRemain, -1
+    mov     nWaveEnemiesTotal, 0
+    mov     nWaveEnemyCD, -1
+    ret
+WaveReset endp
+
+WaveStart proc     waven:DWORD, ecnt:DWORD
+    mov     eax, waven
+    mov     nWaveNumber, eax
+    mov     eax, ecnt
+    mov     nWaveEnemiesRemain, eax
+    mov     eax, ecnt
+    mov     nWaveEnemiesTotal, eax
+    mov     eax, DEFAULTENEMYCD
+    mov     nWaveEnemyCD, eax
+    ret
+WaveStart endp
+
+WaveStepForward proc
+    local   lvl:DWORD
+    mov     eax, nWaveEnemyCD
+    and     eax, eax
+    je      @f
+    sub     eax, 1
+    mov     nWaveEnemyCD, eax
+    ret
+    @@:
+    mov     eax, DEFAULTENEMYCD
+    mov     nWaveEnemyCD, eax
+    mov     eax, nWaveEnemiesRemain
+    and     eax, eax
+    je      @f
+    sub     eax, 1
+    mov     nWaveEnemiesRemain, eax
+    ; spawn enemy
+    mov     eax, nWaveNumber
+    mov     ecx, 2
+    mul     ecx
+    mov     lvl, eax ; set lvl
+    xor     edx, edx
+    invoke  rand
+    mov     ecx, 32
+    div     ecx
+    pushad
+    invoke  dPrint2, nWaveNumber, lvl
+    popad
+    .IF     edx <= 16
+        invoke  PrefabEnemy1, lvl
+    .ELSEIF edx <= 25
+        invoke  PrefabEnemy2, lvl
+    .ELSEIF edx <= 28
+        invoke  PrefabEnemy3, lvl
+    .ELSE
+        invoke  PrefabEnemy4, lvl
+    .ENDIF
+    ;
+    ret
+    @@:
+    ; next wave
+    invoke  dPrint2, nWaveNumber, nWaveEnemiesTotal
+    mov     eax, DEFAULTWAVECD
+    mov     nWaveEnemyCD, eax
+    mov     eax, nWaveNumber
+    add     eax, 1
+    mov     nWaveNumber, eax
+    mov     eax, nWaveEnemiesTotal
+    mov     edx, DELTAECNT
+    add     eax, edx
+    mov     nWaveEnemiesTotal, eax
+    mov     nWaveEnemiesRemain, eax
+    ret
+WaveStepForward endp
+
 
 RoadmapClear proc
     mov     nRoadmapCnt, 0
