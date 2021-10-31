@@ -167,7 +167,7 @@ pProjt1         DWORD  ?
                 ; ------- test pop
                 ; invoke  PopNoCoin
                 ; ------- test enemy
-                ; invoke  PrefabEnemy3, 1000
+                ; invoke  PrefabEnemy3, 100
                 ; invoke  PrefabHurtEffectProj, 200, 200
                 ; invoke  PrefabTestProjectile, 200, 200
                 invoke  SortButtons ; IMPORTANT!
