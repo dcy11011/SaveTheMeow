@@ -128,6 +128,16 @@ MapBlockClicked PROC uses ebx esi edi   pButton: ptr BUTTONDATA
     .IF     eax == MAPB_CONTRACTING 
         mov     eax, MAPB_POPPING
         mov     [edi].status, eax
+        .IF [edi].turretID != 0
+            mov     esi, topPainter
+            assume  esi: PTR BUTTONDATA
+            mov     [esi].bParam, edi
+            mov     ax, [esi].isActive
+            mov     bx, BTNI_DISABLE_PAINT
+            not     bx
+            and     ax, bx
+            mov     [esi].isActive, ax
+        .ENDIF
     .ELSEIF eax == MAPB_POPPING  
         mov     eax, MAPB_CONTRACTING
         mov     [edi].status, eax
@@ -261,41 +271,18 @@ TurrentUpdate   PROC uses ebx esi edi  cnt:DWORD, pButton: ptr BUTTONDATA
             mov     eax, [eax].pAsButton
             invoke  GetCenterButton, eax
             invoke  DirectionTo, @tx, @ty, eax, edx
-            invoke  Lerp, [edi].turretAngle, eax, real2of3
+            invoke  LerpAngle, [edi].turretAngle, eax, real2of3
             mov     [edi].turretAngle, eax
 
             xor     edx, edx
             mov     eax, cnt
-            mov     ecx, 20
+            mov     ecx, 15
             div     ecx
-            .IF     edx <= 1
+            .IF     edx <= 0
                 invoke  PrefabProjA, [edi].centerX, [edi].centerY, [edi].turretAngle
             .ENDIF
 
         .ELSEIF [edi].turretID == B_TURRET
-            xor     edx, edx
-            mov     eax, cnt
-            mov     ecx, 5
-            div     ecx
-            .IF     edx <= 1
-                invoke  PrefabProjB, [edi].centerX, [edi].centerY, real0
-                assume  eax:PTR PROJTDATA
-                mov     ebx, 30
-                mov     [eax].lifetime, ebx
-                mov     edx, eax
-                push    edx
-                invoke  Random 
-                pop     edx
-                mov     @integer, eax
-                fld     @integer
-                fadd   [edi].turretAngle
-                fstp    @integer
-                
-                invoke  ProjtSetDirection, edx, @integer
-                
-                invoke  ProjtSetSpeed, edx, three
-            .ENDIF
-        .ELSEIF [edi].turretID == C_TURRET
             mov     eax, [edi].pTurretTarget
             assume  eax: ptr ENEMYDATA
             mov     eax, [eax].pAsButton
@@ -306,9 +293,46 @@ TurrentUpdate   PROC uses ebx esi edi  cnt:DWORD, pButton: ptr BUTTONDATA
 
             xor     edx, edx
             mov     eax, cnt
-            mov     ecx, 40
+            mov     ecx, 4
             div     ecx
-            .IF     edx <= 1
+            .IF     edx <= 0
+                invoke  PrefabProjB, [edi].centerX, [edi].centerY, [edi].turretAngle
+                assume  eax:PTR PROJTDATA
+                mov     edx, eax
+                push    edx
+                invoke  Random 
+                pop     edx
+                mov     @integer, eax
+                fld     @integer
+                mov     eax, 1
+                mov     @integer, eax
+                fild    @integer
+                fmul
+                fild    @integer
+                mov     eax, 2
+                mov     @integer, eax
+                fidiv   @integer
+                fsub
+                fadd   [edi].turretAngle
+                fstp    @integer
+                
+                invoke  ProjtSetDirection, edx, @integer
+                
+            .ENDIF
+        .ELSEIF [edi].turretID == C_TURRET
+            mov     eax, [edi].pTurretTarget
+            assume  eax: ptr ENEMYDATA
+            mov     eax, [eax].pAsButton
+            invoke  GetCenterButton, eax
+            invoke  DirectionTo, @tx, @ty, eax, edx
+            invoke  LerpAngle, [edi].turretAngle, eax, real2of3
+            mov     [edi].turretAngle, eax
+
+            xor     edx, edx
+            mov     eax, cnt
+            mov     ecx, 30
+            div     ecx
+            .IF     edx <= 0
                 invoke  PrefabProjC, [edi].centerX, [edi].centerY, [edi].turretAngle
             .ENDIF
         .ENDIF
@@ -317,13 +341,7 @@ TurrentUpdate   PROC uses ebx esi edi  cnt:DWORD, pButton: ptr BUTTONDATA
     .IF     [edi].turretID == A_TURRET
         nop
     .ELSEIF [edi].turretID == B_TURRET
-        mov     eax, 15
-        mov     @integer, eax
-        fild    cnt
-        fidiv   @integer
-        fldpi
-        fmul
-        fstp    [edi].turretAngle
+        nop
     .ELSEIF [edi].turretID == C_TURRET
         nop
     .ENDIF
@@ -472,6 +490,9 @@ ReallyDeleteTurret  PROC uses ebx esi edi    pButton: PTR BUTTONDATA
     mov     esi, [edi].pTurret
     mov     ax, BTNI_HIDE
     mov     [esi].isActive, ax
+
+    mov     eax, 0
+    mov     [edi].turretID, eax
     ret
 ReallyDeleteTurret   ENDP
 

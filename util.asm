@@ -3,6 +3,7 @@
 option casemap:none
 
 include util.inc
+include windows.inc
 
 .data
 szOpenFile          byte    "r", 0
@@ -14,6 +15,7 @@ szdPrintFloatFormat byte    "%f", 0dh, 0ah, 0
 szdPrint2FloatFormat byte    "(%f %f)", 0dh, 0ah, 0
 PI                  REAL4   3.1415926
 PIby2               REAL4   1.5707963
+PIm2                REAL4   6.2831852
 real0               REAL4   0.0
 real1               REAL4   1.0
 real2               REAL4   2.0
@@ -22,8 +24,10 @@ real1of2            REAL4   0.5
 real1of3            REAL4   0.33333
 real2of3            REAL4   0.66666
 real9of10           REAL4   0.9
+real99of100         REAL4   0.99
 real5               REAL4   5.0
 real11              REAL4   11.0
+real20              REAL4   20.0
 real100             REAL4   100.0
 MouseXi             DWORD   0
 MouseYi             DWORD   0
@@ -140,5 +144,51 @@ Random          PROC  uses ebx esi edi
     mov     eax, @integer
     ret
 Random      ENDP
+
+SetRect     PROC    uses ebx edi esi  pRect:DWORD, dleft:DWORD, dtop:DWORD, dright:DWORD, dbottom:DWORD
+    mov     edi, pRect
+    assume  edi: PTR RECT
+    mov     eax, dleft
+    mov     [edi].left, eax
+    mov     eax, dright
+    mov     [edi].right, eax
+    mov     eax, dtop
+    mov     [edi].top, eax
+    mov     eax, dbottom
+    mov     [edi].bottom, eax
+    ret
+SetRect     ENDP
+
+DwordToStr  PROC    uses ebx esi edi szStr:PTR BYTE , val:DWORD
+    mov     esi, szStr
+    assume  esi:PTR BYTR
+    mov     ecx, val
+    .REPEAT
+        xor     edx, edx
+        mov     eax, ecx
+        mov     ebx, 10
+        div     ebx
+        add     edx, 48
+        mov     BYTE PTR [esi], dl
+        add     esi, 1 
+        mov     ecx, eax
+    .UNTIL ecx == 0
+    mov     BYTE PTR [esi], 0
+    mov     eax, esi
+    sub     eax, szStr
+
+    sub     esi, 1
+    mov     edi, szStr
+    .WHILE  edi < esi
+        mov     bl, [esi]
+        mov     bh, [edi]
+        mov     [esi], bh
+        mov     [edi], bl
+        dec     esi
+        inc     edi
+    .ENDW
+    ret
+DwordToStr   ENDP
+
 
 end
