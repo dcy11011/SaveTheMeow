@@ -26,7 +26,7 @@ BUTTONDATA struct
     pPaint          DWORD   ?
     aParam          DWORD   ? ; use for restore some data
     bParam          DWORD   ? ; use for restore some data
-    cParam          REAL4   ?
+    cParam          DWORD   ?
     pClickEvent     DWORD   ?
     pHoverEvent     DWORD   ?
     pUpdateEvent    DWORD   ?

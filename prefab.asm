@@ -293,7 +293,7 @@ PrefabProjB proc   x:DWORD, y:DWORD, dir:REAL4
     invoke  BindButtonToBitmap, pButton1, BULLET_B
     invoke  SetButtonSize, pButton1, 5, 5
     ; ---- Proj
-    invoke  RegisterProjectile, 1, real11, dir
+    invoke  RegisterProjectile, 2, real11 , dir
     mov     pProjt1, eax
     invoke  ProjtBindButton, pProjt1, pButton1
     invoke  ProjtBindUpdate, pProjt1, ProjtFireUpdate
@@ -330,7 +330,7 @@ PrefabProjC proc   x:DWORD, y:DWORD, dir:REAL4
     invoke  BindButtonToBitmap, pButton1, BULLET_C
     invoke  SetButtonSize, pButton1, 15, 15
     ; ---- Proj
-    invoke  RegisterProjectile, 5, real11, dir
+    invoke  RegisterProjectile, 12, real11, dir
     mov     pProjt1, eax
     invoke  ProjtBindButton, pProjt1, pButton1
     invoke  ProjtBindUpdate, pProjt1, ProjtMissleUpdate
@@ -398,6 +398,8 @@ PrefabEnemy1 proc lvl:DWORD
     add     eax, lvl
     invoke  RegisterEnemy, eax, real1, 10
     mov     pEnemy1, eax
+    assume  eax: PTR ENEMYDATA
+    mov     [eax].bParam, 3
     invoke  EnemyBindButton, pEnemy1, pButton1
     invoke  EnemyBindUpdate, pEnemy1, EnemyDefaultUpdate
     mov     eax, pEnemy1
@@ -427,6 +429,8 @@ PrefabEnemy2 proc lvl:DWORD
     add     eax, lvl
     invoke  RegisterEnemy, eax, real1, 10
     mov     pEnemy1, eax
+    assume  eax: PTR ENEMYDATA
+    mov     [eax].bParam, 17
     invoke  EnemyBindButton, pEnemy1, pButton1
     invoke  EnemyBindUpdate, pEnemy1, EnemyDefaultUpdate
     mov     eax, pEnemy1
@@ -456,6 +460,8 @@ PrefabEnemy3 proc lvl:DWORD
     add     eax, lvl
     invoke  RegisterEnemy, eax, PI, 10
     mov     pEnemy1, eax
+    assume  eax: PTR ENEMYDATA
+    mov     [eax].bParam, 2
     invoke  EnemyBindButton, pEnemy1, pButton1
     invoke  EnemyBindUpdate, pEnemy1, EnemyDefaultUpdate
     mov     eax, pEnemy1
@@ -487,6 +493,8 @@ PrefabEnemy4 proc lvl:DWORD
     add     eax, 1000
     invoke  RegisterEnemy, eax, real1of2, 10
     mov     pEnemy1, eax
+    assume  eax: PTR ENEMYDATA
+    mov     [eax].bParam, 175
     invoke  EnemyBindButton, pEnemy1, pButton1
     invoke  EnemyBindUpdate, pEnemy1, EnemyDefaultUpdate
     mov     eax, pEnemy1

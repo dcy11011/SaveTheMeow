@@ -161,9 +161,13 @@ pProjt1         DWORD  ?
                 mov     ebx, eax
                 and     ebx, 0000FFFFh
                 shr     eax, 16
+                pushad
                 invoke  SendClickInfo, ebx, eax
+                popad
+                ; ------- test pop
+                ; invoke  PopNoCoin
                 ; ------- test enemy
-                invoke  PrefabEnemy3, 1000
+                ; invoke  PrefabEnemy3, 1000
                 ; invoke  PrefabHurtEffectProj, 200, 200
                 ; invoke  PrefabTestProjectile, 200, 200
                 invoke  SortButtons ; IMPORTANT!

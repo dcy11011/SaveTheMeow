@@ -160,7 +160,7 @@ PrepareBitmapPaint ENDP
 
 GetBitmapSize       PROC uses edi ebx bitmapID:DWORD, pPoint:ptr D_POINT
     local   @hBitmap:DWORD, @bitmap[32]:byte
-    invoke  LoadBitmap, hInstance, bitmapID
+    invoke  LoadBitmapFromBuffer, bitmapID
     mov     @hBitmap, eax
     invoke  GetObject, @hBitmap, 32, addr @bitmap
     lea     eax, @bitmap

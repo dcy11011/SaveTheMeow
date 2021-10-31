@@ -4,6 +4,7 @@ option casemap:none
 
 include enemy.inc
 include collision.inc
+include statusbar.inc
 
 include windows.inc
 include gdi32.inc
@@ -367,6 +368,7 @@ WaveStepForward proc
         mov     eax, nWaveNumber
         add     eax, 1
         mov     nWaveNumber, eax
+        invoke  PopWave, nWaveNumber
     .ENDIF
     mov     eax, DEFAULTENEMYCD
     mov     nWaveEnemyCD, eax

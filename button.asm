@@ -114,6 +114,7 @@ RegisterButton      PROC    uses ebx edi esi pRect: ptr RECT, pPaint:DWORD, pCli
     .ENDIF
     mov     eax, esi
     ret 
+
 RegisterButton ENDP
 
 ; 绘制单个按钮

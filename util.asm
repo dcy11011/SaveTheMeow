@@ -27,6 +27,7 @@ real9of10           REAL4   0.9
 real99of100         REAL4   0.99
 real5               REAL4   5.0
 real11              REAL4   11.0
+real15              REAL4   15.0
 real20              REAL4   20.0
 real100             REAL4   100.0
 MouseXi             DWORD   0

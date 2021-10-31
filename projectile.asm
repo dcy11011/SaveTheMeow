@@ -328,7 +328,7 @@ ProjtHitEnemies proc uses esi edi self: ptr PROJTDATA, cnt:DWORD
                     invoke  GetCenterButton, [esi].pAsButton
                     invoke  PrefabDeathEffectProjf, eax, edx
                     invoke  EnemySetDeath, esi
-                    invoke  AddCoin, 10
+                    invoke  PopAddCoinf, [esi].bParam, [esi].xf, [esi].yf
                 @@:
                 ; apply damage
                 mov     eax, [edi].pHitEvent
