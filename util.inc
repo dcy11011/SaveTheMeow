@@ -34,6 +34,10 @@ CloseFile       PROTO  pFile:DWORD
 
 Random          PROTO  
 
+SetRect         PROTO  pRect:DWORD, left:DWORD, top:DWORD, right:DWORD, bottom:DWORD
+
+DwordToStr      PROTO  sxStr:PTR BYTE , val:DWORD
+
 EXTERNDEF PI:REAL4
 EXTERNDEF PIby2:REAL4
 EXTERNDEF PIm2:REAL4
