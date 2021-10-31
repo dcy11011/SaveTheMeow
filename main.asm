@@ -52,9 +52,9 @@ pProjt1         DWORD  ?
 
 
 .const
-    szClassName     db      'MyClass', 0
-    szCaptionMain   db      'Window Caption', 0
-    szText          db      'Win32 Assembly Test Text', 0
+    szClassName     db      "MyGameClass", 0
+    szCaptionMain   db      "Anti-Slime Turrent Defense", 0
+    szText          db      "If you see this text, contact author about this bug", 0
 ;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 ; Code
 ;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>

@@ -4,7 +4,7 @@ RCM = rclist.rcm
 RCINC = rclist.inc
 RC  = rclist.rc
 RES = rclist.res
-EXE = app.exe
+EXE = StartGame.exe
 
 EX_LIB = kernel32.lib gdi32.lib user32.lib msvcrt.lib msimg32.lib
 
@@ -12,7 +12,7 @@ ML = $(MASM)\bin\ml.exe
 LINK = $(MASM)\bin\link.exe
 RC_E = $(MASM)\bin\rc.exe
 
-LINK_FLAG = /subsystem:console /LIBPATH:$(IRVINE) /LIBPATH:$(MASM)\lib
+LINK_FLAG = /subsystem:windows /LIBPATH:$(IRVINE) /LIBPATH:$(MASM)\lib
 ML_FLAG = /c /coff /I$(MASM)/include /Zi
 
 
