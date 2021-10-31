@@ -77,6 +77,11 @@ RegisterEnemy proc hp: DWORD, speed: REAL4, atk: DWORD
     invoke  GetAvilaibleEnemyData
     mov     edx, eax
     assume  edx: ptr ENEMYDATA
+    ;
+    pushad
+    invoke  dPrint, hp
+    popad
+    ;
     mov     eax, hp
     mov     [edx].health, eax
     mov     [edx].healthMax, eax
@@ -346,6 +351,7 @@ WaveStart proc     waven:DWORD, ecnt:DWORD
 WaveStart endp
 
 WaveStepForward proc
+    local   lvl:DWORD
     mov     eax, nWaveEnemyCD
     and     eax, eax
     je      @f
@@ -361,18 +367,25 @@ WaveStepForward proc
     sub     eax, 1
     mov     nWaveEnemiesRemain, eax
     ; spawn enemy
+    mov     eax, nWaveNumber
+    mov     ecx, 2
+    mul     ecx
+    mov     lvl, eax ; set lvl
     xor     edx, edx
     invoke  rand
     mov     ecx, 32
     div     ecx
+    pushad
+    invoke  dPrint2, nWaveNumber, lvl
+    popad
     .IF     edx <= 16
-        invoke  PrefabEnemy1
+        invoke  PrefabEnemy1, lvl
     .ELSEIF edx <= 25
-        invoke  PrefabEnemy2
+        invoke  PrefabEnemy2, lvl
     .ELSEIF edx <= 28
-        invoke  PrefabEnemy3
+        invoke  PrefabEnemy3, lvl
     .ELSE
-        invoke  PrefabEnemy4
+        invoke  PrefabEnemy4, lvl
     .ENDIF
     ;
     ret
@@ -389,7 +402,6 @@ WaveStepForward proc
     add     eax, edx
     mov     nWaveEnemiesTotal, eax
     mov     nWaveEnemiesRemain, eax
-    invoke  dPrint2, nWaveNumber, nWaveEnemiesTotal
     ret
 WaveStepForward endp
 

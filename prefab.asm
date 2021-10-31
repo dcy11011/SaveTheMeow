@@ -170,7 +170,7 @@ PrefabProjA proc   x:DWORD, y:DWORD, dir:REAL4
     assume  eax: ptr BUTTONDATA
     or      [eax].isActive, BTNI_DISABLE
     invoke  BindButtonToBitmap, pButton1, BULLET_A
-    invoke  SetButtonSize, pButton1, 10, 10
+    invoke  SetButtonSize, pButton1, 15, 15
     ; ---- Proj
     invoke  RegisterProjectile, 5, real11, dir
     mov     pProjt1, eax
@@ -207,17 +207,17 @@ PrefabProjB proc   x:DWORD, y:DWORD, dir:REAL4
     assume  eax: ptr BUTTONDATA
     or      [eax].isActive, BTNI_DISABLE
     invoke  BindButtonToBitmap, pButton1, BULLET_B
-    invoke  SetButtonSize, pButton1, 10, 10
+    invoke  SetButtonSize, pButton1, 5, 5
     ; ---- Proj
     invoke  RegisterProjectile, 5, real11, dir
     mov     pProjt1, eax
     invoke  ProjtBindButton, pProjt1, pButton1
-    invoke  ProjtBindUpdate, pProjt1, ProjtDefaultUpdate
+    invoke  ProjtBindUpdate, pProjt1, ProjtFireUpdate
     ;
     mov     edx, pProjt1
     assume  edx: ptr PROJTDATA
     mov     [edx].penetrate, 1
-    mov     [edx].lifetime, 30
+    mov     [edx].lifetime, 40
     ;
     mov     eax, pProjt1
     ret
@@ -244,7 +244,7 @@ PrefabProjC proc   x:DWORD, y:DWORD, dir:REAL4
     assume  eax: ptr BUTTONDATA
     or      [eax].isActive, BTNI_DISABLE
     invoke  BindButtonToBitmap, pButton1, BULLET_C
-    invoke  SetButtonSize, pButton1, 10, 10
+    invoke  SetButtonSize, pButton1, 15, 15
     ; ---- Proj
     invoke  RegisterProjectile, 5, real11, dir
     mov     pProjt1, eax
@@ -295,7 +295,7 @@ PrefabTestEnemy proc   x:DWORD, y:DWORD
     ret
 PrefabTestEnemy endp
 
-PrefabEnemy1 proc
+PrefabEnemy1 proc lvl:DWORD
     local   @stRect:RECT, pButton1:DWORD, pEnemy1:DWORD
     mov     eax, -100
     mov     @stRect.left, eax
@@ -314,7 +314,9 @@ PrefabEnemy1 proc
     or      [eax].isActive, BTNI_DISABLE
     invoke  BindButtonToBitmap, pButton1, ENEMY_SPRITE_1
     
-    invoke  RegisterEnemy, 30, real1, 10
+    mov     eax, 30
+    add     eax, lvl
+    invoke  RegisterEnemy, eax, real1, 10
     mov     pEnemy1, eax
     invoke  EnemyBindButton, pEnemy1, pButton1
     invoke  EnemyBindUpdate, pEnemy1, EnemyDefaultUpdate
@@ -322,7 +324,7 @@ PrefabEnemy1 proc
     ret
 PrefabEnemy1 endp
 
-PrefabEnemy2 proc
+PrefabEnemy2 proc lvl:DWORD
     local   @stRect:RECT, pButton1:DWORD, pEnemy1:DWORD
     mov     eax, -100
     mov     @stRect.left, eax
@@ -341,7 +343,9 @@ PrefabEnemy2 proc
     or      [eax].isActive, BTNI_DISABLE
     invoke  BindButtonToBitmap, pButton1, ENEMY_SPRITE_2
     
-    invoke  RegisterEnemy, 100, real1, 10
+    mov     eax, 100
+    add     eax, lvl
+    invoke  RegisterEnemy, eax, real1, 10
     mov     pEnemy1, eax
     invoke  EnemyBindButton, pEnemy1, pButton1
     invoke  EnemyBindUpdate, pEnemy1, EnemyDefaultUpdate
@@ -349,7 +353,7 @@ PrefabEnemy2 proc
     ret
 PrefabEnemy2 endp
 
-PrefabEnemy3 proc
+PrefabEnemy3 proc lvl:DWORD
     local   @stRect:RECT, pButton1:DWORD, pEnemy1:DWORD
     mov     eax, -100
     mov     @stRect.left, eax
@@ -366,9 +370,11 @@ PrefabEnemy3 proc
     mov     eax, pButton1
     assume  eax: ptr BUTTONDATA
     or      [eax].isActive, BTNI_DISABLE
-    invoke  BindButtonToBitmap, pButton1, ENEMY_SPRITE_1
+    invoke  BindButtonToBitmap, pButton1, ENEMY_SPRITE_3
     
-    invoke  RegisterEnemy, 10, PI, 10
+    mov     eax, 10
+    add     eax, lvl
+    invoke  RegisterEnemy, eax, PI, 10
     mov     pEnemy1, eax
     invoke  EnemyBindButton, pEnemy1, pButton1
     invoke  EnemyBindUpdate, pEnemy1, EnemyDefaultUpdate
@@ -376,7 +382,7 @@ PrefabEnemy3 proc
     ret
 PrefabEnemy3 endp
 
-PrefabEnemy4 proc
+PrefabEnemy4 proc lvl:DWORD
     local   @stRect:RECT, pButton1:DWORD, pEnemy1:DWORD
     mov     eax, -100
     mov     @stRect.left, eax
@@ -393,9 +399,13 @@ PrefabEnemy4 proc
     mov     eax, pButton1
     assume  eax: ptr BUTTONDATA
     or      [eax].isActive, BTNI_DISABLE
-    invoke  BindButtonToBitmap, pButton1, ENEMY_SPRITE_2
+    invoke  BindButtonToBitmap, pButton1, ENEMY_SPRITE_4
     
-    invoke  RegisterEnemy, 1000, real1of2, 10
+    mov     ecx, 10
+    mov     eax, lvl
+    mul     ecx
+    add     eax, 1000
+    invoke  RegisterEnemy, eax, real1of2, 10
     mov     pEnemy1, eax
     invoke  EnemyBindButton, pEnemy1, pButton1
     invoke  EnemyBindUpdate, pEnemy1, EnemyDefaultUpdate

@@ -291,7 +291,6 @@ TurrentUpdate   PROC uses ebx esi edi  cnt:DWORD, pButton: ptr BUTTONDATA
                 
                 invoke  ProjtSetDirection, edx, @integer
                 
-                invoke  ProjtSetSpeed, edx, three
             .ENDIF
         .ELSEIF [edi].turretID == C_TURRET
             mov     eax, [edi].pTurretTarget
