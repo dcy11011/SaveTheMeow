@@ -298,6 +298,7 @@ DeleteButton    proc uses esi  pButton:ptr BUTTONDATA
     mov     esi, pButton
     assume  esi: ptr BUTTONDATA
     mov     [esi].status, BTNS_UNUSED
+    mov     [esi].isActive, 00ffh
     xor     eax, eax
     ret     
 DeleteButton    ENDP
