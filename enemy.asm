@@ -275,7 +275,6 @@ EnemySetDeath proc uses edi self: ptr ENEMYDATA
     assume  edi: ptr ENEMYDATA
     mov     [edi].isActive, 0
     invoke  DeleteButton, [edi].pAsButton
-    invoke  PopAddCoinf, [edi].bParam, [edi].xf, [edi].yf
     ret
 EnemySetDeath endp
 
@@ -369,6 +368,7 @@ WaveStepForward proc
         mov     eax, nWaveNumber
         add     eax, 1
         mov     nWaveNumber, eax
+        invoke  PopWave, nWaveNumber
     .ENDIF
     mov     eax, DEFAULTENEMYCD
     mov     nWaveEnemyCD, eax

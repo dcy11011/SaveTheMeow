@@ -33,8 +33,8 @@ three                      REAL4    3.0
 szMapFileName              BYTE     "map0.data", 0
 pLastMapBlock              DWORD    0
 topPainter                 DWORD    0
-turrentCost                DWORD    0, 50, 40, 80, 220, 0, 0, 0
-textbuffer                 BYTE     20 DUP(?)
+turrentCost                DWORD    0, 120, 80, 180, 220, 0, 0, 0
+textbuffer                 BYTE     200 DUP(?)
 
 turrentA_text              BYTE     "Bean",0
 turrentB_text              BYTE     "Frame",0
@@ -141,7 +141,6 @@ PopTurretPaint   PROC uses ebx edi esi hdc:DWORD, pButton: ptr BUTTONDATA
             invoke  PaintBitmapTransEx, hdc, POP_INFO, addr @stRect, 0
             pop     edi
 
-            invoke  dPrint, [edi].cParam
             invoke  SetTextColor, hdc, 00223333h
             invoke  GetCoin
             mov     ecx, [edi].cParam
@@ -529,7 +528,7 @@ CreateTurret        PROC uses ebx esi edi    pMapBlock: PTR MAPBLOCKDATA, turret
     .ELSEIF eax == B_TURRET
         mov     eax, TURRENT_B
         mov     [esi].aParam, eax
-        mov     eax, 120
+        mov     eax, 100
         mov     [edi].turretRange, eax
     .ELSEIF eax == C_TURRET
         mov     eax, TURRENT_C
@@ -559,7 +558,6 @@ CreateTurretR       PROC uses ebx esi edi    pButton: PTR BUTTONDATA
     mov     edi, [esi].bParam
     assume  edi: ptr MAPBLOCKDATA
     invoke  GetCoin
-    invoke  dPrint, eax
     mov     ecx, [esi].cParam
     .IF     eax < turrentCost[ecx*4]
         invoke PopNoCoin
@@ -778,7 +776,7 @@ SetMapBlockDisplaySet   PROC  uses ebx edi esi pMapBlock: ptr MAPBLOCKDATA, id:D
 SetMapBlockDisplaySet  ENDP
 
 LoadMapFromFile     PROC uses ebx edi esi offsetX:DWORD, offsetY:DWORD
-    local   @file:DWORD, @x:DWORD, @y:DWORD, @rect:RECT, @route_point_cnt:DWORD
+    local   @file:DWORD, @x:DWORD, @y:DWORD, @rect:RECT, @route_point_cnt:DWORD, @imgID:DWORD
     invoke  OpenTextFile, offset szMapFileName
     mov     @file, eax
     
@@ -820,6 +818,11 @@ LoadMapFromFile     PROC uses ebx edi esi offsetX:DWORD, offsetY:DWORD
             mov     al, BYTE PTR [esi]
             .IF     al == 43 || (al >=48 && al <= 64) 
                 push    eax
+                .IF al == 48
+                    mov     @imgID, BMP_START
+                .ELSE
+                    mov     @imgID, BMP_ROAD
+                .ENDIF
 
                 push    ecx
                 push    edx
@@ -832,7 +835,8 @@ LoadMapFromFile     PROC uses ebx edi esi offsetX:DWORD, offsetY:DWORD
                 assume  eax: ptr BUTTONDATA
                 mov     dx, BTNI_DISABLE
                 mov     WORD PTR [eax].isActive, dx
-                invoke  BindButtonToBitmap, eax, BMP_ROAD
+
+                invoke  BindButtonToBitmap, eax, @imgID
                 invoke  SetButtonSize, eax, MAPB_BLOCKWIDTH, MAPB_BLOCKHEIGHT
                 pop     edx
                 pop     ecx

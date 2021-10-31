@@ -26,9 +26,10 @@ waves       DWORD   0
 actionRatio REAL4   0.80
 
 pNoCoinButton   DWORD   0
+pWaveButton     DWORD   0
 
 .data?
-textbuffer  BYTE    20 DUP(?)
+textbuffer  BYTE    200 DUP(?)
 
 
 .code
@@ -50,7 +51,7 @@ PaintStatusBar      PROC    uses ebx edi esi   hdc:DWORD, pButton:PTR BUTTONDATA
             DT_SINGLELINE or DT_VCENTER
 
     invoke  SetTextColor, hdc, 00dd8888h
-    invoke  SetRect, addr @rect, 360, 20, 420, 40
+    invoke  SetRect, addr @rect, 380, 20, 480, 40
     invoke  DwordToStr, offset textbuffer, nWaveNumber
     invoke  DrawText, hdc, offset textbuffer, -1, addr @rect, \
             DT_SINGLELINE or DT_VCENTER
@@ -292,6 +293,104 @@ PopNoCoin      PROC    uses ebx esi edi
     
     ret
 PopNoCoin      ENDP
+
+PaintPopWave PROC    uses ebx edi esi  hdc:DWORD, pButton:PTR BUTTONDATA
+    local   @oldPen:DWORD, @oldBrush:DWORD, @rect:RECT, @pos:D_POINT
+    mov     esi, pButton
+    assume  esi:PTR BUTTONDATA
+    invoke  GetButtonRect, esi, addr @rect
+
+    mov     eax, @rect.left
+    add     eax, @rect.right
+    shr     eax, 1
+    mov     @pos.x, eax
+
+    mov     eax, @rect.top
+    add     eax, @rect.bottom
+    shr     eax, 1
+    mov     @pos.y, eax
+
+    mov     eax, [esi].cParam
+    and     eax, 8
+    .IF     eax
+        mov     eax, 5
+    .ELSE
+        mov     eax, -5
+    .ENDIF
+    invoke  RotateDCi, hdc, eax, @pos.x, @pos.y
+    invoke  PaintBitmapTransEx, hdc, POP_WAVE, addr @rect, CENTER_XY
+    invoke  SetBkMode, hdc, TRANSPARENT
+    invoke  SetTextColor, hdc, 00BB1111h
+    mov     eax, @rect.left
+    add     eax, 55
+    mov     @rect.left, eax
+    add     eax, 50
+    mov     @rect.right, eax
+    mov     eax, @rect.top
+    sub     eax, 2
+    mov     @rect.top, eax
+    add     eax, 50
+    mov     @rect.bottom, eax
+    invoke  DwordToStr, offset textbuffer, waves
+    invoke  DrawText, hdc, offset textbuffer, -1, addr @rect, \
+            DT_SINGLELINE or DT_VCENTER
+    invoke  ClearDCRotate, hdc
+
+    ret
+PaintPopWave ENDP
+
+UpdatePopWave  PROC uses ebx edi esi  cnt:DWORD, pButton:PTR BUTTONDATA
+    local   @val:DWORD, @x1:REAL4, @x2:REAL4
+    mov     esi, pButton
+    assume  esi: PTR BUTTONDATA
+    .IF     [esi].cParam > 120
+        invoke  MoveButtonTo, esi, -100, -100
+        ret
+    .ENDIF
+    inc     [esi].cParam
+    .IF     [esi].cParam < 30
+        mov     eax, [esi].aParam
+        mov     ebx, [esi].cParam
+        shl     ebx, 1
+        add     eax, ebx
+        invoke  MoveButtonTo, esi, 350, eax
+        ret
+    .ENDIF
+    .IF     [esi].cParam > 90
+        mov     eax, [esi].aParam
+        mov     ebx, [esi].cParam
+        sub     ebx, 90
+        shl     ebx, 1
+        add     eax, 60
+        sub     eax, ebx
+        invoke  MoveButtonTo, esi, 350, eax
+        ret
+    .ENDIF
+    
+    ret
+UpdatePopWave  ENDP
+
+PopWave      PROC    uses ebx esi edi waveNumber:DWORD
+    local   @rect:RECT
+    .IF  !pWaveButton
+        invoke  SetRect, addr @rect, 0, 0, 0, 0
+        invoke  RegisterButton, addr @rect, PaintPopWave, 0, 0,UpdatePopWave
+        invoke  SetButtonDepth, eax, -7499
+        mov     esi, eax
+        assume  esi: PTR BUTTONDATA
+        invoke  SetButtonSize, esi, 80, 40
+        mov     pWaveButton, esi
+        mov     esi, pWaveButton
+        mov     [esi].cParam, 0
+    .ENDIF
+    mov     esi, pWaveButton
+    mov     [esi].cParam, 0
+    mov     [esi].aParam, 0
+    mov     eax, waveNumber
+    mov     waves, eax
+    
+    ret
+PopWave      ENDP
 
 
 end
