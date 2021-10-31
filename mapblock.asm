@@ -18,6 +18,7 @@ include projectile.inc
 include rclist.inc
 
 include mapblock.inc
+include statusbar.inc
 
 
 .data
@@ -253,6 +254,13 @@ MapBlockUpdate  ENDP
 
 TurrentUpdate   PROC uses ebx esi edi  cnt:DWORD, pButton: ptr BUTTONDATA
     local   @integer:DWORD, @siz:D_POINT, @tx:REAL4, @ty:REAL4
+
+    mov     eax, health
+    and     eax, eax
+    jg      @f
+    ret
+    @@:
+
     mov     esi, pButton
     assume  esi: PTR BUTTONDATA
     mov     edi, [esi].bParam
@@ -288,7 +296,7 @@ TurrentUpdate   PROC uses ebx esi edi  cnt:DWORD, pButton: ptr BUTTONDATA
             mov     eax, [eax].pAsButton
             invoke  GetCenterButton, eax
             invoke  DirectionTo, @tx, @ty, eax, edx
-            invoke  Lerp, [edi].turretAngle, eax, real2of3
+            invoke  LerpAngle, [edi].turretAngle, eax, real2of3
             mov     [edi].turretAngle, eax
 
             xor     edx, edx
@@ -807,9 +815,6 @@ LoadMapFromFile     PROC uses ebx edi esi offsetX:DWORD, offsetY:DWORD
         assume  edx: ptr D_POINT
         push    ecx
         push    edx
-        pushad
-        invoke  dPrint2, [edx].x, [edx].y
-        popad
         invoke  RoadmapAddi, [edx].x, [edx].y
         pop     edx
         pop     ecx

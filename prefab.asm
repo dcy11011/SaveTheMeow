@@ -10,6 +10,7 @@ include button.inc
 include util.inc
 include collision.inc
 include rclist.inc
+include main.inc
 
 .data
 
@@ -113,6 +114,42 @@ PrefabDeathEffectProjf proc   x:REAL4, y:REAL4
     ret
 PrefabDeathEffectProjf endp
 
+PrefabReplayBtn proc   x:DWORD, y:DWORD
+    local   @stRect:RECT, pButton1:DWORD, pProjt1:DWORD
+    ; ---- Button
+    mov     eax, x
+    sub     eax, 250
+    mov     @stRect.left, eax
+    add     eax, 30
+    mov     @stRect.right, eax
+    ;
+    mov     eax, y
+    sub     eax, 45
+    mov     @stRect.top, eax
+    add     eax, 20
+    mov     @stRect.bottom, eax
+    invoke  RegisterButton, addr @stRect, 0, QuitCallback, 0, 0
+    mov     pButton1, eax
+    invoke  SetButtonDepth, pButton1, -1000
+    mov     eax, pButton1
+    assume  eax: ptr BUTTONDATA
+    ; or      [eax].isActive, BTNI_DISABLE
+    invoke  BindButtonToBitmap, pButton1, GG_BUTTON
+    invoke  SetButtonSize, pButton1, 500, 60
+    ; ---- Proj
+    invoke  RegisterProjectile, 0, real0, real0
+    mov     pProjt1, eax
+    invoke  ProjtBindButton, pProjt1, pButton1
+    invoke  ProjtBindUpdate, pProjt1, ProjtDefaultUpdate
+    ;
+    mov     edx, pProjt1
+    assume  edx: ptr PROJTDATA
+    mov     [edx].penetrate, -1
+    mov     [edx].lifetime, -1
+    ;
+    mov     eax, pProjt1
+    ret
+PrefabReplayBtn endp
 
 
 PrefabTestProjectile proc   x:DWORD, y:DWORD
@@ -259,10 +296,6 @@ PrefabProjC proc   x:DWORD, y:DWORD, dir:REAL4
     mov     eax, pProjt1
     ret
 PrefabProjC endp
-
-;
-;   Enemy Prefabs
-;
 
 ;
 ;   Enemy Prefabs

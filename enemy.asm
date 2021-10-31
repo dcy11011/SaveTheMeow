@@ -10,6 +10,7 @@ include gdi32.inc
 include util.inc 
 include paint.inc
 include prefab.inc
+include statusbar.inc
 
 .data
 nEnemyListCnt           DWORD    0
@@ -77,10 +78,6 @@ RegisterEnemy proc hp: DWORD, speed: REAL4, atk: DWORD
     invoke  GetAvilaibleEnemyData
     mov     edx, eax
     assume  edx: ptr ENEMYDATA
-    ;
-    pushad
-    invoke  dPrint, hp
-    popad
     ;
     mov     eax, hp
     mov     [edx].health, eax
@@ -242,6 +239,11 @@ EnemyStepForward proc uses edi self: ptr ENEMYDATA
     fadd
     fstp    DWORD ptr [edi].progress
     invoke  RoadmapCalcCurrent, [edi].progress
+    .IF     ecx
+        invoke  DecHealth, [edi].attack
+        invoke  EnemySetDeath, self
+        ret
+    .ENDIF
     mov     tx, eax
     mov     ty, edx
 
@@ -359,6 +361,12 @@ WaveStepForward proc
     mov     nWaveEnemyCD, eax
     ret
     @@:
+    mov     eax, nWaveEnemiesRemain
+    .IF     eax == nWaveEnemiesTotal
+        mov     eax, nWaveNumber
+        add     eax, 1
+        mov     nWaveNumber, eax
+    .ENDIF
     mov     eax, DEFAULTENEMYCD
     mov     nWaveEnemyCD, eax
     mov     eax, nWaveEnemiesRemain
@@ -375,9 +383,9 @@ WaveStepForward proc
     invoke  rand
     mov     ecx, 32
     div     ecx
-    pushad
-    invoke  dPrint2, nWaveNumber, lvl
-    popad
+    ; pushad
+    ; invoke  dPrint2, nWaveNumber, lvl
+    ; popad
     .IF     edx <= 16
         invoke  PrefabEnemy1, lvl
     .ELSEIF edx <= 25
@@ -387,16 +395,16 @@ WaveStepForward proc
     .ELSE
         invoke  PrefabEnemy4, lvl
     .ENDIF
+    lea     edx, arrayRoadmapList
+    assume  edx: ptr F_POINT
+    invoke  PrefabDeathEffectProjf, [edx].x, [edx].y
     ;
     ret
     @@:
     ; next wave
-    invoke  dPrint2, nWaveNumber, nWaveEnemiesTotal
+    ; invoke  dPrint2, nWaveNumber, nWaveEnemiesTotal
     mov     eax, DEFAULTWAVECD
     mov     nWaveEnemyCD, eax
-    mov     eax, nWaveNumber
-    add     eax, 1
-    mov     nWaveNumber, eax
     mov     eax, nWaveEnemiesTotal
     mov     edx, DELTAECNT
     add     eax, edx
@@ -503,6 +511,7 @@ RoadmapCalcCurrent proc uses esi    s:REAL4 ; 依据一维距离计算当前位�
         ; invoke  dPrint2Float, [esi + sizeof F_POINT].x, [esi + sizeof F_POINT].y
         ; invoke  dPrint2Float, eax, edx
         ; popad
+        xor     ecx, ecx
         ret
         @@:
         ;
@@ -514,6 +523,7 @@ RoadmapCalcCurrent proc uses esi    s:REAL4 ; 依据一维距离计算当前位�
     assume  esi: ptr F_POINT
     mov     eax, [esi].x
     mov     edx, [esi].y
+    mov     ecx, 1
     ret
 RoadmapCalcCurrent endp
 

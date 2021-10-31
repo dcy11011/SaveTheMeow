@@ -255,12 +255,12 @@ ButtonBitmapPaint   PROC uses ebx edi esi hdc:DWORD, pButton: ptr BUTTONDATA
 ButtonBitmapPaint   ENDP
 
 ButtonDefaultClick PROC uses ebx edi esi pButton: ptr BUTTONDATA
-    invoke  printf, offset szDefaultButtonClick, pButton
+    ; invoke  printf, offset szDefaultButtonClick, pButton
     ret
 ButtonDefaultClick ENDP
 
 ButtonDefaultHover PROC uses ebx edi esi pButton: ptr BUTTONDATA
-    invoke  printf, offset szDefaultButtonHover, pButton
+    ; invoke  printf, offset szDefaultButtonHover, pButton
     ret
 ButtonDefaultHover ENDP
 
