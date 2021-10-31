@@ -27,6 +27,7 @@ Include button.inc
 include enemy.inc
 include projectile.inc
 include mapblock.inc
+include statusbar.inc
 
 include prefab.inc
 
@@ -183,7 +184,10 @@ pProjt1         DWORD  ?
 
                 invoke  SetTimer, hWnd, TIMER_TICK, TICK_INTERVAL, NULL   
 
-                invoke  LoadMapFromFile, 50, 50
+                invoke  LoadMapFromFile, 50, 90
+
+                invoke  GetClientRect, hWnd, addr @stRect
+                invoke  RegisterStatusBar, addr @stRect
 
                 invoke  RegisterTopPainter
 
@@ -221,7 +225,7 @@ pProjt1         DWORD  ?
 
             invoke  CreateWindowEx, WS_EX_CLIENTEDGE, offset szClassName, \
                     offset szCaptionMain, WS_OVERLAPPEDWINDOW, \
-                    100, 100, 870, 650, \
+                    100, 100, 870, 670, \
                     NULL, NULL, hInstance, NULL
             mov     hWinMain, eax
             invoke  ShowWindow, hWinMain, SW_SHOWNORMAL

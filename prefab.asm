@@ -209,7 +209,7 @@ PrefabProjB proc   x:DWORD, y:DWORD, dir:REAL4
     invoke  BindButtonToBitmap, pButton1, BULLET_B
     invoke  SetButtonSize, pButton1, 10, 10
     ; ---- Proj
-    invoke  RegisterProjectile, 5, real11, dir
+    invoke  RegisterProjectile, 1, real11, dir
     mov     pProjt1, eax
     invoke  ProjtBindButton, pProjt1, pButton1
     invoke  ProjtBindUpdate, pProjt1, ProjtDefaultUpdate

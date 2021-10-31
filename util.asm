@@ -3,6 +3,7 @@
 option casemap:none
 
 include util.inc
+include windows.inc
 
 .data
 szOpenFile          byte    "r", 0
@@ -140,5 +141,51 @@ Random          PROC  uses ebx esi edi
     mov     eax, @integer
     ret
 Random      ENDP
+
+SetRect     PROC    uses ebx edi esi  pRect:DWORD, dleft:DWORD, dtop:DWORD, dright:DWORD, dbottom:DWORD
+    mov     edi, pRect
+    assume  edi: PTR RECT
+    mov     eax, dleft
+    mov     [edi].left, eax
+    mov     eax, dright
+    mov     [edi].right, eax
+    mov     eax, dtop
+    mov     [edi].top, eax
+    mov     eax, dbottom
+    mov     [edi].bottom, eax
+    ret
+SetRect     ENDP
+
+DwordToStr  PROC    uses ebx esi edi szStr:PTR BYTE , val:DWORD
+    mov     esi, szStr
+    assume  esi:PTR BYTR
+    mov     ecx, val
+    .REPEAT
+        xor     edx, edx
+        mov     eax, ecx
+        mov     ebx, 10
+        div     ebx
+        add     edx, 48
+        mov     BYTE PTR [esi], dl
+        add     esi, 1 
+        mov     ecx, eax
+    .UNTIL ecx == 0
+    mov     BYTE PTR [esi], 0
+    mov     eax, esi
+    sub     eax, szStr
+
+    sub     esi, 1
+    mov     edi, szStr
+    .WHILE  edi < esi
+        mov     bl, [esi]
+        mov     bh, [edi]
+        mov     [esi], bh
+        mov     [edi], bl
+        dec     esi
+        inc     edi
+    .ENDW
+    ret
+DwordToStr   ENDP
+
 
 end
