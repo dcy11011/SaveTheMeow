@@ -52,7 +52,7 @@ LoadAllBitmap PROC  uses ebx edi esi
     mul     ecx
     add     edi, eax
     .WHILE ecx <= MAX_BITMAP_ID
-        invoke  dPrint, ecx
+        ; invoke  dPrint, ecx
         push    ecx
         invoke  LoadBitmap, hInstance, ecx
         mov     DWORD ptr [edi], eax

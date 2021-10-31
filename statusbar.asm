@@ -49,9 +49,9 @@ PaintStatusBar      PROC    uses ebx edi esi   hdc:DWORD, pButton:PTR BUTTONDATA
     invoke  DrawText, hdc, offset textbuffer, -1, addr @rect, \
             DT_SINGLELINE or DT_VCENTER
 
-    invoke  SetTextColor, hdc, 00dd4444h
+    invoke  SetTextColor, hdc, 00dd8888h
     invoke  SetRect, addr @rect, 360, 20, 420, 40
-    invoke  DwordToStr, offset textbuffer, waves
+    invoke  DwordToStr, offset textbuffer, nWaveNumber
     invoke  DrawText, hdc, offset textbuffer, -1, addr @rect, \
             DT_SINGLELINE or DT_VCENTER
     
@@ -117,12 +117,26 @@ AddHealth     PROC    val:DWORD
     ret
 AddHealth     ENDP
 
-addWave     PROC    val:DWORD
-    mov     eax, waves
-    add     eax, val
-    mov     waves, eax
+DecHealth     PROC    val:DWORD
+    mov     eax, health
+    and     eax, eax
+    jg      @f
+        ret
+    @@:
+    ; already dead
+    mov     eax, health
+    sub     eax, val
+    mov     health, eax
+    and     eax, eax
+    jg      @f
+        mov     health, 0
+        invoke  PrefabReplayBtn, 435, 345
+        mov     eax, 0
+        ret
+    @@:
+    mov     eax, 1
     ret
-addWave     ENDP
+DecHealth     ENDP
 
 PaintPopAddCoin PROC    uses ebx edi esi  hdc:DWORD, pButton:PTR BUTTONDATA
     local   @oldPen:DWORD, @oldBrush:DWORD, @rect:RECT

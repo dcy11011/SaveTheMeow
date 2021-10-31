@@ -12,7 +12,7 @@ BTNI_DISABLE_CLICK          EQU     0004h
 BTNI_DISABLE_PAINT          EQU     0008h
 BTNI_RUNNING     EQU     0000h
 
-MAXBTNCNT        EQU     4000   ; 最大的按钮数量； Note：没有溢出保护
+MAXBTNCNT        EQU     7000   ; 最大的按钮数量； Note：没有溢出保护
 
 
 BUTTONDATA struct

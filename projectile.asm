@@ -12,6 +12,7 @@ include util.inc
 include paint.inc
 
 include prefab.inc
+include statusbar.inc
 
 .data
 nProjtListCnt           DWORD    0
@@ -327,6 +328,7 @@ ProjtHitEnemies proc uses esi edi self: ptr PROJTDATA, cnt:DWORD
                     invoke  GetCenterButton, [esi].pAsButton
                     invoke  PrefabDeathEffectProjf, eax, edx
                     invoke  EnemySetDeath, esi
+                    invoke  AddCoin, 10
                 @@:
                 ; apply damage
                 mov     eax, [edi].pHitEvent

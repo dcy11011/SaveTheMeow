@@ -30,9 +30,9 @@ ENEMYDATA ends
 EXTERNDEF nEnemyListCnt:DWORD
 EXTERNDEF nRoadmapCnt:DWORD
 
-EXTERNDEF nLevelNumber:DWORD
-EXTERNDEF nLevelEnemiesRemain:DWORD
-EXTERNDEF nLevelEnemiesTotal:DWORD
+EXTERNDEF nWaveNumber:DWORD
+EXTERNDEF nWaveEnemiesRemain:DWORD
+EXTERNDEF nWaveEnemiesTotal:DWORD
 
 EXTERNDEF arrayEnemyListHead:DWORD
 EXTERNDEF arrayRoadmapListHead:DWORD
@@ -63,7 +63,7 @@ RoadmapClear            PROTO
 RoadmapAddi             PROTO    x:DWORD, y:DWORD
 RoadmapAddf             PROTO    x:REAL4, y:REAL4
 RoadmapTotalDist        PROTO   
-RoadmapCalcCurrent      PROTO    s:REAL4 ; 依据一维距离计算当前位置 返回-> eax, edx
+RoadmapCalcCurrent      PROTO    s:REAL4 ; 依据一维距离计算当前位置 返回-> eax, edx; ecx为是否到达终点
 
 FindInrangeEnemyf       PROTO    xi:REAL4, yi:REAL4, radius:REAL4    ; -> ptr ENEMYDATA
 FindInrangeEnemyi       PROTO    xi:DWORD, yi:DWORD, radius:DWORD
