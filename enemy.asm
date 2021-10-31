@@ -272,7 +272,7 @@ EnemySetDeath proc uses edi self: ptr ENEMYDATA
     assume  edi: ptr ENEMYDATA
     mov     [edi].isActive, 0
     invoke  DeleteButton, [edi].pAsButton
-    invoke  PopAddCoinf, 10, [edi].xf, [edi].yf
+    invoke  PopAddCoinf, [edi].bParam, [edi].xf, [edi].yf
     ret
 EnemySetDeath endp
 

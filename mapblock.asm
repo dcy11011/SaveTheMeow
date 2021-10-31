@@ -14,6 +14,7 @@ include collision.inc
 include enemy.inc
 include prefab.inc
 include projectile.inc
+include statusbar.inc
 
 include rclist.inc
 
@@ -31,6 +32,12 @@ three                      REAL4    3.0
 szMapFileName              BYTE     "map0.data", 0
 pLastMapBlock              DWORD    0
 topPainter                 DWORD    0
+turrentCost                DWORD    0, 50, 40, 80, 220, 0, 0, 0
+textbuffer                 BYTE     20 DUP(?)
+
+turrentA_text              BYTE     "Bean",0
+turrentB_text              BYTE     "Frame",0
+turrentC_text              BYTE     "Magic",0
 
 .data?
 ptRoutePoint               D_POINT  MAX_ROUTEPOINT DUP(<?>)
@@ -78,6 +85,112 @@ GetAvilaibleMapBlockData proc uses ebx edx edi
     mov eax, edi
     ret
 GetAvilaibleMapBlockData endp
+
+PopTurretPaint   PROC uses ebx edi esi hdc:DWORD, pButton: ptr BUTTONDATA
+    local   @oldPen, @oldBrush, @stRect:RECT
+    ;ocal   @colorAdjustment:COLORADJUSTMENT, @oldColorAdjustment:COLORADJUSTMENT
+    mov     edi, pButton
+    assume  edi: ptr BUTTONDATA
+    invoke  GetButtonRect, pButton, addr @stRect
+
+    push    eax
+    mov     eax, @stRect.top
+    sub     eax, @stRect.bottom
+    .IF     eax <= 1
+        pop     eax
+        ret
+    .ENDIF
+    pop     eax
+    invoke  PaintBitmapTransEx, hdc, [edi].aParam, addr @stRect, STRETCH_XY
+    
+    push    edi
+    mov     bx, [edi].status
+    and     bx, BTNS_CLICK
+    .IF     bx
+        invoke  SetPen, hdc, PS_SOLID, 2, 00111111h
+        mov     @oldPen, eax
+        invoke  GetStockObject, NULL_BRUSH
+        invoke  SelectObject, hdc, eax
+        mov     @oldBrush, eax
+        invoke  PaintRoundRect, hdc, addr @stRect, 10
+        invoke  SelectObject, hdc, @oldBrush
+        invoke  SelectObject, hdc, @oldPen
+        invoke  DeleteObject, eax
+    .ELSE
+        mov     bx, [edi].status
+        and     bx, BTNS_HOVER
+        .IF     bx
+            push    edi
+            invoke  SetPen, hdc, PS_SOLID, 2, 00ffffffh
+            mov     @oldPen, eax
+            invoke  GetStockObject, NULL_BRUSH
+            invoke  SelectObject, hdc, eax
+            mov     @oldBrush, eax
+            invoke  PaintRoundRect, hdc, addr @stRect, 10
+            invoke  SelectObject, hdc, @oldBrush
+            invoke  SelectObject, hdc, @oldPen
+            invoke  DeleteObject, eax
+
+            mov     eax, @stRect.top
+            add     eax, 30
+            mov     @stRect.top, eax
+            mov     eax, @stRect.bottom
+            add     eax, 30
+            mov     @stRect.bottom, 30
+            invoke  PaintBitmapTransEx, hdc, POP_INFO, addr @stRect, 0
+            pop     edi
+
+            invoke  dPrint, [edi].cParam
+            invoke  SetTextColor, hdc, 00223333h
+            invoke  GetCoin
+            mov     ecx, [edi].cParam
+            .IF     eax < turrentCost[ecx*4]
+                invoke  SetTextColor, hdc, 00aabbbbh
+            .ENDIF
+            invoke  GetButtonRect, edi, addr @stRect
+            mov     eax, @stRect.top
+            add     eax, 23
+            mov     @stRect.top, eax
+            add     eax, 60
+            mov     @stRect.bottom, eax
+            mov     eax, @stRect.left
+            add     eax, 25
+            mov     @stRect.left, eax
+            add     eax, 60
+            mov     @stRect.right, eax
+
+            mov     ecx, [edi].cParam
+            invoke  DwordToStr, offset textbuffer, turrentCost[ecx*4]
+            invoke  DrawText, hdc, offset textbuffer, -1, addr @stRect, \
+                    DT_SINGLELINE or DT_VCENTER
+            mov     eax, @stRect.top
+            add     eax, 20
+            mov     @stRect.top, eax
+            add     eax, 60
+            mov     @stRect.bottom, eax
+            mov     eax, @stRect.left
+            sub     eax, 15
+            mov     @stRect.left, eax
+            add     eax, 60
+            mov     @stRect.right, eax
+            .IF     [edi].cParam == A_TURRET
+                invoke  DrawText, hdc, offset turrentA_text, -1, addr @stRect, \
+                        DT_SINGLELINE or DT_VCENTER
+            .ELSEIF [edi].cParam == B_TURRET
+                invoke  DrawText, hdc, offset turrentB_text, -1, addr @stRect, \
+                        DT_SINGLELINE or DT_VCENTER
+            .ELSEIF [edi].cParam == C_TURRET
+                invoke  DrawText, hdc, offset turrentC_text, -1, addr @stRect, \
+                        DT_SINGLELINE or DT_VCENTER
+            .ENDIF
+        .ENDIF
+        
+    .ENDIF
+    pop     edi
+
+    xor     eax, eax
+    ret
+PopTurretPaint   ENDP
 
 MapBlockBasePaint   PROC uses ebx esi edi  hdc:DWORD, pButton:PTR BUTTONDATA
     local   @rect:RECT, @oldPen:HPEN, @oldBrush:HBRUSH
@@ -356,9 +469,7 @@ PaintTurret     PROC    uses ebx esi edi    hdc:DWORD, pButton: PTR BUTTONDATA
     local   @tmp:REAL4
     mov     esi, pButton
     assume  esi: PTR BUTTONDATA
-    .IF     [esi].cParam == 0
-        ret
-    .ENDIF
+    
     mov     edi, [esi].bParam
     assume  edi: PTR MAPBLOCKDATA
     invoke  GetButtonRect, esi, addr @rect
@@ -422,8 +533,6 @@ CreateTurret        PROC uses ebx esi edi    pMapBlock: PTR MAPBLOCKDATA, turret
     mov     [esi].pUpdateEvent, TurrentUpdate
     mov     ax, BTNI_DISABLE_HOVER or BTNI_DISABLE_CLICK
     mov     [esi].isActive, ax
-    mov     eax, one
-    mov     [esi].cParam, eax
     invoke  SetButtonSize, esi, MAPB_BLOCKWIDTH, MAPB_BLOCKHEIGHT
     invoke  MoveButtonCenterTo, esi, [edi].centerX, [edi].centerY
     mov     esi, topPainter
@@ -436,32 +545,27 @@ CreateTurret        PROC uses ebx esi edi    pMapBlock: PTR MAPBLOCKDATA, turret
     ret
 CreateTurret    ENDP
 
-CreateTurretA       PROC uses ebx esi edi    pButton: PTR BUTTONDATA
-    mov     edi, pButton
-    assume  edi: ptr BUTTONDATA
-    mov     edi, [edi].bParam
+CreateTurretR       PROC uses ebx esi edi    pButton: PTR BUTTONDATA
+    mov     esi, pButton
+    assume  esi: ptr BUTTONDATA
+    mov     edi, [esi].bParam
     assume  edi: ptr MAPBLOCKDATA
-    invoke  CreateTurret, edi, A_TURRET
-    ret
-CreateTurretA       ENDP
+    invoke  GetCoin
+    invoke  dPrint, eax
+    mov     ecx, [esi].cParam
+    .IF     eax < turrentCost[ecx*4]
+        invoke PopNoCoin
+        ret
+    .ENDIF
 
-CreateTurretB       PROC uses ebx esi edi    pButton: PTR BUTTONDATA
-    mov     edi, pButton
-    assume  edi: ptr BUTTONDATA
-    mov     edi, [edi].bParam
-    assume  edi: ptr MAPBLOCKDATA
-    invoke  CreateTurret, edi, B_TURRET
-    ret
-CreateTurretB       ENDP
+    mov     eax, turrentCost[ecx*4]
+    neg     eax
+    invoke  AddCoin, eax
 
-CreateTurretC       PROC uses ebx esi edi    pButton: PTR BUTTONDATA
-    mov     edi, pButton
-    assume  edi: ptr BUTTONDATA
-    mov     edi, [edi].bParam
-    assume  edi: ptr MAPBLOCKDATA
-    invoke  CreateTurret, edi, C_TURRET
+    mov     esi, [esi].cParam
+    invoke  CreateTurret, edi, esi
     ret
-CreateTurretC       ENDP
+CreateTurretR       ENDP
 
 DeleteTurret       PROC uses ebx esi edi    pButton: PTR BUTTONDATA
     mov     edi, pButton
@@ -579,16 +683,22 @@ RegisterMapBlock    PROC uses ebx esi edi    posX:DWORD, posY:DWORD
     assume  esi: PTR BUTTONDATA
     invoke  BindMapBlockPopButtonsBitmap, edi, 0, TURRENT_A_ICON
     mov     esi, eax
-    mov     eax, CreateTurretA
+    mov     eax, CreateTurretR
     mov     [esi].pClickEvent, eax
+    mov     [esi].pPaint, PopTurretPaint
+    mov     [esi].cParam, A_TURRET
     invoke  BindMapBlockPopButtonsBitmap, edi, 1, TURRENT_B
     mov     esi, eax
-    mov     eax, CreateTurretB
+    mov     eax, CreateTurretR
     mov     [esi].pClickEvent, eax
+    mov     [esi].pPaint, PopTurretPaint
+    mov     [esi].cParam, B_TURRET
     invoke  BindMapBlockPopButtonsBitmap, edi, 2, TURRENT_C
     mov     esi, eax
-    mov     eax, CreateTurretC
+    mov     eax, CreateTurretR
     mov     [esi].pClickEvent, eax
+    mov     [esi].pPaint, PopTurretPaint
+    mov     [esi].cParam, C_TURRET
     invoke  BindMapBlockPopButtonsBitmap, edi, 3, ICON_UP
     invoke  BindMapBlockPopButtonsBitmap, edi, 4, ICON_DELETE
     mov     esi, eax

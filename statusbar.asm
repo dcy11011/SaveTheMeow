@@ -20,10 +20,12 @@ include rclist.inc
 include statusbar.inc
 
 .data   
-coin        DWORD   15
+coin        DWORD   500
 health      DWORD   100
 waves       DWORD   0
 actionRatio REAL4   0.80
+
+pNoCoinButton   DWORD   0
 
 .data?
 textbuffer  BYTE    20 DUP(?)
@@ -81,6 +83,7 @@ RegisterStatusBar   PROC    uses ebx edi esi  pClientRect:ptr RECT
     assume  esi:PTR BUTTONDATA
     mov     ax, BTNI_DISABLE_CLICK or BTNI_DISABLE_HOVER
     mov     [esi].isActive, ax
+    invoke  SetButtonDepth, esi, -7500
 
     ret
 RegisterStatusBar   ENDP
@@ -96,6 +99,11 @@ AddCoin     PROC    val:DWORD
     .ENDIF
     ret
 AddCoin     ENDP
+
+GetCoin     PROC uses ebx esi edi
+    mov     eax, coin
+    ret
+GetCoin     ENDP
 
 AddHealth     PROC    val:DWORD
     mov     eax, health
@@ -189,5 +197,87 @@ PopAddCoinf     PROC    uses ebx esi edi valCoin:DWORD, posX:REAL4, posY:REAL4
     invoke  PopAddCoin, valCoin, @x, @y
     ret
 PopAddCoinf     ENDP
+
+PaintPopNoCoin PROC    uses ebx edi esi  hdc:DWORD, pButton:PTR BUTTONDATA
+    local   @oldPen:DWORD, @oldBrush:DWORD, @rect:RECT, @pos:D_POINT
+    mov     esi, pButton
+    assume  esi:PTR BUTTONDATA
+    invoke  GetButtonRect, esi, addr @rect
+
+    mov     eax, @rect.left
+    add     eax, @rect.right
+    shr     eax, 1
+    mov     @pos.x, eax
+
+    mov     eax, @rect.top
+    add     eax, @rect.bottom
+    shr     eax, 1
+    mov     @pos.y, eax
+
+    mov     eax, [esi].cParam
+    and     eax, 8
+    .IF     eax
+        mov     eax, 5
+    .ELSE
+        mov     eax, -5
+    .ENDIF
+    invoke  RotateDCi, hdc, eax, @pos.x, @pos.y
+    invoke  PaintBitmapTransEx, hdc, POP_NOCOIN, addr @rect, CENTER_XY
+    invoke  ClearDCRotate, hdc
+
+    ret
+PaintPopNoCoin ENDP
+
+UpdatePopNoCoin  PROC uses ebx edi esi  cnt:DWORD, pButton:PTR BUTTONDATA
+    local   @val:DWORD, @x1:REAL4, @x2:REAL4
+    mov     esi, pButton
+    assume  esi: PTR BUTTONDATA
+    .IF     [esi].cParam > 120
+        invoke  MoveButtonTo, esi, -100, -100
+        ret
+    .ENDIF
+    inc     [esi].cParam
+    .IF     [esi].cParam < 30
+        mov     eax, [esi].aParam
+        mov     ebx, [esi].cParam
+        shl     ebx, 1
+        add     eax, ebx
+        invoke  MoveButtonTo, esi, 40, eax
+        ret
+    .ENDIF
+    .IF     [esi].cParam > 90
+        mov     eax, [esi].aParam
+        mov     ebx, [esi].cParam
+        sub     ebx, 90
+        shl     ebx, 1
+        add     eax, 60
+        sub     eax, ebx
+        invoke  MoveButtonTo, esi, 40, eax
+        ret
+    .ENDIF
+    
+    ret
+UpdatePopNoCoin  ENDP
+
+PopNoCoin      PROC    uses ebx esi edi 
+    local   @rect:RECT
+    .IF  !pNoCoinButton
+        invoke  SetRect, addr @rect, 0, 0, 0, 0
+        invoke  RegisterButton, addr @rect, PaintPopNoCoin, 0, 0,UpdatePopNoCoin
+        invoke  SetButtonDepth, eax, -7499
+        mov     esi, eax
+        assume  esi: PTR BUTTONDATA
+        invoke  SetButtonSize, esi, 60, 40
+        mov     pNoCoinButton, esi
+        mov     esi, pNoCoinButton
+        mov     [esi].cParam, 0
+    .ENDIF
+    mov     esi, pNoCoinButton
+    mov     [esi].cParam, 0
+    mov     [esi].aParam, 0
+    
+    ret
+PopNoCoin      ENDP
+
 
 end

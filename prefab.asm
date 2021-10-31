@@ -318,6 +318,8 @@ PrefabEnemy1 proc lvl:DWORD
     add     eax, lvl
     invoke  RegisterEnemy, eax, real1, 10
     mov     pEnemy1, eax
+    assume  eax: PTR ENEMYDATA
+    mov     [eax].bParam, 3
     invoke  EnemyBindButton, pEnemy1, pButton1
     invoke  EnemyBindUpdate, pEnemy1, EnemyDefaultUpdate
     mov     eax, pEnemy1
@@ -347,6 +349,8 @@ PrefabEnemy2 proc lvl:DWORD
     add     eax, lvl
     invoke  RegisterEnemy, eax, real1, 10
     mov     pEnemy1, eax
+    assume  eax: PTR ENEMYDATA
+    mov     [eax].bParam, 17
     invoke  EnemyBindButton, pEnemy1, pButton1
     invoke  EnemyBindUpdate, pEnemy1, EnemyDefaultUpdate
     mov     eax, pEnemy1
@@ -376,6 +380,8 @@ PrefabEnemy3 proc lvl:DWORD
     add     eax, lvl
     invoke  RegisterEnemy, eax, PI, 10
     mov     pEnemy1, eax
+    assume  eax: PTR ENEMYDATA
+    mov     [eax].bParam, 2
     invoke  EnemyBindButton, pEnemy1, pButton1
     invoke  EnemyBindUpdate, pEnemy1, EnemyDefaultUpdate
     mov     eax, pEnemy1
@@ -407,6 +413,8 @@ PrefabEnemy4 proc lvl:DWORD
     add     eax, 1000
     invoke  RegisterEnemy, eax, real1of2, 10
     mov     pEnemy1, eax
+    assume  eax: PTR ENEMYDATA
+    mov     [eax].bParam, 231
     invoke  EnemyBindButton, pEnemy1, pButton1
     invoke  EnemyBindUpdate, pEnemy1, EnemyDefaultUpdate
     mov     eax, pEnemy1

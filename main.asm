@@ -162,6 +162,8 @@ pProjt1         DWORD  ?
                 pushad
                 invoke  SendClickInfo, ebx, eax
                 popad
+                ; ------- test pop
+                ; invoke  PopNoCoin
                 ; ------- test enemy
                 ; invoke  PrefabTestEnemy, -200, -200
                 ; invoke  PrefabHurtEffectProj, 200, 200
