@@ -23,6 +23,7 @@ include statusbar.inc
 coin        DWORD   15
 health      DWORD   100
 waves       DWORD   0
+actionRatio REAL4   0.80
 
 .data?
 textbuffer  BYTE    20 DUP(?)
@@ -86,7 +87,7 @@ RegisterStatusBar   ENDP
 
 AddCoin     PROC    val:DWORD
     mov     eax, coin
-    add     eax, coin
+    add     eax, val
     .IF     eax >= 0
         mov     coin, eax
         mov     eax, 0
@@ -98,7 +99,7 @@ AddCoin     ENDP
 
 AddHealth     PROC    val:DWORD
     mov     eax, health
-    add     eax, health
+    add     eax, val
     .IF     eax >= 0
         mov     health, eax
         mov     eax, 0
@@ -110,12 +111,12 @@ AddHealth     ENDP
 
 addWave     PROC    val:DWORD
     mov     eax, waves
-    add     eax, waves
+    add     eax, val
     mov     waves, eax
     ret
 addWave     ENDP
 
-PaintPopAddcoin PROC    uses ebx edi esi  hdc:DWORD, pButton:PTR BUTTONDATA
+PaintPopAddCoin PROC    uses ebx edi esi  hdc:DWORD, pButton:PTR BUTTONDATA
     local   @oldPen:DWORD, @oldBrush:DWORD, @rect:RECT
     mov     esi, pButton
     assume  esi:PTR BUTTONDATA
@@ -125,12 +126,68 @@ PaintPopAddcoin PROC    uses ebx edi esi  hdc:DWORD, pButton:PTR BUTTONDATA
     invoke  SetBkMode, hdc, TRANSPARENT
 
     invoke  SetTextColor, hdc, 0011ddddh
+    mov     eax, @rect.left
+    add     eax, 40
+    mov     @rect.left, eax
+    add     eax, 40
+    mov     @rect.right, eax
     invoke  DwordToStr, offset textbuffer, [esi].bParam
     invoke  DrawText, hdc, offset textbuffer, -1, addr @rect, \
             DT_SINGLELINE or DT_VCENTER
 
     ret
-PaintPopAddcoin ENDP
+PaintPopAddCoin ENDP
 
+UpdatePopAddCoin  PROC uses ebx edi esi  cnt:DWORD, pButton:PTR BUTTONDATA
+    local   @val:DWORD, @x1:REAL4, @x2:REAL4
+    mov     esi, pButton
+    assume  esi: PTR BUTTONDATA
+    
+    .IF     [esi].cParam > 20
+        invoke  DeleteButton, esi
+    .ENDIF
+    mov     eax, [esi].cParam
+    add     eax, 1
+    mov     [esi].cParam, eax
+    fild    [esi].aParam
+    fstp    @x1
+    fild    [esi].top
+    fstp    @x2
+    invoke  Lerp, @x1, @x2, actionRatio
+    mov     @val, eax
+    fld     @val
+    fistp   @val
+    invoke  MoveButtonTo, esi, [esi].left, @val
+    ret
+UpdatePopAddCoin  ENDP
+
+PopAddCoin      PROC    uses ebx esi edi valCoin:DWORD, posX:DWORD, posY:DWORD
+    local   @rect:RECT
+    invoke  SetRect, addr @rect, 0, 0, 0, 0
+    invoke  RegisterButton, addr @rect, PaintPopAddCoin, 0, 0,UpdatePopAddCoin
+    invoke  SetButtonDepth, eax, -7510
+    mov     esi, eax
+    assume  esi: PTR BUTTONDATA
+    invoke  SetButtonSize, esi, 40, 20
+    invoke  MoveButtonCenterTo, esi, posX, posY
+    mov     [esi].cParam, 0
+    mov     eax, valCoin
+    mov     [esi].bParam, eax
+    mov     eax, [esi].top
+    sub     eax, 30
+    mov     [esi].aParam, eax
+    invoke  AddCoin, valCoin
+    ret
+PopAddCoin      ENDP
+
+PopAddCoinf     PROC    uses ebx esi edi valCoin:DWORD, posX:REAL4, posY:REAL4
+    local   @x:REAL4, @y:REAL4
+    fld     posX
+    fistp   @x
+    fld     posY
+    fistp   @y
+    invoke  PopAddCoin, valCoin, @x, @y
+    ret
+PopAddCoinf     ENDP
 
 end

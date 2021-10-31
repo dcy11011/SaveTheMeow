@@ -158,7 +158,9 @@ pProjt1         DWORD  ?
                 mov     ebx, eax
                 and     ebx, 0000FFFFh
                 shr     eax, 16
+                pushad
                 invoke  SendClickInfo, ebx, eax
+                popad
                 ; ------- test enemy
                 invoke  PrefabTestEnemy, -200, -200
                 ; invoke  PrefabHurtEffectProj, 200, 200

@@ -4,6 +4,7 @@ option casemap:none
 
 include enemy.inc
 include collision.inc
+include statusbar.inc
 
 include windows.inc
 include gdi32.inc
@@ -261,6 +262,7 @@ EnemySetDeath proc uses edi self: ptr ENEMYDATA
     assume  edi: ptr ENEMYDATA
     mov     [edi].isActive, 0
     invoke  DeleteButton, [edi].pAsButton
+    invoke  PopAddCoinf, 10, [edi].xf, [edi].yf
     ret
 EnemySetDeath endp
 
