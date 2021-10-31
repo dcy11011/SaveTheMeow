@@ -127,12 +127,14 @@ pProjt1         DWORD  ?
                         mov     cnt, eax
                         
                         invoke  SendUpdateInfo, cnt
+                        mov     eax, health
+                        and     eax, eax
+                        jng     @f
                         invoke  WaveStepForward
                         invoke  ProjtUpdateAll, cnt
                         invoke  EnemyUpdateAll, cnt
+                        @@:
                         invoke  GetClientRect, hWnd, addr @stRect
-
-                        invoke  RoadmapCalcCurrent, real100
                         
                         invoke  InvalidateRect, hWnd, addr @stRect, 0
                         invoke  SortButtons ; IMPORTANT!
@@ -161,7 +163,7 @@ pProjt1         DWORD  ?
                 shr     eax, 16
                 invoke  SendClickInfo, ebx, eax
                 ; ------- test enemy
-                ; invoke  PrefabTestEnemy, -200, -200
+                invoke  PrefabEnemy3, 1000
                 ; invoke  PrefabHurtEffectProj, 200, 200
                 ; invoke  PrefabTestProjectile, 200, 200
                 invoke  SortButtons ; IMPORTANT!
@@ -186,7 +188,7 @@ pProjt1         DWORD  ?
                 invoke  SetTimer, hWnd, TIMER_TICK, TICK_INTERVAL, NULL   
 
                 invoke  WaveReset
-                invoke  WaveStart, 1, 3
+                invoke  WaveStart, 0, 3
                 invoke  LoadMapFromFile, 50, 90
 
                 invoke  GetClientRect, hWnd, addr @stRect
@@ -243,6 +245,15 @@ pProjt1         DWORD  ?
             .ENDW
             ret
     _WinMain    ENDP
+    QuitCallback PROC pButton: DWORD
+        invoke  DestroyWindow, hWinMain
+        invoke  PostQuitMessage, NULL
+        invoke  KillTimer, hInstance, TIMER_TICK
+        invoke  DeleteDC, hMemDc
+        invoke  DeleteObject, hBitmap
+        invoke  ReleaseAllBitmap ; IMPORTANT!
+        ret
+    QuitCallback ENDP
     ;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
     start:
             call _WinMain

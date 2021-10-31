@@ -134,7 +134,7 @@ Random          PROC  uses ebx esi edi
     invoke  rand
     and     eax, 0000ffffh
     
-    invoke  dPrint, eax
+    ; invoke  dPrint, eax
     mov     @integer, eax
     fild    @integer
     mov     eax, 7fffh
