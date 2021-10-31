@@ -39,6 +39,7 @@ MAPBLOCKDATA    struct
     diaplaySet      DWORD   ?   ; which set of pop buttons to diaplay; set the setID by 'defualtButtonGroupID' in .asm
     pTurret         DWORD   ? 
     turretID        DWORD   ?
+    turretLvl       DWORD   ?
     turretAngle     REAL4   ?
     turretRange     DWORD   ?
     pTurretUpdate   DWORD   ?
@@ -60,4 +61,6 @@ NO_TURRET       EQU     0
 A_TURRET   EQU     1
 B_TURRET    EQU     2
 C_TURRET  EQU     3
+UP_TURRET  EQU     4
+DE_TURRET  EQU     5
 
