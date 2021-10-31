@@ -392,8 +392,15 @@ ProjtMissleUpdate PROC uses esi edi cnt:DWORD, pProjt: ptr PROJTDATA
         mov     eax, [eax].pAsButton
         invoke  GetCenterButton, eax
         invoke  DirectionTo, [edi].xf, [edi].yf, eax, edx
+        invoke  LerpAngle, [edi].direction, eax, real9of10
         invoke  ProjtSetDirection, pProjt, eax
+
+        invoke  Lerp, [edi].speed, real5, real9of10
+        invoke  ProjtSetSpeed, pProjt, eax
         ; change dir
+    .ELSEIF
+        invoke  Lerp, [edi].speed, real1, real2of3
+        invoke  ProjtSetSpeed, pProjt, eax
     .ENDIF
 
     invoke  ProjtHitEnemies, pProjt, cnt

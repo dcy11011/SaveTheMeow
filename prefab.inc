@@ -8,3 +8,7 @@ PrefabDeathEffectProjf  PROTO   x:REAL4, y:REAL4
 PrefabProjA             PROTO   x:DWORD, y:DWORD, dir:REAL4
 PrefabProjB             PROTO   x:DWORD, y:DWORD, dir:REAL4
 PrefabProjC             PROTO   x:DWORD, y:DWORD, dir:REAL4
+PrefabEnemy1            PROTO
+PrefabEnemy2            PROTO
+PrefabEnemy3            PROTO
+PrefabEnemy4            PROTO

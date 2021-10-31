@@ -126,6 +126,7 @@ pProjt1         DWORD  ?
                         mov     cnt, eax
                         
                         invoke  SendUpdateInfo, cnt
+                        invoke  WaveStepForward
                         invoke  ProjtUpdateAll, cnt
                         invoke  EnemyUpdateAll, cnt
                         invoke  GetClientRect, hWnd, addr @stRect
@@ -159,7 +160,7 @@ pProjt1         DWORD  ?
                 shr     eax, 16
                 invoke  SendClickInfo, ebx, eax
                 ; ------- test enemy
-                invoke  PrefabTestEnemy, -200, -200
+                ; invoke  PrefabTestEnemy, -200, -200
                 ; invoke  PrefabHurtEffectProj, 200, 200
                 ; invoke  PrefabTestProjectile, 200, 200
                 invoke  SortButtons ; IMPORTANT!
@@ -183,7 +184,9 @@ pProjt1         DWORD  ?
 
                 invoke  SetTimer, hWnd, TIMER_TICK, TICK_INTERVAL, NULL   
 
+                invoke  WaveReset
                 invoke  LoadMapFromFile, 50, 50
+                invoke  WaveStart, 1, 3
 
                 invoke  RegisterTopPainter
 

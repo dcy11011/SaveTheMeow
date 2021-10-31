@@ -217,7 +217,7 @@ PrefabProjB proc   x:DWORD, y:DWORD, dir:REAL4
     mov     edx, pProjt1
     assume  edx: ptr PROJTDATA
     mov     [edx].penetrate, 1
-    mov     [edx].lifetime, 1000
+    mov     [edx].lifetime, 30
     ;
     mov     eax, pProjt1
     ret
@@ -246,7 +246,7 @@ PrefabProjC proc   x:DWORD, y:DWORD, dir:REAL4
     invoke  BindButtonToBitmap, pButton1, BULLET_C
     invoke  SetButtonSize, pButton1, 10, 10
     ; ---- Proj
-    invoke  RegisterProjectile, 5, real1, dir
+    invoke  RegisterProjectile, 5, real11, dir
     mov     pProjt1, eax
     invoke  ProjtBindButton, pProjt1, pButton1
     invoke  ProjtBindUpdate, pProjt1, ProjtMissleUpdate
@@ -294,5 +294,113 @@ PrefabTestEnemy proc   x:DWORD, y:DWORD
     mov     eax, pEnemy1
     ret
 PrefabTestEnemy endp
+
+PrefabEnemy1 proc
+    local   @stRect:RECT, pButton1:DWORD, pEnemy1:DWORD
+    mov     eax, -100
+    mov     @stRect.left, eax
+    add     eax, 30
+    mov     @stRect.right, eax
+
+    mov     eax, -100
+    mov     @stRect.top, eax
+    add     eax, 30
+    mov     @stRect.bottom, eax
+    invoke  RegisterButton, addr @stRect, 0, 0, 0, 0
+    mov     pButton1, eax
+    invoke  SetButtonDepth, pButton1, -10
+    mov     eax, pButton1
+    assume  eax: ptr BUTTONDATA
+    or      [eax].isActive, BTNI_DISABLE
+    invoke  BindButtonToBitmap, pButton1, ENEMY_SPRITE_1
+    
+    invoke  RegisterEnemy, 30, real1, 10
+    mov     pEnemy1, eax
+    invoke  EnemyBindButton, pEnemy1, pButton1
+    invoke  EnemyBindUpdate, pEnemy1, EnemyDefaultUpdate
+    mov     eax, pEnemy1
+    ret
+PrefabEnemy1 endp
+
+PrefabEnemy2 proc
+    local   @stRect:RECT, pButton1:DWORD, pEnemy1:DWORD
+    mov     eax, -100
+    mov     @stRect.left, eax
+    add     eax, 30
+    mov     @stRect.right, eax
+
+    mov     eax, -100
+    mov     @stRect.top, eax
+    add     eax, 30
+    mov     @stRect.bottom, eax
+    invoke  RegisterButton, addr @stRect, 0, 0, 0, 0
+    mov     pButton1, eax
+    invoke  SetButtonDepth, pButton1, -10
+    mov     eax, pButton1
+    assume  eax: ptr BUTTONDATA
+    or      [eax].isActive, BTNI_DISABLE
+    invoke  BindButtonToBitmap, pButton1, ENEMY_SPRITE_2
+    
+    invoke  RegisterEnemy, 100, real1, 10
+    mov     pEnemy1, eax
+    invoke  EnemyBindButton, pEnemy1, pButton1
+    invoke  EnemyBindUpdate, pEnemy1, EnemyDefaultUpdate
+    mov     eax, pEnemy1
+    ret
+PrefabEnemy2 endp
+
+PrefabEnemy3 proc
+    local   @stRect:RECT, pButton1:DWORD, pEnemy1:DWORD
+    mov     eax, -100
+    mov     @stRect.left, eax
+    add     eax, 30
+    mov     @stRect.right, eax
+
+    mov     eax, -100
+    mov     @stRect.top, eax
+    add     eax, 30
+    mov     @stRect.bottom, eax
+    invoke  RegisterButton, addr @stRect, 0, 0, 0, 0
+    mov     pButton1, eax
+    invoke  SetButtonDepth, pButton1, -10
+    mov     eax, pButton1
+    assume  eax: ptr BUTTONDATA
+    or      [eax].isActive, BTNI_DISABLE
+    invoke  BindButtonToBitmap, pButton1, ENEMY_SPRITE_1
+    
+    invoke  RegisterEnemy, 10, PI, 10
+    mov     pEnemy1, eax
+    invoke  EnemyBindButton, pEnemy1, pButton1
+    invoke  EnemyBindUpdate, pEnemy1, EnemyDefaultUpdate
+    mov     eax, pEnemy1
+    ret
+PrefabEnemy3 endp
+
+PrefabEnemy4 proc
+    local   @stRect:RECT, pButton1:DWORD, pEnemy1:DWORD
+    mov     eax, -100
+    mov     @stRect.left, eax
+    add     eax, 30
+    mov     @stRect.right, eax
+
+    mov     eax, -100
+    mov     @stRect.top, eax
+    add     eax, 30
+    mov     @stRect.bottom, eax
+    invoke  RegisterButton, addr @stRect, 0, 0, 0, 0
+    mov     pButton1, eax
+    invoke  SetButtonDepth, pButton1, -10
+    mov     eax, pButton1
+    assume  eax: ptr BUTTONDATA
+    or      [eax].isActive, BTNI_DISABLE
+    invoke  BindButtonToBitmap, pButton1, ENEMY_SPRITE_2
+    
+    invoke  RegisterEnemy, 1000, real1of2, 10
+    mov     pEnemy1, eax
+    invoke  EnemyBindButton, pEnemy1, pButton1
+    invoke  EnemyBindUpdate, pEnemy1, EnemyDefaultUpdate
+    mov     eax, pEnemy1
+    ret
+PrefabEnemy4 endp
 
 end

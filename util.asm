@@ -14,6 +14,7 @@ szdPrintFloatFormat byte    "%f", 0dh, 0ah, 0
 szdPrint2FloatFormat byte    "(%f %f)", 0dh, 0ah, 0
 PI                  REAL4   3.1415926
 PIby2               REAL4   1.5707963
+PIm2                REAL4   6.2831852
 real0               REAL4   0.0
 real1               REAL4   1.0
 real2               REAL4   2.0

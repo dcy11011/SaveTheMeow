@@ -261,14 +261,14 @@ TurrentUpdate   PROC uses ebx esi edi  cnt:DWORD, pButton: ptr BUTTONDATA
             mov     eax, [eax].pAsButton
             invoke  GetCenterButton, eax
             invoke  DirectionTo, @tx, @ty, eax, edx
-            invoke  Lerp, [edi].turretAngle, eax, real2of3
+            invoke  LerpAngle, [edi].turretAngle, eax, real2of3
             mov     [edi].turretAngle, eax
 
             xor     edx, edx
             mov     eax, cnt
-            mov     ecx, 20
+            mov     ecx, 15
             div     ecx
-            .IF     edx <= 1
+            .IF     edx <= 0
                 invoke  PrefabProjA, [edi].centerX, [edi].centerY, [edi].turretAngle
             .ENDIF
 
@@ -280,8 +280,6 @@ TurrentUpdate   PROC uses ebx esi edi  cnt:DWORD, pButton: ptr BUTTONDATA
             .IF     edx <= 1
                 invoke  PrefabProjB, [edi].centerX, [edi].centerY, real0
                 assume  eax:PTR PROJTDATA
-                mov     ebx, 30
-                mov     [eax].lifetime, ebx
                 mov     edx, eax
                 push    edx
                 invoke  Random 
@@ -301,14 +299,14 @@ TurrentUpdate   PROC uses ebx esi edi  cnt:DWORD, pButton: ptr BUTTONDATA
             mov     eax, [eax].pAsButton
             invoke  GetCenterButton, eax
             invoke  DirectionTo, @tx, @ty, eax, edx
-            invoke  Lerp, [edi].turretAngle, eax, real2of3
+            invoke  LerpAngle, [edi].turretAngle, eax, real2of3
             mov     [edi].turretAngle, eax
 
             xor     edx, edx
             mov     eax, cnt
-            mov     ecx, 40
+            mov     ecx, 30
             div     ecx
-            .IF     edx <= 1
+            .IF     edx <= 0
                 invoke  PrefabProjC, [edi].centerX, [edi].centerY, [edi].turretAngle
             .ENDIF
         .ENDIF
