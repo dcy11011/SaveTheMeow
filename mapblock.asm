@@ -575,8 +575,8 @@ PainterTop  PROC  hdc:DWORD, pButton: PTR BUTTONDATA
         mov     @oldBrush, eax
         invoke  PaintCircleCR, hdc, [edi].centerX, [edi].centerY, [edi].turretRange
         invoke  SelectObject, hdc, @oldPen
-        invoke  SelectObject, hdc, @oldBrush
         invoke  DeleteObject, eax
+        invoke  SelectObject, hdc, @oldBrush
     .ENDIF
     ret
 PainterTop  ENDP
