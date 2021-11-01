@@ -56,4 +56,7 @@ SortButtons             PROTO
 SetButtonDepth          PROTO    pButton: ptr BUTTONDATA, depth:DWORD       ; 设置按钮的深度。深度越小越上层
 GetButtonDepth          PROTO    pButton: ptr BUTTONDATA                    ; 获取按钮的深度
 
+GetButtonCenteri        PROTO    pButton: ptr BUTTONDATA
+
+
 BindButtonToBitmap      PROTO    pButton:ptr BUTTONDATA, BitmapID:DWORD

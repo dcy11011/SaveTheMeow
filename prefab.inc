@@ -14,6 +14,7 @@ PrefabReplayBtn         PROTO   x:DWORD, y:DWORD
 PrefabProjA             PROTO   x:DWORD, y:DWORD, dir:REAL4
 PrefabProjB             PROTO   x:DWORD, y:DWORD, dir:REAL4
 PrefabProjC             PROTO   x:DWORD, y:DWORD, dir:REAL4
+PrefabProjD             PROTO   pMapBlock:DWORD, pEnemy:DWORD
 PrefabEnemy1            PROTO   lvl:DWORD
 PrefabEnemy2            PROTO   lvl:DWORD
 PrefabEnemy3            PROTO   lvl:DWORD

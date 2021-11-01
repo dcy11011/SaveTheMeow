@@ -25,8 +25,8 @@ include statusbar.inc
 .data
 nMapBlockListCnt           DWORD    0
 bIfInitMapBlockData        DWORD    0
-defaultAngset              DWORD    210, 90, 330, 135, 45, 135, 45
-defualtButtonGroupID       DWORD    1, 1, 1, 2, 2, 3, 3
+defaultAngset              DWORD    45, 135, 225, 315, 135, 45, 135, 45
+defualtButtonGroupID       DWORD    1, 1, 1, 1, 2, 2, 3, 3
 popRatio                   REAL4    0.3
 one                        REAL4    1.0
 three                      REAL4    3.0
@@ -39,6 +39,7 @@ textbuffer                 BYTE     200 DUP(?)
 turrentA_text              BYTE     "Bean",0
 turrentB_text              BYTE     "Flame",0
 turrentC_text              BYTE     "Magic",0
+turrentD_text              BYTE     "Sniper",0
 upgrade_text               BYTE     "Upgrade",0
 destroy_text               BYTE     "Destroy",0
 
@@ -205,6 +206,9 @@ PopTurretPaint   PROC uses ebx edi esi hdc:DWORD, pButton: ptr BUTTONDATA
                         DT_SINGLELINE or DT_VCENTER
             .ELSEIF [edi].cParam == C_TURRET
                 invoke  DrawText, hdc, offset turrentC_text, -1, addr @stRect, \
+                        DT_SINGLELINE or DT_VCENTER
+            .ELSEIF [edi].cParam == D_TURRET
+                invoke  DrawText, hdc, offset turrentD_text, -1, addr @stRect, \
                         DT_SINGLELINE or DT_VCENTER
             .ELSEIF [edi].cParam == UP_TURRET
                 invoke  DrawText, hdc, offset upgrade_text, -1, addr @stRect, \
@@ -526,6 +530,45 @@ TurrentUpdate   PROC uses ebx esi edi  cnt:DWORD, pButton: ptr BUTTONDATA
             .IF     edx <= 0
                 invoke  PrefabProjC, [edi].centerX, [edi].centerY, [edi].turretAngle
             .ENDIF
+        .ELSEIF [edi].turretID == D_TURRET
+
+            xor     edx, edx
+            mov     eax, cnt
+            ;
+            push    eax
+            push    edx
+            xor     edx, edx
+            mov     eax, 400
+            div     [edi].turretLvl
+            and     eax, eax
+            jne     @f
+            mov     eax, 1
+            @@:
+            mov     ecx, eax
+            pop     edx
+            pop     eax
+            ; 
+            ; mov     ecx, 30
+            div     ecx
+            .if     ecx < 20
+                mov     ecx, 0
+            .else   
+                sub     ecx, 20
+            .endif 
+            .IF     edx >= ecx
+                mov     eax, [edi].pTurretTarget
+                assume  eax: ptr ENEMYDATA
+                mov     eax, [eax].pAsButton
+                invoke  GetCenterButton, eax
+                invoke  DirectionTo, @tx, @ty, eax, edx
+                invoke  LerpAngle, [edi].turretAngle, eax, real2of3
+                mov     [edi].turretAngle, eax
+            .ENDIF
+            .IF   edx == 0
+                mov     esi, [edi].pTurretTarget
+                assume  esi: ptr ENEMYDATA
+                invoke  PrefabProjD, edi, esi
+            .ENDIF
         .ENDIF
     .ENDIF 
 
@@ -595,17 +638,22 @@ CreateTurret        PROC uses ebx esi edi    pMapBlock: PTR MAPBLOCKDATA, turret
     .IF     eax == A_TURRET
         mov     eax, TURRENT_A
         mov     [esi].aParam, eax
-        mov     eax, 180
+        mov     eax, 140
         mov     [edi].turretRange, eax
     .ELSEIF eax == B_TURRET
         mov     eax, TURRENT_B
         mov     [esi].aParam, eax
-        mov     eax, 100
+        mov     eax, 90
         mov     [edi].turretRange, eax
     .ELSEIF eax == C_TURRET
         mov     eax, TURRENT_C
         mov     [esi].aParam, eax
-        mov     eax, 250
+        mov     eax, 200
+        mov     [edi].turretRange, eax
+    .ELSEIF eax == D_TURRET
+        mov     eax, TURRENT_D
+        mov     [esi].aParam, eax
+        mov     eax, 240
         mov     [edi].turretRange, eax
     .ENDIF
     mov     [esi].pPaint, PaintTurret
@@ -655,6 +703,7 @@ UpgradeTurret        PROC uses ebx esi edi    pMapBlock: PTR MAPBLOCKDATA, turre
     assume  esi: PTR BUTTONDATA
     mov     [esi].bParam, edi
     mov     [edi].turretLvl, eax
+    mov     eax, [edi].turretRange
     invoke  SetButtonSize, esi, MAPB_BLOCKWIDTH, MAPB_BLOCKHEIGHT
     invoke  MoveButtonCenterTo, esi, [edi].centerX, [edi].centerY
     ret
@@ -814,23 +863,29 @@ RegisterMapBlock    PROC uses ebx esi edi    posX:DWORD, posY:DWORD
     mov     [esi].pClickEvent, eax
     mov     [esi].pPaint, PopTurretPaint
     mov     [esi].cParam, C_TURRET
-    invoke  BindMapBlockPopButtonsBitmap, edi, 3, ICON_UP
+    invoke  BindMapBlockPopButtonsBitmap, edi, 3, TURRENT_D
+    mov     esi, eax
+    mov     eax, CreateTurretR
+    mov     [esi].pClickEvent, eax
+    mov     [esi].pPaint, PopTurretPaint
+    mov     [esi].cParam, D_TURRET
+    invoke  BindMapBlockPopButtonsBitmap, edi, 4, ICON_UP
     mov     esi, eax
     mov     eax, UpgradeTurretR
     mov     [esi].pClickEvent, eax
     mov     [esi].pPaint, PopTurretPaint
     mov     [esi].cParam, UP_TURRET
-    invoke  BindMapBlockPopButtonsBitmap, edi, 4, ICON_DELETE
+    invoke  BindMapBlockPopButtonsBitmap, edi, 5, ICON_DELETE
     mov     esi, eax
     mov     eax, DeleteTurret
     mov     [esi].pClickEvent, eax
     mov     [esi].pPaint, PopTurretPaint
     mov     [esi].cParam, DE_TURRET
-    invoke  BindMapBlockPopButtonsBitmap, edi, 5, ICON_OK
+    invoke  BindMapBlockPopButtonsBitmap, edi, 6, ICON_OK
     mov     esi, eax
     mov     eax, ReallyDeleteTurret
     mov     [esi].pClickEvent, eax
-    invoke  BindMapBlockPopButtonsBitmap, edi, 6, ICON_CANCEL
+    invoke  BindMapBlockPopButtonsBitmap, edi, 7, ICON_CANCEL
     mov     esi, eax
     mov     eax, CancelDeleteTurret
     mov     [esi].pClickEvent, eax

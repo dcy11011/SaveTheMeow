@@ -17,7 +17,7 @@ MAPB_BLOCKMARGINX   EQu     50
 
 MAPB_BTNDISTANCE    EQU     60  ; distance of pop
 
-MAPB_BTNTOTAL       EQU     7
+MAPB_BTNTOTAL       EQU     8
 
 MAPB_BTNWIDTH       EQU     30
 MAPB_BTNHEIGHT      EQU     30
@@ -57,10 +57,11 @@ LoadMapFromFile                 PROTO    offsetX:DWORD, offsetY:DWORD ; 读取�
 
 
 
-NO_TURRET       EQU     0
-A_TURRET   EQU     1
+NO_TURRET   EQU     0
+A_TURRET    EQU     1
 B_TURRET    EQU     2
-C_TURRET  EQU     3
-UP_TURRET  EQU     4
-DE_TURRET  EQU     5
+C_TURRET    EQU     3
+D_TURRET    EQU     4
+UP_TURRET   EQU     5
+DE_TURRET   EQU     6
 

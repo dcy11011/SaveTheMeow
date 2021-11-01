@@ -12,7 +12,7 @@ ML = $(MASM)\bin\ml.exe
 LINK = $(MASM)\bin\link.exe
 RC_E = $(MASM)\bin\rc.exe
 
-LINK_FLAG = /subsystem:windows /LIBPATH:$(IRVINE) /LIBPATH:$(MASM)\lib
+LINK_FLAG = /subsystem:console /LIBPATH:$(IRVINE) /LIBPATH:$(MASM)\lib
 ML_FLAG = /c /coff /I$(MASM)/include /Zi
 
 

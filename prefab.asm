@@ -13,6 +13,7 @@ include collision.inc
 include rclist.inc
 include paint.inc
 include main.inc
+include mapblock.inc
 
 .data
 
@@ -443,6 +444,107 @@ PrefabProjC proc   x:DWORD, y:DWORD, dir:REAL4
     mov     eax, pProjt1
     ret
 PrefabProjC endp
+
+UpdateSniperBullet PROC uses ebx esi edi  cnt:DWORD, pButton:PTR BUTTONDATA
+    local   @pos:D_POINT
+    local   @stRect:RECT, pButton1:DWORD, pProjt1:DWORD
+    mov     esi, pButton
+    assume  esi: PTR BUTTONDATA
+    mov     edx, [esi].bParam
+    assume  edx: PTR ENEMYDATA
+    inc     [esi].cParam
+    .IF     [esi].cParam > 2
+        mov     eax, [edx].pAsButton
+        invoke  GetButtonCenteri, eax
+        mov     @pos.x, eax
+        mov     @pos.y, edx
+        ; ---- Button
+        mov     eax, @pos.x
+        sub     eax, 5
+        mov     @stRect.left, eax
+        add     eax, 10
+        mov     @stRect.right, eax
+        ;
+        mov     eax, @pos.y
+        sub     eax, 5
+        mov     @stRect.top, eax
+        add     eax, 10
+        mov     @stRect.bottom, eax
+        invoke  RegisterButton, addr @stRect, 0, 0, 0, 0
+        mov     pButton1, eax
+        invoke  SetButtonDepth, pButton1, -1000
+        mov     eax, pButton1
+        assume  eax: ptr BUTTONDATA
+        or      [eax].isActive, BTNI_DISABLE or BTNI_DISABLE_PAINT
+        invoke  BindButtonToBitmap, pButton1, BULLET_B
+        invoke  SetButtonSize, pButton1, 15, 15
+        ; ---- Proj
+        invoke  RegisterProjectile, 250, 0, 0
+        mov     pProjt1, eax
+        invoke  ProjtBindButton, pProjt1, pButton1
+        invoke  ProjtBindUpdate, pProjt1, ProjtMissleUpdate
+        ;
+        mov     edx, pProjt1
+        assume  edx: ptr PROJTDATA
+        mov     [edx].penetrate, 1
+        mov     [edx].lifetime, 1000
+        ;
+        mov     eax, pProjt1
+        mov     esi, pButton
+        assume  esi: ptr BUTTONDATA
+        invoke  DeleteButton, esi
+    .ENDIF
+    ret
+UpdateSniperBullet ENDP
+
+PaintSniperBullet PROC uses ebx esi edi  hdc:DWORD, pButton:PTR BUTTONDATA
+    local   @oldPen, @pos:D_POINT
+    mov     esi, pButton
+    assume  esi: PTR BUTTONDATA
+    mov     ecx, [esi].aParam
+    assume  ecx: PTR MAPBLOCKDATA
+    mov     edx, [esi].bParam
+    assume  edx: PTR ENEMYDATA
+
+    mov     eax, [esi].cParam
+    .IF     eax < 7
+        mov     eax, 1
+    .ELSE
+        sub     eax, 6
+    .ENDIF
+    push    edx
+    push    ecx
+    invoke  SetPen, hdc, PS_SOLID, eax , 00ffffffh  
+    mov     @oldPen, eax              
+    pop     ecx
+    invoke  MoveToEx, hdc, [ecx].centerX, [ecx].centerY, NULL
+    pop     edx
+    mov     eax, [edx].pAsButton
+    invoke  GetButtonCenteri, eax
+    invoke  LineTo, hdc, eax, edx
+    
+    invoke  SelectObject, hdc, @oldPen
+    invoke  DeleteObject, eax
+    
+    ret
+PaintSniperBullet ENDP
+
+PrefabProjD proc   pMapBlock:DWORD, pEnemy:DWORD
+    local   @rect:RECT
+    invoke  SetRect, addr @rect, 0, 0, 0, 0
+    invoke  RegisterButton, addr @rect, PaintSniperBullet, 0, 0, UpdateSniperBullet
+    mov     esi, eax
+    assume  esi: ptr BUTTONDATA
+    invoke  SetButtonDepth, esi, -8000
+    mov     ax, BTNI_DISABLE_HOVER or BTNI_DISABLE_CLICK
+    mov     [esi].isActive, ax
+    mov     eax, pMapBlock
+    mov     [esi].aParam, eax
+    mov     eax, pEnemy
+    mov     [esi].bParam, eax
+    mov     [esi].cParam, 0
+    ret
+PrefabProjD endp
 
 ;
 ;   Enemy Prefabs

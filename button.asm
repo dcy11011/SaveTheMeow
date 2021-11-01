@@ -117,6 +117,18 @@ RegisterButton      PROC    uses ebx edi esi pRect: ptr RECT, pPaint:DWORD, pCli
 
 RegisterButton ENDP
 
+GetButtonCenteri        PROC    uses ebx esi edi    pButton: ptr BUTTONDATA
+    mov     edi, pButton
+    assume  edi: PTR BUTTONDATA
+    mov     eax, [edi].left
+    add     eax, [edi].right
+    shr     eax, 1
+    mov     edx, [edi].top
+    add     edx, [edi].bottom
+    shr     edx, 1
+    ret
+GetButtonCenteri     ENDP
+
 ; 绘制单个按钮
 PaintButton     PROC uses ebx   hDc:DWORD, pButton: ptr BUTTONDATA
     mov     eax, pButton
